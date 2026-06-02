@@ -527,20 +527,27 @@ const selectedAIGroupData = computed(() => {
 })
 
 // --- 演示数据 ---
+// 展览模式下，揽星组/驭风组/逐日组分数始终为0，仅长空组/凌云组/巡天组有演示数据
+const ZERO_GROUPS = ['逐日组', '揽星组', '驭风组']
 function getDemoGroups(dimensions) {
   const demoScores = {
-    '逐日组': [0, 0, 0, 0],
-    '揽星组': [0, 0, 0, 0],
-    '驭风组': [0, 0, 0, 0],
+    '逐日组': [92, 88, 85, 90],
+    '揽星组': [87, 93, 89, 85],
+    '驭风组': [90, 86, 92, 88],
     '长空组': [85, 90, 87, 92],
     '凌云组': [88, 85, 90, 87],
     '巡天组': [91, 89, 88, 90],
   }
   const groups = Object.entries(demoScores).map(([name, scores]) => {
+    const isZero = ZERO_GROUPS.includes(name)
     const dimScores = {}
     let total = 0
-    dimensions.forEach((dim, j) => { dimScores[dim] = scores[j] || 85; total += scores[j] || 85 })
-    return { group_id: name, dimension_scores: dimScores, total_avg: Math.round(total / dimensions.length * 100) / 100, weighted_avg: Math.round(total / dimensions.length * 100) / 100, score_count: 5, rank: 0 }
+    dimensions.forEach((dim, j) => {
+      const val = isZero ? 0 : (scores[j] || 85)
+      dimScores[dim] = val
+      total += val
+    })
+    return { group_id: name, dimension_scores: dimScores, total_avg: isZero ? 0 : Math.round(total / dimensions.length * 100) / 100, weighted_avg: isZero ? 0 : Math.round(total / dimensions.length * 100) / 100, score_count: isZero ? 0 : 5, rank: 0 }
   })
   groups.sort((a, b) => b.total_avg - a.total_avg)
   groups.forEach((g, i) => g.rank = i + 1)
@@ -643,7 +650,7 @@ function startSimulation() {
   simData.forEach(g => {
     simBaseScores[g.group_id] = {}
     dims.forEach(d => {
-      const target = g.target_scores[d] || 80
+      const target = g.target_scores[d] ?? 80
       const perScorer = target / totalSteps
       const shares = []
       let remaining = target
