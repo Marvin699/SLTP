@@ -108,13 +108,17 @@
               </div>
               <div class="session-link" @click.stop>
                 <span class="link-text">{{ getScoreUrl(s.token) }}</span>
-                <el-button size="small" text type="primary" @click="copyLink(s.token)">复制</el-button>
+                <el-button size="small" type="primary" plain @click="copyLink(s.token)">
+                  <el-icon><CopyDocument /></el-icon> 复制
+                </el-button>
               </div>
               <div class="session-meta">
                 <span v-if="s.start_time">开始: {{ formatTime(s.start_time) }}</span>
                 <span v-if="s.end_time">结束: {{ formatTime(s.end_time) }}</span>
               </div>
-              <el-button size="small" type="danger" text @click.stop="handleDelete(s)">删除</el-button>
+              <el-button size="small" type="warning" plain @click.stop="handleDelete(s)">
+                <el-icon><VideoPause /></el-icon> 停用
+              </el-button>
             </div>
             <el-empty v-if="!sessions.length" description="暂无评分链接，点击上方生成" :image-size="80" />
           </div>
@@ -554,7 +558,9 @@ async function loadSections() {
 async function loadSessions() {
   try {
     const res = await fetchSessions(sectionId.value)
-    sessions.value = Array.isArray(res.data) ? res.data : []
+    const all = Array.isArray(res.data) ? res.data : []
+    // 管理列表只显示活跃链接，已停用的不显示
+    sessions.value = all.filter(s => s.is_active)
   } catch { sessions.value = [] }
 }
 
@@ -824,11 +830,8 @@ function startPolling() {
     if (simulating.value) return // 模拟中不轮询
     if (viewMode.value !== 'overview') return
     if (exhibitionEnabled.value) return // 展览模式不轮询
-    // 没有活跃链接时停止轮询（打分已结束）
-    const hasActive = sessions.value.some(s => isSessionValid(s))
-    if (!hasActive) { stopPolling(); return }
     await loadDashboard()
-    // 只在有真实数据时刷新图表（展览数据不动）
+    // 有真实数据时刷新图表
     if (hasRealData.value) {
       await nextTick()
       renderOverviewCharts()
@@ -870,7 +873,22 @@ function isSessionValid(s) {
   return true
 }
 function getScoreUrl(token) { return `${window.location.origin}/score/${token}` }
-function copyLink(token) { navigator.clipboard.writeText(getScoreUrl(token)); ElMessage.success('链接已复制') }
+function copyLink(token) {
+  const url = getScoreUrl(token)
+  // 兼容 HTTP 环境（navigator.clipboard 需要 HTTPS/localhost）
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(url).then(() => ElMessage.success('链接已复制'))
+  } else {
+    const ta = document.createElement('textarea')
+    ta.value = url
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    ElMessage.success('链接已复制')
+  }
+}
 function formatTime(t) {
   if (!t) return ''
   return new Date(t).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -901,9 +919,9 @@ async function handleCreate() {
 }
 async function handleDelete(s) {
   try {
-    await ElMessageBox.confirm(`确定停用「${s.title}」？打分将结束，已有数据保留`, '结束打分', { type: 'warning', confirmButtonText: '确认停用', cancelButtonText: '取消' })
+    await ElMessageBox.confirm(`确定停用「${s.title}」？链接将失效，已有打分数据保留不变。`, '停用链接', { type: 'warning', confirmButtonText: '确认停用', cancelButtonText: '取消' })
     await deleteSession(s.id)
-    ElMessage.success('链接已停用，打分结束')
+    ElMessage.success('链接已停用')
     if (selectedSession.value?.token === s.token) { selectedSession.value = null; summary.value = null }
     loadSessions()
   } catch {}
@@ -967,7 +985,7 @@ function renderSessionBar() {
     backgroundColor: 'transparent', tooltip: { trigger: 'axis' },
     grid: { left: 50, right: 20, top: 20, bottom: 40 },
     xAxis: { type: 'category', data: groups.map(g => g.group_id), axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-    yAxis: { type: 'value', min: 60, max: 100, axisLabel: { color: 'rgba(255,255,255,0.5)' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
+    yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: 'rgba(255,255,255,0.5)' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
     series: [{ type: 'bar', data: groups.map((g, i) => ({ value: g.weighted_avg || g.total_avg, itemStyle: { color: GROUP_COLORS[i % 6], borderRadius: [4, 4, 0, 0] } })), barWidth: '40%', label: { show: true, position: 'top', color: '#fff', fontSize: 12, formatter: '{c}' } }]
   })
 }
@@ -1065,7 +1083,7 @@ function renderOverviewCharts() {
       legend: { data: dimensions, textStyle: { color: 'rgba(255,255,255,0.7)', fontSize: 11 }, top: 0, itemWidth: 12, itemHeight: 8 },
       grid: { left: 50, right: 20, top: 40, bottom: 40 },
       xAxis: { type: 'category', data: groups.map(g => g.group_id), axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
-      yAxis: { type: 'value', min: 60, max: 100, axisLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10 }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+      yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10 }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
       series: dimSeries,
     })
   }
@@ -1155,7 +1173,7 @@ function renderAICharts() {
       backgroundColor: 'transparent', tooltip: { trigger: 'axis' },
       grid: { left: 50, right: 30, top: 20, bottom: 40 },
       xAxis: { type: 'category', data: groups.map(g => g.group_id), axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-      yAxis: { type: 'value', min: 60, max: 100, axisLabel: { color: 'rgba(255,255,255,0.5)' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
+      yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: 'rgba(255,255,255,0.5)' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
       series: [{ type: 'bar', data: groups.map((g, i) => ({ value: g.total_avg, itemStyle: { color: GROUP_COLORS[i % 6], borderRadius: [6, 6, 0, 0] } })), barWidth: '35%', label: { show: true, position: 'top', color: '#fff', fontSize: 13, fontWeight: 600, formatter: '{c}' } }]
     })
   }
@@ -1191,7 +1209,7 @@ function renderFsCharts() {
       backgroundColor: 'transparent', tooltip: { trigger: 'axis' },
       grid: { left: 50, right: 30, top: 20, bottom: 40 },
       xAxis: { type: 'category', data: groups.map(g => g.group_id), axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-      yAxis: { type: 'value', min: 60, max: 100, axisLabel: { color: 'rgba(255,255,255,0.5)' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
+      yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: 'rgba(255,255,255,0.5)' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
       series: [{ type: 'bar', data: groups.map((g, i) => ({ value: g.total_avg, itemStyle: { color: GROUP_COLORS[i % 6], borderRadius: [6, 6, 0, 0] } })), barWidth: '35%', label: { show: true, position: 'top', color: '#fff', fontSize: 13, fontWeight: 600, formatter: '{c}' } }]
     })
   }

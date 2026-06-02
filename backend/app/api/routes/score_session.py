@@ -143,7 +143,7 @@ def create_session(data: ScoreSessionCreate):
 
 @router.delete("/sessions/{session_id}")
 def delete_session(session_id: int):
-    """停用评分会话（结束打分，保留数据）"""
+    """停用评分会话（链接失效，打分数据保留，成绩总览不受影响）"""
     db = SessionLocal()
     try:
         session = db.query(ScoreSession).filter(ScoreSession.id == session_id).first()
@@ -151,7 +151,7 @@ def delete_session(session_id: int):
             raise HTTPException(status_code=404, detail="会话不存在")
         session.is_active = False
         db.commit()
-        return {"message": "链接已停用，打分结束"}
+        return {"message": "链接已停用，已有打分数据保留"}
     finally:
         db.close()
 

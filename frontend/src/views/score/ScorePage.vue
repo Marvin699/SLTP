@@ -144,7 +144,7 @@ onMounted(async () => {
     sessionInfo.value = res.data
     for (const group of sessionInfo.value.groups) {
       for (const dim of sessionInfo.value.dimensions) {
-        scores[`${group}-${dim}`] = 80
+        scores[`${group}-${dim}`] = 0
       }
     }
   } catch (e) {
