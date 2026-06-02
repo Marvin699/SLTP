@@ -7,7 +7,7 @@
         <p class="header-sub">AI提取关键词 + 智能风险识别</p>
       </div>
       <el-button class="back-btn" @click="goBack">
-        <el-icon><ArrowLeft /></el-icon> 返回评分页面
+        <el-icon><ArrowLeft /></el-icon> 返回首页
       </el-button>
     </div>
 
@@ -20,31 +20,48 @@
           <span class="panel-title">方案亮点词云</span>
         </div>
         <div class="panel-body">
-          <!-- 小组标签 -->
-          <div class="group-tags">
-            <span class="group-tag tag-blue">{{ groupA }}</span>
-            <span class="group-tag tag-orange">{{ groupB }}</span>
-          </div>
-          <!-- 关键词标签云 -->
-          <div class="keywords-cloud">
-            <span v-for="kw in sortedKeywords" :key="kw.text"
-              class="keyword-pill"
-              :class="kw.group === 'A' ? 'pill-blue' : 'pill-orange'"
-              :style="{ fontSize: getKwSize(kw.weight) + 'px' }">
-              {{ kw.text }}
-            </span>
+          <!-- 左右双栏词云 -->
+          <div class="cloud-columns">
+            <!-- 左栏：驭风组（橙色） -->
+            <div class="cloud-col cloud-col-orange">
+              <div class="col-header">
+                <span class="col-dot dot-orange"></span>
+                <span class="col-name">{{ groupB }}</span>
+              </div>
+              <div class="col-keywords">
+                <span v-for="kw in keywordsB" :key="kw.text"
+                  class="keyword-pill pill-orange">
+                  {{ kw.text }}
+                </span>
+              </div>
+            </div>
+            <!-- 分割线 -->
+            <div class="cloud-divider"></div>
+            <!-- 右栏：揽星组（蓝色） -->
+            <div class="cloud-col cloud-col-blue">
+              <div class="col-header">
+                <span class="col-dot dot-blue"></span>
+                <span class="col-name">{{ groupA }}</span>
+              </div>
+              <div class="col-keywords">
+                <span v-for="kw in keywordsA" :key="kw.text"
+                  class="keyword-pill pill-blue">
+                  {{ kw.text }}
+                </span>
+              </div>
+            </div>
           </div>
           <!-- 底部分析结论 -->
           <div class="cloud-conclusion">
             <div class="conclusion-row">
-              <span class="conclusion-label blue">{{ groupA }}：</span>
-              <span class="conclusion-text">高频出现"{{ getTop3(groupA) }}"</span>
-              <span class="conclusion-tag tag-blue-light">胜在技术深度</span>
-            </div>
-            <div class="conclusion-row">
               <span class="conclusion-label orange">{{ groupB }}：</span>
               <span class="conclusion-text">高频出现"{{ getTop3(groupB) }}"</span>
               <span class="conclusion-tag tag-orange-light">胜在系统整合</span>
+            </div>
+            <div class="conclusion-row">
+              <span class="conclusion-label blue">{{ groupA }}：</span>
+              <span class="conclusion-text">高频出现"{{ getTop3(groupA) }}"</span>
+              <span class="conclusion-tag tag-blue-light">胜在技术深度</span>
             </div>
           </div>
         </div>
@@ -55,6 +72,7 @@
         <div class="panel-header">
           <span class="panel-icon">⚠️</span>
           <span class="panel-title">潜在风险提示</span>
+          <span class="risk-count-badge">{{ riskAlerts.length }} 条</span>
         </div>
         <div class="panel-body">
           <div v-for="(risk, i) in riskAlerts" :key="i" class="risk-item">
@@ -97,6 +115,12 @@
         <div class="sc-comment">协同设计有前瞻性，效率优先策略清晰；但数据口径必须统一，这是企业汇报基本要求</div>
       </div>
     </div>
+
+    <!-- 底部说明 -->
+    <div class="footer-note">
+      <div class="footer-main">AI辅助分析，最终决策以教师及企业导师评价为准</div>
+      <div class="footer-sub">数据来源：课堂实时评价系统</div>
+    </div>
   </div>
 </template>
 
@@ -109,7 +133,7 @@ const route = useRoute()
 const router = useRouter()
 
 const groupA = computed(() => route.query.groupA || '揽星组')
-const groupB = computed(() => route.query.groupB || '御风组')
+const groupB = computed(() => route.query.groupB || '驭风组')
 const groupAScore = 92
 const groupBScore = 91
 
@@ -132,7 +156,7 @@ const wordCloudData = {
     { text: '分级配送', weight: 58 },
     { text: '仿真', weight: 50 },
   ],
-  '御风组': [
+  '驭风组': [
     { text: '协同', weight: 92 },
     { text: '优先级', weight: 88 },
     { text: '快速恢复', weight: 85 },
@@ -151,15 +175,12 @@ const wordCloudData = {
   ],
 }
 
-const sortedKeywords = computed(() => {
-  const listA = (wordCloudData[groupA.value] || []).map(w => ({ ...w, group: 'A' }))
-  const listB = (wordCloudData[groupB.value] || []).map(w => ({ ...w, group: 'B' }))
-  return [...listA, ...listB].sort((a, b) => b.weight - a.weight)
+const keywordsA = computed(() => {
+  return (wordCloudData[groupA.value] || []).slice().sort((a, b) => b.weight - a.weight)
 })
-
-function getKwSize(weight) {
-  return Math.round(12 + (weight / 100) * 14)
-}
+const keywordsB = computed(() => {
+  return (wordCloudData[groupB.value] || []).slice().sort((a, b) => b.weight - a.weight)
+})
 
 function getTop3(groupName) {
   return (wordCloudData[groupName] || []).slice(0, 3).map(w => w.text).join('、')
@@ -264,6 +285,16 @@ function goBack() {
 }
 .panel-icon { font-size: 18px; }
 .panel-title { font-size: 15px; font-weight: 600; color: #e2e8f0; }
+
+.risk-count-badge {
+  margin-left: auto;
+  background: rgba(239,68,68,0.18);
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
 .panel-body {
   flex: 1;
   padding: 20px 22px;
@@ -273,88 +304,98 @@ function goBack() {
 /* ===== 词云面板 ===== */
 .wordcloud-panel { flex: 1.3; }
 
-.group-tags {
+/* 双栏词云 */
+.cloud-columns {
   display: flex;
-  gap: 10px;
+  gap: 0;
   margin-bottom: 18px;
-}
-.group-tag {
-  padding: 4px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-}
-.tag-blue { background: #3b82f6; }
-.tag-orange { background: #f59e0b; }
-
-/* 关键词标签云 */
-.keywords-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 24px;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(59,130,246,0.06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(245,158,11,0.06) 0%, transparent 50%),
-    linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 100%);
   border: 1px solid rgba(255,255,255,0.04);
   border-radius: 12px;
-  min-height: 240px;
-  align-content: center;
-  justify-content: center;
-  margin-bottom: 18px;
-  position: relative;
   overflow: hidden;
+  min-height: 240px;
 }
-/* 背景网格线 */
-.keywords-cloud::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
-  background-size: 30px 30px;
-  pointer-events: none;
+.cloud-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px;
+}
+.cloud-col-orange {
+  background: radial-gradient(circle at 30% 50%, rgba(245,158,11,0.08) 0%, transparent 70%);
+}
+.cloud-col-blue {
+  background: radial-gradient(circle at 70% 50%, rgba(59,130,246,0.08) 0%, transparent 70%);
+}
+.cloud-divider {
+  width: 1px;
+  background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.1) 80%, transparent 100%);
+  flex-shrink: 0;
+}
+.col-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.col-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dot-orange { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+.dot-blue { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.5); }
+.col-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+.cloud-col-orange .col-name { color: #fbbf24; }
+.cloud-col-blue .col-name { color: #60a5fa; }
+
+.col-keywords {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  justify-items: center;
 }
 .keyword-pill {
-  display: inline-block;
-  padding: 6px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 0;
+  width: 100%;
   border-radius: 4px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
   cursor: default;
   transition: all 0.2s ease;
   white-space: nowrap;
-  position: relative;
-  z-index: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 .keyword-pill:hover {
-  transform: translateY(-2px) scale(1.05);
+  transform: translateY(-1px);
 }
 .pill-blue {
   background: rgba(59, 130, 246, 0.12);
   color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.15), inset 0 0 12px rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 .pill-blue:hover {
   background: rgba(59, 130, 246, 0.22);
   border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 0 0 16px rgba(59, 130, 246, 0.3), 0 4px 20px rgba(59, 130, 246, 0.2);
   color: #93bbfd;
 }
 .pill-orange {
   background: rgba(245, 158, 11, 0.12);
   color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.15), inset 0 0 12px rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 .pill-orange:hover {
   background: rgba(245, 158, 11, 0.22);
   border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3), 0 4px 20px rgba(245, 158, 11, 0.2);
   color: #fcd34d;
 }
 
@@ -490,5 +531,21 @@ function goBack() {
   font-size: 13px;
   color: #c0c8d4;
   line-height: 1.6;
+}
+
+/* ===== 底部说明 ===== */
+.footer-note {
+  text-align: center;
+  padding: 16px 0 4px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.footer-main {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 4px;
+}
+.footer-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
 }
 </style>

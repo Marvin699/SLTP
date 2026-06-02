@@ -1,3 +1,5 @@
+import json
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -353,6 +355,38 @@ def _init_default_case():
         print(f"初始化默认案例失败: {e}")
 
 
+def _seed_p5_graph_data(db):
+    """将four-graph-data.json中的四图谱数据导入P5项目"""
+    data_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "src", "data", "four-graph-data.json")
+    if not os.path.exists(data_path):
+        print("[Startup] 四图谱数据文件不存在，跳过导入")
+        return
+
+    with open(data_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    p5 = db.query(CourseProject).filter(CourseProject.project_id == "P5").first()
+    if not p5:
+        return
+
+    fields = {
+        "knowledge_graph": data.get("knowledge_graph"),
+        "capability_graph": data.get("capability_graph"),
+        "problem_graph": data.get("problem_graph"),
+        "ideological_graph": data.get("ideological_graph"),
+    }
+    updated = False
+    for field, value in fields.items():
+        if value and not getattr(p5, field, None):
+            setattr(p5, field, json.dumps(value, ensure_ascii=False))
+            updated = True
+            print(f"  [Startup] 导入 P5 {field}")
+
+    if updated:
+        db.commit()
+        print("[Startup] P5四图谱数据导入完成")
+
+
 def _init_default_projects():
     """初始化默认课程项目数据（P5）"""
     from app.core.database import SessionLocal
@@ -363,6 +397,9 @@ def _init_default_projects():
         db = SessionLocal()
         existing = db.query(CourseProject).filter(CourseProject.project_id == "P5").first()
         if existing:
+            # P5已存在，检查是否缺少四图谱数据，缺少则自动补全
+            if not existing.knowledge_graph:
+                _seed_p5_graph_data(db)
             db.close()
             return
 
@@ -466,8 +503,12 @@ def _init_default_projects():
         )
         db.add(p5_project)
         db.commit()
-        db.close()
         print("[Startup] 默认项目P5初始化成功")
+
+        # 自动导入P5四图谱数据
+        _seed_p5_graph_data(db)
+
+        db.close()
     except Exception as e:
         print(f"初始化默认项目失败: {e}")
 
