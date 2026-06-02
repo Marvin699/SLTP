@@ -68,6 +68,7 @@
             <span v-if="avatarState === 'idle'">小翼待命中...</span>
             <span v-else-if="avatarState === 'talking'">小翼正在回答</span>
             <span v-else-if="avatarState === 'thinking'">小翼思考中</span>
+            <span v-else-if="avatarState === 'listening'" class="listening-text">聆听汇报中...</span>
           </div>
         </div>
 
@@ -84,6 +85,68 @@
 
       <!-- 右侧聊天区域 -->
       <div class="chat-section">
+        <!-- 录音采集卡片 -->
+        <div class="record-card">
+          <div class="record-header">
+            <el-icon :size="18" color="#00e5ff"><Microphone /></el-icon>
+            <span class="record-title">小组汇报 · 语音采集</span>
+          </div>
+          <div class="record-selectors">
+            <div class="selector-item">
+              <span class="select-label">项目</span>
+              <el-select v-model="selectedProject" size="small" style="width: 200px">
+                <el-option label="P5 - 应急物资低空智慧运输" value="P5" />
+              </el-select>
+            </div>
+            <div class="selector-item">
+              <span class="select-label">任务</span>
+              <el-select v-model="selectedTask" size="small" style="width: 240px">
+                <el-option label="任务8 - 方案汇报与应急模拟演练" value="T8" />
+              </el-select>
+            </div>
+            <div class="selector-item">
+              <span class="select-label">环节</span>
+              <el-select v-model="selectedSection" size="small" style="width: 220px">
+                <el-option label="环节一 - 运输方案汇报与知识深化" value="section1" />
+              </el-select>
+            </div>
+          </div>
+          <div class="record-body">
+            <div class="record-left">
+              <div v-if="isRecording" class="record-timer">
+                <span class="timer-dot"></span>
+                <span class="timer-text">{{ recordDuration }}</span>
+                <span class="timer-label">正在采集</span>
+              </div>
+              <div v-else-if="recorded" class="record-done">
+                <el-icon color="#67c23a" :size="18"><CircleCheckFilled /></el-icon>
+                <span>采集完成 · {{ recordDuration }}</span>
+              </div>
+              <div v-else class="record-idle">
+                <span class="idle-text">点击开始采集学生汇报语音</span>
+              </div>
+            </div>
+            <div class="record-right">
+              <canvas v-show="isRecording" ref="waveCanvas" class="wave-canvas" width="180" height="36"></canvas>
+              <!-- 已采集完成后：显示"开始分析"或"查看AI分析" -->
+              <el-button v-if="recorded && !analyzed" type="warning" @click="startAnalyze" :loading="analyzing" round>
+                {{ analyzing ? 'AI分析中' : '开始分析' }}
+              </el-button>
+              <el-button v-else-if="recorded && analyzed" type="success" @click="goToAnalysis" round>
+                查看AI分析
+                <el-icon class="el-icon--right"><ArrowRight /></el-icon>
+              </el-button>
+              <!-- 采集按钮 -->
+              <el-button v-if="!isRecording && !recorded" type="primary" @click="startRecording" :icon="Microphone" round>
+                开始采集
+              </el-button>
+              <el-button v-else-if="isRecording" type="danger" @click="stopRecording" :icon="VideoPause" round>
+                停止采集
+              </el-button>
+            </div>
+          </div>
+        </div>
+
         <div class="chat-messages" ref="chatMessagesRef">
           <div v-for="(msg, i) in chatMessages" :key="i" class="message" :class="msg.role">
             <div class="msg-avatar-wrap">
@@ -139,9 +202,9 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, computed } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Delete, Promotion } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Delete, Promotion, Microphone, VideoPause, CircleCheckFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
 
 const router = useRouter()
@@ -160,8 +223,126 @@ const chatInput = ref('')
 const chatLoading = ref(false)
 const chatMessagesRef = ref(null)
 
+// ===== 录音采集 =====
+const selectedProject = ref('P5')
+const selectedTask = ref('T8')
+const selectedSection = ref('section1')
+const isRecording = ref(false)
+const recorded = ref(false)
+const analyzing = ref(false)
+const analyzed = ref(false)
+const recordDuration = ref('00:00')
+const waveCanvas = ref(null)
+let mediaRecorder = null
+let audioChunks = []
+let recordTimer = null
+let recordSeconds = 0
+let animFrame = null
+let audioContext = null
+let analyser = null
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    audioChunks = []
+    mediaRecorder = new MediaRecorder(stream)
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data) }
+    mediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop())
+      if (audioContext) { audioContext.close(); audioContext = null }
+      cancelAnimationFrame(animFrame)
+    }
+    mediaRecorder.start()
+
+    // 音频分析（波形）
+    audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    const source = audioContext.createMediaStreamSource(stream)
+    analyser = audioContext.createAnalyser()
+    analyser.fftSize = 256
+    source.connect(analyser)
+    drawWave()
+
+    // 计时器
+    recordSeconds = 0
+    recordDuration.value = '00:00'
+    recordTimer = setInterval(() => {
+      recordSeconds++
+      const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0')
+      const s = String(recordSeconds % 60).padStart(2, '0')
+      recordDuration.value = `${m}:${s}`
+    }, 1000)
+
+    isRecording.value = true
+    recorded.value = false
+    analyzing.value = false
+    analyzed.value = false
+  } catch (err) {
+    alert('无法访问麦克风，请检查浏览器权限设置')
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop()
+  }
+  clearInterval(recordTimer)
+  isRecording.value = false
+  recorded.value = true
+}
+
+function startAnalyze() {
+  analyzing.value = true
+  analyzed.value = false
+  setTimeout(() => {
+    analyzing.value = false
+    analyzed.value = true
+  }, 5000)
+}
+
+function drawWave() {
+  if (!analyser || !waveCanvas.value) return
+  const canvas = waveCanvas.value
+  const ctx = canvas.getContext('2d')
+  const bufferLength = analyser.frequencyBinCount
+  const dataArray = new Uint8Array(bufferLength)
+
+  function draw() {
+    animFrame = requestAnimationFrame(draw)
+    analyser.getByteFrequencyData(dataArray)
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    const barWidth = (canvas.width / bufferLength) * 2.5
+    let x = 0
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (dataArray[i] / 255) * canvas.height
+      const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight)
+      gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)')
+      gradient.addColorStop(1, 'rgba(0, 229, 255, 0.9)')
+      ctx.fillStyle = gradient
+      ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight)
+      x += barWidth
+      if (x > canvas.width) break
+    }
+  }
+  draw()
+}
+
+function goToAnalysis() {
+  router.push({
+    path: `/evaluation/section/${selectedSection.value}/ai-analysis`,
+    query: { groupA: '揽星组', groupB: '驭风组' }
+  })
+}
+
+onUnmounted(() => {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+  clearInterval(recordTimer)
+  cancelAnimationFrame(animFrame)
+  if (audioContext) audioContext.close()
+})
+
 // 数字人状态
 const avatarState = computed(() => {
+  if (isRecording.value) return 'listening'
   if (chatLoading.value) return 'thinking'
   return 'idle'
 })
@@ -570,6 +751,76 @@ onMounted(() => {
   box-shadow: 0 0 10px rgba(255, 179, 0, 0.8);
 }
 
+/* 聆听状态 */
+.digital-avatar.listening {
+  animation: avatarListen 1.5s ease-in-out infinite;
+}
+
+@keyframes avatarListen {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.02); }
+}
+
+.digital-avatar.listening .avatar-glow {
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.35) 0%, transparent 70%);
+  animation: glowListen 1.2s ease-in-out infinite;
+}
+
+@keyframes glowListen {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+.digital-avatar.listening .avatar-face {
+  border-color: rgba(0, 229, 255, 0.7);
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.35), inset 0 0 20px rgba(0, 229, 255, 0.15);
+}
+
+.digital-avatar.listening .pupil {
+  animation: listenEye 1s ease-in-out infinite;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 1);
+}
+
+@keyframes listenEye {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 229, 255, 0.9); }
+  50% { transform: scale(1.3); box-shadow: 0 0 18px rgba(0, 229, 255, 1); }
+}
+
+.digital-avatar.listening .core-dot {
+  animation: coreListen 1s ease-in-out infinite;
+}
+
+@keyframes coreListen {
+  0%, 100% { box-shadow: 0 0 12px rgba(0, 229, 255, 0.9); transform: scale(1); }
+  50% { box-shadow: 0 0 20px rgba(0, 229, 255, 1); transform: scale(1.2); }
+}
+
+.digital-avatar.listening .core-ring {
+  animation: coreRotate 2s linear infinite;
+}
+
+.digital-avatar.listening .antenna-dot {
+  animation: antennaListen 0.8s ease-in-out infinite;
+}
+
+@keyframes antennaListen {
+  0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(0, 229, 255, 0.9); }
+  50% { opacity: 0.6; box-shadow: 0 0 20px rgba(0, 229, 255, 1); }
+}
+
+.digital-avatar.listening .left-wing {
+  animation: wingListen 1s ease-in-out infinite;
+}
+
+.digital-avatar.listening .right-wing {
+  animation: wingListen 1s ease-in-out infinite reverse;
+}
+
+@keyframes wingListen {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-12deg); }
+}
+
 /* 状态文字 */
 .avatar-status {
   font-size: 13px;
@@ -621,6 +872,122 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* 录音采集卡片 */
+.record-card {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.06), rgba(0, 180, 204, 0.03));
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding: 14px 20px;
+  flex-shrink: 0;
+}
+.record-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.record-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.record-selectors {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.selector-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.select-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+.selector-item :deep(.el-select .el-input__wrapper) {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  box-shadow: none;
+  border-radius: 6px;
+}
+.selector-item :deep(.el-select .el-input__wrapper:hover) {
+  border-color: rgba(0, 229, 255, 0.4);
+}
+.selector-item :deep(.el-select .el-input__wrapper.is-focus) {
+  border-color: #00e5ff;
+}
+.selector-item :deep(.el-select .el-input__inner) {
+  color: #e2e8f0;
+}
+.record-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.record-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.record-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.timer-dot {
+  width: 8px;
+  height: 8px;
+  background: #f56c6c;
+  border-radius: 50%;
+  animation: recBlink 1s ease-in-out infinite;
+}
+@keyframes recBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.timer-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f56c6c;
+  font-variant-numeric: tabular-nums;
+}
+.timer-label {
+  font-size: 12px;
+  color: rgba(245, 108, 108, 0.7);
+}
+.record-done {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #67c23a;
+}
+.record-idle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+.record-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wave-canvas {
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* 聆听状态文字动画 */
+.listening-text {
+  animation: listenPulse 1.5s ease-in-out infinite;
+}
+@keyframes listenPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 .chat-messages {

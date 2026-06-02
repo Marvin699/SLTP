@@ -177,7 +177,7 @@
         <div class="overview-toolbar">
           <div class="toolbar-left">
             <el-tag v-if="simulating" type="success" effect="dark" size="small" class="toolbar-tag">
-              <span class="tag-dot"></span> 展览模拟中
+              <span class="tag-dot"></span> 展览中
             </el-tag>
             <el-tag v-else-if="hasRealData" type="primary" effect="plain" size="small" class="toolbar-tag">
               真实打分数据
@@ -201,10 +201,10 @@
             </el-button>
           </div>
         </div>
-        <!-- 实时打分状态栏（展览模拟中） -->
+        <!-- 实时打分状态栏（展览中） -->
         <div class="live-bar" v-if="simulating">
           <div class="live-dot"></div>
-          <span class="live-text">LIVE 展览模拟中</span>
+          <span class="live-text">LIVE 展览中</span>
           <span class="live-count">已收到 <strong>{{ submittedCount }}</strong> / {{ totalScorers }} 份评分</span>
           <div class="live-progress">
             <div class="live-progress-fill" :style="{ width: (submittedCount / totalScorers * 100) + '%' }"></div>
@@ -529,9 +529,9 @@ const selectedAIGroupData = computed(() => {
 // --- 演示数据 ---
 function getDemoGroups(dimensions) {
   const demoScores = {
-    '逐日组': [92, 88, 85, 90],
-    '揽星组': [87, 93, 89, 85],
-    '驭风组': [90, 86, 92, 88],
+    '逐日组': [0, 0, 0, 0],
+    '揽星组': [0, 0, 0, 0],
+    '驭风组': [0, 0, 0, 0],
     '长空组': [85, 90, 87, 92],
     '凌云组': [88, 85, 90, 87],
     '巡天组': [91, 89, 88, 90],
