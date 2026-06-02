@@ -233,58 +233,32 @@ const analyzing = ref(false)
 const analyzed = ref(false)
 const recordDuration = ref('00:00')
 const waveCanvas = ref(null)
-let mediaRecorder = null
-let audioChunks = []
 let recordTimer = null
 let recordSeconds = 0
 let animFrame = null
-let audioContext = null
-let analyser = null
 
-async function startRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    audioChunks = []
-    mediaRecorder = new MediaRecorder(stream)
-    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data) }
-    mediaRecorder.onstop = () => {
-      stream.getTracks().forEach(t => t.stop())
-      if (audioContext) { audioContext.close(); audioContext = null }
-      cancelAnimationFrame(animFrame)
-    }
-    mediaRecorder.start()
+function startRecording() {
+  // 纯模拟演示，不打开真实麦克风
+  drawWave()
 
-    // 音频分析（波形）
-    audioContext = new (window.AudioContext || window.webkitAudioContext)()
-    const source = audioContext.createMediaStreamSource(stream)
-    analyser = audioContext.createAnalyser()
-    analyser.fftSize = 256
-    source.connect(analyser)
-    drawWave()
+  // 计时器
+  recordSeconds = 0
+  recordDuration.value = '00:00'
+  recordTimer = setInterval(() => {
+    recordSeconds++
+    const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0')
+    const s = String(recordSeconds % 60).padStart(2, '0')
+    recordDuration.value = `${m}:${s}`
+  }, 1000)
 
-    // 计时器
-    recordSeconds = 0
-    recordDuration.value = '00:00'
-    recordTimer = setInterval(() => {
-      recordSeconds++
-      const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0')
-      const s = String(recordSeconds % 60).padStart(2, '0')
-      recordDuration.value = `${m}:${s}`
-    }, 1000)
-
-    isRecording.value = true
-    recorded.value = false
-    analyzing.value = false
-    analyzed.value = false
-  } catch (err) {
-    alert('无法访问麦克风，请检查浏览器权限设置')
-  }
+  isRecording.value = true
+  recorded.value = false
+  analyzing.value = false
+  analyzed.value = false
 }
 
 function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop()
-  }
+  cancelAnimationFrame(animFrame)
   clearInterval(recordTimer)
   isRecording.value = false
   recorded.value = true
@@ -299,28 +273,44 @@ function startAnalyze() {
   }, 5000)
 }
 
+// 模拟波形数据（平滑过渡，模拟语音节奏）
+let waveHeights = []
 function drawWave() {
-  if (!analyser || !waveCanvas.value) return
   const canvas = waveCanvas.value
+  if (!canvas) return
   const ctx = canvas.getContext('2d')
-  const bufferLength = analyser.frequencyBinCount
-  const dataArray = new Uint8Array(bufferLength)
+  const barCount = 32
+  const barWidth = canvas.width / barCount
+  // 初始化：中间高两边低的弧形
+  if (waveHeights.length !== barCount) {
+    waveHeights = Array.from({ length: barCount }, (_, i) => {
+      const center = barCount / 2
+      const dist = Math.abs(i - center) / center
+      return 0.2 + (1 - dist) * 0.3
+    })
+  }
 
+  let tick = 0
   function draw() {
     animFrame = requestAnimationFrame(draw)
-    analyser.getByteFrequencyData(dataArray)
+    tick += 0.06
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    const barWidth = (canvas.width / bufferLength) * 2.5
-    let x = 0
-    for (let i = 0; i < bufferLength; i++) {
-      const barHeight = (dataArray[i] / 255) * canvas.height
-      const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight)
-      gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)')
-      gradient.addColorStop(1, 'rgba(0, 229, 255, 0.9)')
+    for (let i = 0; i < barCount; i++) {
+      // 用正弦波叠加产生自然起伏，中间高两边低
+      const center = barCount / 2
+      const dist = Math.abs(i - center) / center
+      const envelope = 1 - dist * 0.6
+      const wave = Math.sin(tick + i * 0.4) * 0.3 + 0.5
+      const wave2 = Math.sin(tick * 1.7 + i * 0.25) * 0.15
+      const target = envelope * (wave + wave2)
+      // 平滑过渡
+      waveHeights[i] += (target - waveHeights[i]) * 0.3
+      const h = Math.max(3, waveHeights[i] * canvas.height * 0.85)
+      const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - h)
+      gradient.addColorStop(0, 'rgba(0, 229, 255, 0.2)')
+      gradient.addColorStop(1, 'rgba(0, 229, 255, 0.85)')
       ctx.fillStyle = gradient
-      ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight)
-      x += barWidth
-      if (x > canvas.width) break
+      ctx.fillRect(i * barWidth + 1, canvas.height - h, barWidth - 2, h)
     }
   }
   draw()
@@ -334,10 +324,8 @@ function goToAnalysis() {
 }
 
 onUnmounted(() => {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop()
   clearInterval(recordTimer)
   cancelAnimationFrame(animFrame)
-  if (audioContext) audioContext.close()
 })
 
 // 数字人状态
