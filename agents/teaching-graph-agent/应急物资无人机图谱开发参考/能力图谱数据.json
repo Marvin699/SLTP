@@ -1,0 +1,233 @@
+{
+  "course_info": {
+    "course_name": "智慧运输运营",
+    "project_name": "项目五：应急物资低空智慧运输",
+    "total_hours": 16,
+    "major": "现代物流管理",
+    "category": "物流类",
+    "major_category": "财经商贸大类",
+    "competition_group": "高职高专专业课程一组"
+  },
+  "graduate_requirements": {
+    "knowledge": ["现代物流管理基础理论", "运输组织与管理基本知识", "物流信息技术应用", "物流系统规划与设计", "物流项目运营与管理"],
+    "capability": ["智慧运输运营能力", "物流数据分析能力", "物流项目运营能力", "数字能力", "问题解决能力"],
+    "quality": ["思想政治素质", "职业素养", "安全意识", "创新意识", "工匠精神"]
+  },
+  "future_trends": ["数字化与智能化转型", "绿色物流与双碳目标", "供应链韧性提升", "低空经济新业态", "应急物流立体化"],
+  "job_tasks": [
+    {
+      "id": "JT-01",
+      "name": "应急物流需求分析",
+      "job_position": "应急物流调度员",
+      "workflow": "需求接收→需求评估→任务分解→资源匹配→计划编制",
+      "capability_points": ["应急需求快速研判", "多源信息整合分析", "运输方案设计", "风险评估与预判"],
+      "knowledge_points": ["应急物流管理理论", "需求预测方法", "运输组织原理", "风险管理基础"],
+      "skill_points": ["需求分析工具使用", "方案编制技能", "仿真软件操作"],
+      "sub_project": "子项目一：飞行任务规划",
+      "course_task": "任务1：运输需求分析与飞行计划制定（2学时）",
+      "certificate_mapping": "无人机物流运输（初级）-需求分析模块",
+      "competition_mapping": "智慧物流赛项-系统规划仿真",
+      "course_type": "必修",
+      "five_new": {
+        "new_tech": "数字孪生仿真技术、AI需求预测",
+        "new_process": "应急物流标准化作业流程",
+        "new_spec": "《无人机物流配送运行规范》",
+        "new_material": "智能包装材料",
+        "new_equip": "物流调度信息系统"
+      }
+    },
+    {
+      "id": "JT-02",
+      "name": "无人机航线规划",
+      "job_position": "无人机航线规划师",
+      "workflow": "任务分析→航点设定→航线设计→安全评估→空域申请→计划审批",
+      "capability_points": ["航点设计与优化", "航线安全评估", "空域法规应用", "飞行计划编制", "GIS系统操作"],
+      "knowledge_points": ["航空气象学", "空域管理法规", "地理信息系统", "飞行原理", "性能计算"],
+      "skill_points": ["航线规划软件操作", "地图判读与测量", "空域申报流程", "风险评估矩阵应用"],
+      "sub_project": "子项目一：飞行任务规划",
+      "course_task": "任务2：点对点航线规划与空域申请（2学时）",
+      "certificate_mapping": "无人机物流运输（中级）-航线规划模块",
+      "competition_mapping": "智慧物流赛项-规划仿真",
+      "course_type": "必修",
+      "five_new": {
+        "new_tech": "北斗+RTK厘米级定位、AI路径规划算法",
+        "new_process": "点对点配送标准化流程",
+        "new_spec": "《国家空域基础分类方法》",
+        "new_material": "",
+        "new_equip": "地面站规划系统"
+      }
+    },
+    {
+      "id": "JT-03",
+      "name": "多航空站网络协同调度",
+      "job_position": "低空物流运营调度员",
+      "workflow": "网络分析→站点布局→协同规划→运力配置→动态调度→效能评估",
+      "capability_points": ["网络优化分析", "多站点协同规划", "运力动态配置", "智能调度决策", "运营数据分析"],
+      "knowledge_points": ["网络优化理论", "多式联运组织", "调度算法原理", "运营指标体系", "供应链管理"],
+      "skill_points": ["智能调度系统操作", "数据分析与可视化", "协同规划软件应用", "运营方案编制"],
+      "sub_project": "子项目一：飞行任务规划",
+      "course_task": "任务3：多航空站网络航线协同规划（2学时）",
+      "certificate_mapping": "无人机物流运输（高级）-运营调度模块",
+      "competition_mapping": "无人系统空地协同赛-集群协同",
+      "course_type": "必修",
+      "five_new": {
+        "new_tech": "5G-A+边缘计算、数字孪生平台、群体智能",
+        "new_process": "干-支-末三级协同配送",
+        "new_spec": "《民用轻小型无人驾驶航空器物流配送试运行审定指南》",
+        "new_material": "",
+        "new_equip": "丰翼方舟40、京东JDX50"
+      }
+    },
+    {
+      "id": "JT-04",
+      "name": "无人机组装与系统调试",
+      "job_position": "无人机装调工程师",
+      "workflow": "部件检查→机体组装→系统安装→参数配置→联调测试→校准验证",
+      "capability_points": ["机体结构组装", "飞控系统配置", "传感器校准", "动力系统调试", "通信链路测试"],
+      "knowledge_points": ["无人机系统组成", "飞控原理", "传感器技术", "通信协议", "空气动力学基础"],
+      "skill_points": ["机械装配技能", "电子焊接技能", "参数调试技能", "测试仪器使用", "故障诊断技能"],
+      "sub_project": "子项目二：飞行设备准备",
+      "course_task": "任务4：无人机组装装调与系统校准（2学时）",
+      "certificate_mapping": "物流无人机操作与运维（初级）-组装调试模块",
+      "competition_mapping": "无人机操控与维护赛项-组装调试",
+      "course_type": "必修+集中实践",
+      "five_new": {
+        "new_tech": "飞控智能校准技术、自主检测系统",
+        "new_process": "模块化快速装调工艺",
+        "new_spec": "GB/T 43668-2024《物流无人机货物吊挂控制通用要求》",
+        "new_material": "T800碳纤维复材、芳纶复合材料",
+        "new_equip": "丰翼方舟40、调试工具套装"
+      }
+    },
+    {
+      "id": "JT-05",
+      "name": "应急物资包装装载",
+      "job_position": "无人机物流配送员",
+      "workflow": "物资分类→包装设计→重量配平→装载固定→重心检查→飞行前检查",
+      "capability_points": ["应急物资分类识别", "包装设计选择", "重量配平计算", "安全装载固定", "飞行前检查标准执行"],
+      "knowledge_points": ["包装工程基础", "重心与稳定性", "危险品运输规定", "装载力学", "安全检查标准"],
+      "skill_points": ["包装操作技能", "配平计算技能", "检查单执行", "问题识别与处理"],
+      "sub_project": "子项目二：飞行设备准备",
+      "course_task": "任务5：物资包装装载与飞行前检查（2学时）",
+      "certificate_mapping": "物流无人机操作与运维（中级）-载荷配置模块",
+      "competition_mapping": "智慧物流赛项-方案实施",
+      "course_type": "必修+集中实践",
+      "five_new": {
+        "new_tech": "智能称重与平衡系统",
+        "new_process": "冷链温控运输工艺、索降连续配送",
+        "new_spec": "《无人机物流配送运营规范》包装要求",
+        "new_material": "温控冷链箱、智能缓冲材料",
+        "new_equip": "智能分拣机器人"
+      }
+    },
+    {
+      "id": "JT-06",
+      "name": "多机协同装调与调度",
+      "job_position": "低空物流系统工程师",
+      "workflow": "系统架构→单机装调→网络配置→协同测试→调度调试→系统验收",
+      "capability_points": ["多机系统架构设计", "集群通信配置", "协同飞行调试", "调度系统部署", "系统联调联试"],
+      "knowledge_points": ["集群控制理论", "网络通信技术", "分布式系统", "协同调度算法", "系统工程方法"],
+      "skill_points": ["集群系统配置", "网络调试技能", "协同测试执行", "调度软件操作", "系统优化调整"],
+      "sub_project": "子项目二：飞行设备准备",
+      "course_task": "任务6：多机协同装调与调度系统调试（2学时）",
+      "certificate_mapping": "物流无人机操作与运维（高级）-系统调试模块",
+      "competition_mapping": "无人系统空地协同赛-空地协同",
+      "course_type": "选修+集中实践",
+      "five_new": {
+        "new_tech": "5G/5G-A通信、群体智能、V2X空地协同通信",
+        "new_process": "无人机+自动接驳柜模式",
+        "new_spec": "UTMISS国家监管平台接入规范",
+        "new_material": "",
+        "new_equip": "双尾蝎D、ES1000支线无人机"
+      }
+    },
+    {
+      "id": "JT-07",
+      "name": "应急物资精准投放飞行",
+      "job_position": "无人机驾驶员/飞手",
+      "workflow": "任务确认→设备检查→起飞准备→航线飞行→应急判断→精准投放→返航降落→数据记录",
+      "capability_points": ["飞行操控技能", "应急判断决策", "精准投放操作", "特情处置", "飞行数据记录"],
+      "knowledge_points": ["飞行操控原理", "应急处置程序", "气象判断", "飞行法规", "投放力学"],
+      "skill_points": ["视距内/超视距飞行操控", "手动/自动模式切换", "精准投放技能", "应急处置技能", "飞行日志记录"],
+      "sub_project": "子项目三：飞行运输实操",
+      "course_task": "任务7：飞行操控与应急物资精准投放（2学时）",
+      "certificate_mapping": "CAAC无人机驾驶员执照+无人机物流运输（中级）",
+      "competition_mapping": "无人机操控与维护赛项-飞行操控",
+      "course_type": "必修+集中实践+证书",
+      "five_new": {
+        "new_tech": "AI决策系统、激光雷达+视觉融合避障、自主避障",
+        "new_process": "空投精准投放工艺",
+        "new_spec": "SORA特定运行风险评估",
+        "new_material": "可降解空投包装材料",
+        "new_equip": "丰翼丰舟90、美团FP400"
+      }
+    },
+    {
+      "id": "JT-08",
+      "name": "综合运输演练与方案优化",
+      "job_position": "应急物流项目经理",
+      "workflow": "方案编制→综合演练→数据采集→效能评估→问题分析→方案优化→汇报展示",
+      "capability_points": ["综合方案设计", "演练组织指挥", "效能评估分析", "持续改进优化", "成果汇报展示"],
+      "knowledge_points": ["项目管理方法", "演练设计理论", "绩效评估体系", "PDCA循环", "报告撰写规范"],
+      "skill_points": ["项目管理技能", "演练组织技能", "数据分析技能", "方案优化技能", "汇报展示技能"],
+      "sub_project": "子项目三：飞行运输实操",
+      "course_task": "任务8：综合运输演练与方案汇报优化（2学时）",
+      "certificate_mapping": "无人机物流运输（高级）-运营调度模块",
+      "competition_mapping": "智慧物流赛项-方案汇报答辩+无人系统空地协同赛",
+      "course_type": "必修+集中实践+竞赛",
+      "five_new": {
+        "new_tech": "区块链溯源、数字孪生演练平台、低轨卫星通信",
+        "new_process": "无人机+高铁联运",
+        "new_spec": "《民用航空法》修订草案",
+        "new_material": "",
+        "new_equip": "系留无人机基站"
+      }
+    }
+  ],
+  "reverse_design_table": {
+    "description": "岗位任务→核心能力→技能点→知识点→课程模块 反向设计逻辑对应表",
+    "entries": [
+      {"job_task": "应急物流需求分析", "core_capability": "应急需求研判与方案设计", "skill_point": "需求分析工具使用、方案编制", "knowledge_point": "应急物流管理、需求预测", "course_module": "任务1"},
+      {"job_task": "无人机航线规划", "core_capability": "航线设计与安全评估", "skill_point": "航线规划软件操作、空域申报", "knowledge_point": "航空气象、空域管理法规", "course_module": "任务2"},
+      {"job_task": "多航空站协同调度", "core_capability": "网络优化与智能调度", "skill_point": "智能调度系统操作", "knowledge_point": "网络优化、供应链管理", "course_module": "任务3"},
+      {"job_task": "无人机组装调试", "core_capability": "设备装调与系统校准", "skill_point": "机械装配、电子焊接、参数调试", "knowledge_point": "无人机系统组成、飞控原理", "course_module": "任务4"},
+      {"job_task": "物资包装装载", "core_capability": "载荷配置与安全检查", "skill_point": "包装操作、配平计算、检查单执行", "knowledge_point": "包装工程、重心稳定性", "course_module": "任务5"},
+      {"job_task": "多机协同装调", "core_capability": "集群系统部署与调试", "skill_point": "集群配置、网络调试、调度软件", "knowledge_point": "集群控制、分布式系统", "course_module": "任务6"},
+      {"job_task": "精准投放飞行", "core_capability": "飞行操控与应急处置", "skill_point": "飞行操控、投放操作、特情处置", "knowledge_point": "飞行操控原理、应急处置", "course_module": "任务7"},
+      {"job_task": "综合演练优化", "core_capability": "项目运营与持续改进", "skill_point": "项目管理、演练组织、方案优化", "knowledge_point": "项目管理、绩效评估", "course_module": "任务8"}
+    ]
+  },
+  "certificate_integration": {
+    "certificates": [
+      {"name": "无人机物流运输职业技能等级证书（初级）", "level": "初级", "mapped_tasks": ["任务1", "任务4"], "content": "货物分拣、末端配送、基础维修、需求分析"},
+      {"name": "无人机物流运输职业技能等级证书（中级）", "level": "中级", "mapped_tasks": ["任务2", "任务5", "任务7"], "content": "视距内安全飞行、设备调试检修、航线规划、信息处理"},
+      {"name": "无人机物流运输职业技能等级证书（高级）", "level": "高级", "mapped_tasks": ["任务3", "任务6", "任务8"], "content": "航线规划、超视距飞行、运营调度"},
+      {"name": "物流无人机操作与运维职业技能等级证书（初级）", "level": "初级", "mapped_tasks": ["任务4"], "content": "机身检查、视距内起降、日常维护"},
+      {"name": "物流无人机操作与运维职业技能等级证书（中级）", "level": "中级", "mapped_tasks": ["任务5"], "content": "系统安装配置、航线飞行、动力装置维护"},
+      {"name": "CAAC无人机驾驶员执照（视距内）", "level": "视距内", "mapped_tasks": ["任务7"], "content": "视距内飞行操控"},
+      {"name": "CAAC无人机驾驶员执照（超视距）", "level": "超视距", "mapped_tasks": ["任务3", "任务7", "任务8"], "content": "超视距飞行、运营调度"}
+    ],
+    "competitions": [
+      {"name": "全国职业院校技能大赛-智慧物流赛项（高职组）", "level": "国赛", "mapped_tasks": ["任务1", "任务2", "任务5", "任务8"], "content": "系统规划仿真、方案实施、素养测试、汇报答辩"},
+      {"name": "全国职业院校技能大赛-无人机操控与维护赛项", "level": "国赛", "mapped_tasks": ["任务4", "任务7"], "content": "飞行操控、组装调试、检测维护"},
+      {"name": "无人系统空地协同赛", "level": "行业赛", "mapped_tasks": ["任务3", "任务6", "任务8"], "content": "空地协同、自主定位、集群协同"}
+    ]
+  },
+  "course_type_mapping": {
+    "必修": ["任务1", "任务2", "任务3", "任务5", "任务7", "任务8"],
+    "选修": ["任务6"],
+    "集中实践": ["任务4", "任务5", "任务6", "任务7", "任务8"],
+    "证书支撑": {
+      "无人机物流运输（初级）": ["任务1", "任务4"],
+      "无人机物流运输（中级）": ["任务2", "任务5", "任务7"],
+      "无人机物流运输（高级）": ["任务3", "任务6", "任务8"],
+      "CAAC视距内驾驶员": ["任务7"],
+      "CAAC超视距驾驶员": ["任务3", "任务7", "任务8"]
+    },
+    "competition_support": {
+      "智慧物流国赛": ["任务1", "任务2", "任务5", "任务8"],
+      "无人机操控维护国赛": ["任务4", "任务7"],
+      "空地协同行业赛": ["任务3", "任务6", "任务8"]
+    }
+  }
+}

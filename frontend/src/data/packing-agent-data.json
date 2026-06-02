@@ -1,0 +1,380 @@
+{
+  "workOrderTemplates": [
+    {
+      "id": "template_001",
+      "name": "山区地震医疗物资投送",
+      "scenario": "earthquake",
+      "scenarioName": "地震灾害",
+      "icon": "🏚️",
+      "difficulty": "hard",
+      "description": "某山区发生6.5级地震，道路中断，需紧急空投医疗物资",
+      "requirements": [
+        "确保药品完整无损",
+        "设备到达即可使用",
+        "物资防水防潮",
+        "急救物资优先取用"
+      ],
+      "constraints": {
+        "maxWeight": 50,
+        "maxVolume": 72000000,
+        "weatherCondition": "多云有雨",
+        "flightTime": 45,
+        "landingType": "索降"
+      },
+      "materials": [
+        {
+          "id": "m001",
+          "name": "急救药品箱",
+          "category": "medical",
+          "weight": 8.5,
+          "length": 400,
+          "width": 300,
+          "height": 200,
+          "quantity": 2,
+          "isEmergency": true,
+          "isFragile": true,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "含抗生素、止血药、镇痛药"
+        },
+        {
+          "id": "m002",
+          "name": "便携式心电监护仪",
+          "category": "equipment",
+          "weight": 3.2,
+          "length": 350,
+          "width": 250,
+          "height": 150,
+          "quantity": 1,
+          "isEmergency": true,
+          "isFragile": true,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "精密仪器，需防震"
+        },
+        {
+          "id": "m003",
+          "name": "消毒液",
+          "category": "liquid",
+          "weight": 5.0,
+          "length": 200,
+          "width": 150,
+          "height": 300,
+          "quantity": 3,
+          "isEmergency": false,
+          "isFragile": false,
+          "isLiquid": true,
+          "needsWaterproof": true,
+          "notes": "500ml/瓶，需独立密封"
+        },
+        {
+          "id": "m004",
+          "name": "医用纱布绷带",
+          "category": "medical",
+          "weight": 2.0,
+          "length": 300,
+          "width": 200,
+          "height": 100,
+          "quantity": 5,
+          "isEmergency": false,
+          "isFragile": false,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "无菌包装"
+        },
+        {
+          "id": "m005",
+          "name": "卫星电话",
+          "category": "communication",
+          "weight": 0.8,
+          "length": 150,
+          "width": 80,
+          "height": 50,
+          "quantity": 1,
+          "isEmergency": true,
+          "isFragile": true,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "应急通讯设备"
+        }
+      ],
+      "scenarioTips": {
+        "packingTips": [
+          "地震灾区可能有余震，确保物资固定牢靠",
+          "山区湿度大，加强防水处理",
+          "药品需放在最上层便于快速取用"
+        ],
+        "waterproofTips": "建议使用双层防水：防水袋+防水胶带",
+        "bufferTips": "精密仪器需额外防震保护，建议使用气泡膜+泡沫"
+      }
+    },
+    {
+      "id": "template_002",
+      "name": "洪灾区域救援物资配送",
+      "scenario": "flood",
+      "scenarioName": "洪涝灾害",
+      "icon": "🌊",
+      "difficulty": "medium",
+      "description": "某地区发生严重洪涝，多个村庄被困，需空投生活物资",
+      "requirements": [
+        "物资必须防水密封",
+        "食品需独立包装",
+        "确保饮用水安全",
+        "药品放在最上层"
+      ],
+      "constraints": {
+        "maxWeight": 45,
+        "maxVolume": 65000000,
+        "weatherCondition": "暴雨",
+        "flightTime": 30,
+        "landingType": "空投"
+      },
+      "materials": [
+        {
+          "id": "m006",
+          "name": "压缩饼干",
+          "category": "food",
+          "weight": 5.0,
+          "length": 400,
+          "width": 300,
+          "height": 200,
+          "quantity": 3,
+          "isEmergency": false,
+          "isFragile": false,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "应急食品"
+        },
+        {
+          "id": "m007",
+          "name": "瓶装饮用水",
+          "category": "liquid",
+          "weight": 12.0,
+          "length": 400,
+          "width": 300,
+          "height": 300,
+          "quantity": 1,
+          "isEmergency": false,
+          "isFragile": false,
+          "isLiquid": true,
+          "needsWaterproof": true,
+          "notes": "550ml×24瓶"
+        },
+        {
+          "id": "m008",
+          "name": "救生衣",
+          "category": "equipment",
+          "weight": 3.0,
+          "length": 500,
+          "width": 400,
+          "height": 100,
+          "quantity": 5,
+          "isEmergency": true,
+          "isFragile": false,
+          "isLiquid": false,
+          "needsWaterproof": false,
+          "notes": "成人救生衣"
+        },
+        {
+          "id": "m009",
+          "name": "急救包",
+          "category": "medical",
+          "weight": 2.5,
+          "length": 300,
+          "width": 200,
+          "height": 150,
+          "quantity": 2,
+          "isEmergency": true,
+          "isFragile": false,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "基础急救用品"
+        }
+      ],
+      "scenarioTips": {
+        "packingTips": [
+          "洪灾场景物资必须全面防水",
+          "食品和药品需放在最上层",
+          "饮用水需加固防止破裂"
+        ],
+        "waterproofTips": "建议使用防水袋完全包裹，接缝处用防水胶带密封",
+        "bufferTips": "饮用水瓶之间需填充缓冲，防止碰撞破裂"
+      }
+    },
+    {
+      "id": "template_003",
+      "name": "偏远山区疫苗冷链运输",
+      "scenario": "coldchain",
+      "scenarioName": "冷链运输",
+      "icon": "❄️",
+      "difficulty": "hard",
+      "description": "向偏远山区卫生院配送疫苗，需保持2-8℃恒温",
+      "requirements": [
+        "疫苗必须冷链保存",
+        "温度记录仪全程监控",
+        "防止剧烈颠簸",
+        "优先配送紧急疫苗"
+      ],
+      "constraints": {
+        "maxWeight": 30,
+        "maxVolume": 50000000,
+        "weatherCondition": "晴天",
+        "flightTime": 60,
+        "landingType": "着陆",
+        "temperatureRange": "2-8℃"
+      },
+      "materials": [
+        {
+          "id": "m010",
+          "name": "疫苗冷藏箱",
+          "category": "medical",
+          "weight": 10.0,
+          "length": 500,
+          "width": 400,
+          "height": 400,
+          "quantity": 1,
+          "isEmergency": true,
+          "isFragile": true,
+          "isLiquid": true,
+          "needsWaterproof": true,
+          "notes": "内置冰排，保持2-8℃"
+        },
+        {
+          "id": "m011",
+          "name": "温度记录仪",
+          "category": "equipment",
+          "weight": 0.5,
+          "length": 100,
+          "width": 80,
+          "height": 30,
+          "quantity": 2,
+          "isEmergency": false,
+          "isFragile": true,
+          "isLiquid": false,
+          "needsWaterproof": false,
+          "notes": "全程温度监控"
+        },
+        {
+          "id": "m012",
+          "name": "注射器套装",
+          "category": "medical",
+          "weight": 1.5,
+          "length": 250,
+          "width": 150,
+          "height": 100,
+          "quantity": 3,
+          "isEmergency": false,
+          "isFragile": true,
+          "isLiquid": false,
+          "needsWaterproof": true,
+          "notes": "无菌注射器"
+        }
+      ],
+      "scenarioTips": {
+        "packingTips": [
+          "冷藏箱应居中放置，四周留缓冲空间",
+          "温度记录仪需放在箱内和箱外各一个",
+          "注射器需防震保护"
+        ],
+        "waterproofTips": "冷链箱本身防水，外层可加防潮袋",
+        "bufferTips": "冷藏箱四周需用泡沫或气垫固定，防止位移"
+      }
+    }
+  ],
+  "scenarioTypes": {
+    "earthquake": {
+      "name": "地震灾害",
+      "icon": "🏚️",
+      "specialRequirements": {
+        "waterproof": "high",
+        "buffer": "high",
+        "stability": "high"
+      },
+      "tips": {
+        "waterproof": "地震后可能有降雨，建议使用双层防水",
+        "buffer": "余震风险高，物资需额外固定",
+        "stability": "重心尽量低，防止倾倒",
+        "emergency": "急救药品和通讯设备放最上层"
+      }
+    },
+    "flood": {
+      "name": "洪涝灾害",
+      "icon": "🌊",
+      "specialRequirements": {
+        "waterproof": "critical",
+        "buffer": "medium",
+        "stability": "medium"
+      },
+      "tips": {
+        "waterproof": "洪灾场景必须全面防水，建议使用防水袋完全包裹",
+        "buffer": "防水优先于缓冲",
+        "stability": "空投时需考虑风力影响",
+        "emergency": "救生设备和药品优先取用"
+      }
+    },
+    "coldchain": {
+      "name": "冷链运输",
+      "icon": "❄️",
+      "specialRequirements": {
+        "waterproof": "medium",
+        "buffer": "high",
+        "temperature": "critical"
+      },
+      "tips": {
+        "waterproof": "冷链箱防水，但外层需防潮",
+        "buffer": "冷藏箱需固定防止位移",
+        "temperature": "确保温度记录仪正常工作",
+        "emergency": "温度敏感，快速装卸"
+      }
+    }
+  },
+  "materialCategories": {
+    "medical": { "name": "医疗物资", "color": "#f44336", "icon": "🏥" },
+    "equipment": { "name": "设备器材", "color": "#2196f3", "icon": "🔧" },
+    "food": { "name": "食品物资", "color": "#ff9800", "icon": "🍞" },
+    "liquid": { "name": "液体物资", "color": "#00bcd4", "icon": "💧" },
+    "communication": { "name": "通讯设备", "color": "#9c27b0", "icon": "📡" },
+    "fragile": { "name": "易碎物品", "color": "#ff5722", "icon": "⚠️" }
+  },
+  "bufferMaterials": {
+    "foam": { "name": "泡沫", "protection": "high" },
+    "bubble": { "name": "气泡膜", "protection": "medium" },
+    "airbag": { "name": "气垫", "protection": "high" },
+    "sponge": { "name": "海绵", "protection": "medium" },
+    "none": { "name": "无", "protection": "none" }
+  },
+  "waterproofMethods": {
+    "bag": { "name": "防水袋", "effectiveness": "high" },
+    "tape": { "name": "防水胶带", "effectiveness": "medium" },
+    "both": { "name": "防水袋+胶带", "effectiveness": "very_high" },
+    "none": { "name": "无", "effectiveness": "none" }
+  },
+  "sealingMethods": {
+    "tape_cross": { "name": "井字形胶带", "effectiveness": "high" },
+    "tape_single": { "name": "单向胶带", "effectiveness": "medium" },
+    "band": { "name": "打包带", "effectiveness": "medium" },
+    "heat": { "name": "热封", "effectiveness": "very_high" },
+    "none": { "name": "无", "effectiveness": "none" }
+  },
+  "layerOptions": [
+    { "value": 1, "label": "底层", "description": "放置重物和大件物品" },
+    { "value": 2, "label": "中层", "description": "放置中等重量物品" },
+    { "value": 3, "label": "上层", "description": "放置轻质和应急物品" }
+  ],
+  "positionOptions": [
+    { "value": "center", "label": "中央" },
+    { "value": "left", "label": "左侧" },
+    { "value": "right", "label": "右侧" },
+    { "value": "front", "label": "前部" },
+    { "value": "back", "label": "后部" },
+    { "value": "corner", "label": "角落" },
+    { "value": "top", "label": "顶部" },
+    { "value": "accessible", "label": "易取位置" }
+  ],
+  "gradeConfig": {
+    "excellent": { "min": 90, "label": "优秀", "color": "#10b981" },
+    "good": { "min": 80, "label": "良好", "color": "#3b82f6" },
+    "pass": { "min": 60, "label": "合格", "color": "#f59e0b" },
+    "fail": { "min": 0, "label": "不合格", "color": "#ef4444" }
+  }
+}

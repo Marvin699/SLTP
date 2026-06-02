@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #060d1a;
+  --navy2: #0b1628;
+  --navy3: #112040;
+  --navy4: #1a2e50;
+  --teal: #00e5ff;
+  --teal2: #00b4cc;
+  --amber: #ffb300;
+  --red: #ff3d57;
+  --green: #00e676;
+  --purple: #aa80ff;
+  --text: #cdd9f0;
+  --text2: #7a93bb;
+  --text3: #3d5a80;
+  --border: #162540;
+  --border2: #1e3560;
+  --glow-teal: 0 0 20px rgba(0, 229, 255, 0.25);
+  --glow-amber: 0 0 20px rgba(255, 179, 0, 0.25);
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Noto Sans SC', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--sans);
+  background: var(--navy);
+  color: var(--text);
+}
+
+#app {
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 2px;
+}
+
+/* Leaflet dark tiles */
+.dark-tiles {
+  filter: invert(1) hue-rotate(200deg) brightness(0.75) contrast(1.1) saturate(0.8);
+}
+
+/* Leaflet day tiles - 柔和日间模式 */
+.day-tiles {
+  filter: brightness(0.82) contrast(1.05) saturate(0.85) sepia(0.08);
+}
+
+.leaflet-container {
+  background: var(--navy) !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 修复Tailwind preflight对导航和按钮的影响 */
+nav {
+  display: flex;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+/* Fix Tailwind preflight overriding Leaflet */
+.leaflet-control-zoom a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--navy2);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}

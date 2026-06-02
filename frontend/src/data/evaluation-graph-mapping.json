@@ -1,0 +1,259 @@
+{
+  "description": "图谱智能体与教学智评模块的联动映射数据",
+
+  "task_evaluation_mapping": [
+    {
+      "taskTag": "T1", "taskName": "需求分析", "task": "任务1",
+      "evaluationItem": "飞行计划", "maxScore": 15,
+      "evaluationCriteria": "飞行计划书规范性≥90%，需求研判准确率≥85%，风险预案完整性≥95%",
+      "relatedCapabilityCards": ["C1-1", "C1-2"],
+      "relatedKnowledge": ["K01", "K02", "K03", "K19"]
+    },
+    {
+      "taskTag": "T2", "taskName": "航线规划", "task": "任务2",
+      "evaluationItem": "航线规划（融入飞行计划评分）", "maxScore": 0,
+      "evaluationCriteria": "航线设计合规率100%，安全评估完整性≥95%，空域申请一次通过率≥80%",
+      "relatedCapabilityCards": ["C2-1", "C2-2"],
+      "relatedKnowledge": ["K06", "K07", "K08", "K14", "K20"]
+    },
+    {
+      "taskTag": "T3", "taskName": "网络调度", "task": "任务3",
+      "evaluationItem": "协同调度", "maxScore": 10,
+      "evaluationCriteria": "网络优化效率提升≥20%，协同调度成功率≥90%，方案报告评分≥85分",
+      "relatedCapabilityCards": ["C3-1"],
+      "relatedKnowledge": ["K11", "K14", "K15", "K16"]
+    },
+    {
+      "taskTag": "T4", "taskName": "物资包装", "task": "任务4",
+      "evaluationItem": "包装装载", "maxScore": 5,
+      "evaluationCriteria": "包装合规率100%，配平误差≤2%，检查单执行零遗漏",
+      "relatedCapabilityCards": ["C4-1", "C4-2"],
+      "relatedKnowledge": ["K09", "K10"]
+    },
+    {
+      "taskTag": "T5", "taskName": "多机协同", "task": "任务5",
+      "evaluationItem": "多机协同", "maxScore": 10,
+      "evaluationCriteria": "集群配置成功率≥95%，通信测试通过率100%，故障排除时间≤30min",
+      "relatedCapabilityCards": ["C5-1"],
+      "relatedKnowledge": ["K04", "K11", "K16"]
+    },
+    {
+      "taskTag": "T6", "taskName": "飞行模拟", "task": "任务6",
+      "evaluationItem": "虚拟仿真", "maxScore": 15,
+      "evaluationCriteria": "模拟飞行操作准确率≥90%，特情处置正确率≥85%，仿真报告评分≥80分",
+      "relatedCapabilityCards": ["C6-1"],
+      "relatedKnowledge": ["K12", "K03", "K05"]
+    },
+    {
+      "taskTag": "T7", "taskName": "飞行实操", "task": "任务7",
+      "evaluationItem": "真机飞行", "maxScore": 25,
+      "evaluationCriteria": "飞行操控评分≥90分，投放精度误差<5m，特情处置正确率100%",
+      "relatedCapabilityCards": ["C7-1", "C7-2"],
+      "relatedKnowledge": ["K04", "K05", "K06", "K18"]
+    },
+    {
+      "taskTag": "T8", "taskName": "方案汇报", "task": "任务8",
+      "evaluationItem": "方案汇报", "maxScore": 10,
+      "evaluationCriteria": "演练组织评分≥85分，方案报告评分≥90分，汇报答辩评分≥85分",
+      "relatedCapabilityCards": ["C8-1"],
+      "relatedKnowledge": ["K01", "K03", "K19"]
+    }
+  ],
+
+  "radar_capability_mapping": [
+    { "radarDimension": "方案制定", "capabilityCards": ["C1-1", "C1-2"], "taskTags": ["T1"] },
+    { "radarDimension": "航线规划", "capabilityCards": ["C2-1", "C2-2"], "taskTags": ["T2"] },
+    { "radarDimension": "设备运维", "capabilityCards": ["C4-1", "C4-2", "C5-1"], "taskTags": ["T4", "T5"] },
+    { "radarDimension": "飞行操控", "capabilityCards": ["C6-1", "C7-1", "C7-2"], "taskTags": ["T6", "T7"] },
+    { "radarDimension": "团队协作", "capabilityCards": ["C3-1", "C8-1"], "taskTags": ["T3", "T8"] },
+    { "radarDimension": "安全意识", "capabilityCards": ["C4-2", "C2-2"], "taskTags": ["T4", "T2"] }
+  ],
+
+  "evaluation_dimensions": [
+    { "key": "process", "name": "过程性评价", "weight": 0.4, "icon": "Document" },
+    { "key": "result", "name": "结果性评价", "weight": 0.6, "icon": "Trophy" },
+    { "key": "development", "name": "发展性评价", "weight": 0, "icon": "TrendCharts", "bonus": 10 },
+    { "key": "valueAdded", "name": "增值评价", "weight": 0, "icon": "DataAnalysis", "note": "不计入总分" },
+    { "key": "safety", "name": "安全一票否决", "weight": 0, "icon": "Warning", "note": "触发则总分≤59" }
+  ],
+
+  "mock_evaluation_result": {
+    "studentName": "张明",
+    "groupName": "雏鹰组",
+    "totalScore": 86,
+    "taskScores": {
+      "T1": { "score": 13, "max": 15, "status": "completed" },
+      "T2": { "score": 0, "max": 0, "status": "completed", "note": "融入T1评分" },
+      "T3": { "score": 8, "max": 10, "status": "completed" },
+      "T4": { "score": 4, "max": 5, "status": "completed" },
+      "T5": { "score": 9, "max": 10, "status": "completed" },
+      "T6": { "score": 13, "max": 15, "status": "completed" },
+      "T7": { "score": 22, "max": 25, "status": "in_progress" },
+      "T8": { "score": 9, "max": 10, "status": "completed" }
+    },
+    "radarScores": {
+      "方案制定": 85, "航线规划": 82, "设备运维": 88,
+      "飞行操控": 80, "团队协作": 92, "安全意识": 90
+    },
+    "processScore": 48, "resultScore": 31, "developScore": 7,
+    "safetyViolations": [],
+    "capabilityCards": {
+      "C1-1": { "score": 88, "status": "mastered" }, "C1-2": { "score": 85, "status": "mastered" },
+      "C2-1": { "score": 82, "status": "mastered" }, "C2-2": { "score": 80, "status": "mastered" },
+      "C3-1": { "score": 78, "status": "learning" }, "C4-1": { "score": 90, "status": "mastered" },
+      "C4-2": { "score": 92, "status": "mastered" }, "C5-1": { "score": 75, "status": "learning" },
+      "C6-1": { "score": 83, "status": "mastered" }, "C7-1": { "score": 76, "status": "learning" },
+      "C7-2": { "score": 70, "status": "learning" }, "C8-1": { "score": 85, "status": "mastered" }
+    }
+  },
+
+  "mock_students": {
+    "1": {
+      "studentName": "张明", "groupName": "雏鹰组", "totalScore": 86,
+      "taskScores": {
+        "T1": { "score": 13, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 8, "max": 10, "status": "completed" },
+        "T4": { "score": 4, "max": 5, "status": "completed" },
+        "T5": { "score": 9, "max": 10, "status": "completed" },
+        "T6": { "score": 13, "max": 15, "status": "completed" },
+        "T7": { "score": 22, "max": 25, "status": "in_progress" },
+        "T8": { "score": 9, "max": 10, "status": "completed" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 88, "status": "mastered" }, "C1-2": { "score": 85, "status": "mastered" },
+        "C2-1": { "score": 82, "status": "mastered" }, "C2-2": { "score": 80, "status": "mastered" },
+        "C3-1": { "score": 78, "status": "learning" }, "C4-1": { "score": 90, "status": "mastered" },
+        "C4-2": { "score": 92, "status": "mastered" }, "C5-1": { "score": 75, "status": "learning" },
+        "C6-1": { "score": 83, "status": "mastered" }, "C7-1": { "score": 76, "status": "learning" },
+        "C7-2": { "score": 70, "status": "learning" }, "C8-1": { "score": 85, "status": "mastered" }
+      }
+    },
+    "2": {
+      "studentName": "李婷", "groupName": "雏鹰组", "totalScore": 82,
+      "taskScores": {
+        "T1": { "score": 12, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 7, "max": 10, "status": "completed" },
+        "T4": { "score": 5, "max": 5, "status": "completed" },
+        "T5": { "score": 8, "max": 10, "status": "completed" },
+        "T6": { "score": 12, "max": 15, "status": "completed" },
+        "T7": { "score": 20, "max": 25, "status": "in_progress" },
+        "T8": { "score": 8, "max": 10, "status": "completed" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 82, "status": "mastered" }, "C1-2": { "score": 80, "status": "mastered" },
+        "C2-1": { "score": 78, "status": "learning" }, "C2-2": { "score": 75, "status": "learning" },
+        "C3-1": { "score": 72, "status": "learning" }, "C4-1": { "score": 92, "status": "mastered" },
+        "C4-2": { "score": 88, "status": "mastered" }, "C5-1": { "score": 70, "status": "learning" },
+        "C6-1": { "score": 80, "status": "mastered" }, "C7-1": { "score": 72, "status": "learning" },
+        "C7-2": { "score": 68, "status": "learning" }, "C8-1": { "score": 78, "status": "learning" }
+      }
+    },
+    "3": {
+      "studentName": "王浩", "groupName": "雏鹰组", "totalScore": 78,
+      "taskScores": {
+        "T1": { "score": 11, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 7, "max": 10, "status": "completed" },
+        "T4": { "score": 4, "max": 5, "status": "completed" },
+        "T5": { "score": 7, "max": 10, "status": "completed" },
+        "T6": { "score": 11, "max": 15, "status": "completed" },
+        "T7": { "score": 18, "max": 25, "status": "in_progress" },
+        "T8": { "score": 8, "max": 10, "status": "in_progress" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 78, "status": "learning" }, "C1-2": { "score": 75, "status": "learning" },
+        "C2-1": { "score": 72, "status": "learning" }, "C2-2": { "score": 70, "status": "learning" },
+        "C3-1": { "score": 68, "status": "learning" }, "C4-1": { "score": 82, "status": "mastered" },
+        "C4-2": { "score": 85, "status": "mastered" }, "C5-1": { "score": 65, "status": "learning" },
+        "C6-1": { "score": 75, "status": "learning" }, "C7-1": { "score": 68, "status": "learning" },
+        "C7-2": { "score": 62, "status": "learning" }, "C8-1": { "score": 72, "status": "learning" }
+      }
+    },
+    "4": {
+      "studentName": "陈雪", "groupName": "智运组", "totalScore": 92,
+      "taskScores": {
+        "T1": { "score": 14, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 9, "max": 10, "status": "completed" },
+        "T4": { "score": 5, "max": 5, "status": "completed" },
+        "T5": { "score": 10, "max": 10, "status": "completed" },
+        "T6": { "score": 14, "max": 15, "status": "completed" },
+        "T7": { "score": 24, "max": 25, "status": "completed" },
+        "T8": { "score": 9, "max": 10, "status": "completed" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 92, "status": "mastered" }, "C1-2": { "score": 90, "status": "mastered" },
+        "C2-1": { "score": 88, "status": "mastered" }, "C2-2": { "score": 85, "status": "mastered" },
+        "C3-1": { "score": 85, "status": "mastered" }, "C4-1": { "score": 95, "status": "mastered" },
+        "C4-2": { "score": 94, "status": "mastered" }, "C5-1": { "score": 88, "status": "mastered" },
+        "C6-1": { "score": 90, "status": "mastered" }, "C7-1": { "score": 92, "status": "mastered" },
+        "C7-2": { "score": 88, "status": "mastered" }, "C8-1": { "score": 90, "status": "mastered" }
+      }
+    },
+    "5": {
+      "studentName": "刘洋", "groupName": "智运组", "totalScore": 88,
+      "taskScores": {
+        "T1": { "score": 13, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 9, "max": 10, "status": "completed" },
+        "T4": { "score": 4, "max": 5, "status": "completed" },
+        "T5": { "score": 9, "max": 10, "status": "completed" },
+        "T6": { "score": 14, "max": 15, "status": "completed" },
+        "T7": { "score": 23, "max": 25, "status": "completed" },
+        "T8": { "score": 9, "max": 10, "status": "completed" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 86, "status": "mastered" }, "C1-2": { "score": 84, "status": "mastered" },
+        "C2-1": { "score": 85, "status": "mastered" }, "C2-2": { "score": 82, "status": "mastered" },
+        "C3-1": { "score": 82, "status": "mastered" }, "C4-1": { "score": 88, "status": "mastered" },
+        "C4-2": { "score": 90, "status": "mastered" }, "C5-1": { "score": 80, "status": "mastered" },
+        "C6-1": { "score": 88, "status": "mastered" }, "C7-1": { "score": 85, "status": "mastered" },
+        "C7-2": { "score": 80, "status": "mastered" }, "C8-1": { "score": 86, "status": "mastered" }
+      }
+    },
+    "6": {
+      "studentName": "赵林", "groupName": "智运组", "totalScore": 85,
+      "taskScores": {
+        "T1": { "score": 12, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 8, "max": 10, "status": "completed" },
+        "T4": { "score": 4, "max": 5, "status": "completed" },
+        "T5": { "score": 9, "max": 10, "status": "completed" },
+        "T6": { "score": 13, "max": 15, "status": "completed" },
+        "T7": { "score": 21, "max": 25, "status": "in_progress" },
+        "T8": { "score": 8, "max": 10, "status": "completed" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 84, "status": "mastered" }, "C1-2": { "score": 82, "status": "mastered" },
+        "C2-1": { "score": 80, "status": "mastered" }, "C2-2": { "score": 78, "status": "learning" },
+        "C3-1": { "score": 80, "status": "mastered" }, "C4-1": { "score": 88, "status": "mastered" },
+        "C4-2": { "score": 86, "status": "mastered" }, "C5-1": { "score": 78, "status": "learning" },
+        "C6-1": { "score": 82, "status": "mastered" }, "C7-1": { "score": 80, "status": "mastered" },
+        "C7-2": { "score": 75, "status": "learning" }, "C8-1": { "score": 82, "status": "mastered" }
+      }
+    },
+    "7": {
+      "studentName": "周伟", "groupName": "智运组", "totalScore": 79,
+      "taskScores": {
+        "T1": { "score": 11, "max": 15, "status": "completed" },
+        "T2": { "score": 0, "max": 0, "status": "completed" },
+        "T3": { "score": 7, "max": 10, "status": "completed" },
+        "T4": { "score": 4, "max": 5, "status": "completed" },
+        "T5": { "score": 8, "max": 10, "status": "completed" },
+        "T6": { "score": 12, "max": 15, "status": "completed" },
+        "T7": { "score": 19, "max": 25, "status": "in_progress" },
+        "T8": { "score": 8, "max": 10, "status": "in_progress" }
+      },
+      "capabilityCards": {
+        "C1-1": { "score": 76, "status": "learning" }, "C1-2": { "score": 74, "status": "learning" },
+        "C2-1": { "score": 70, "status": "learning" }, "C2-2": { "score": 68, "status": "learning" },
+        "C3-1": { "score": 72, "status": "learning" }, "C4-1": { "score": 82, "status": "mastered" },
+        "C4-2": { "score": 80, "status": "mastered" }, "C5-1": { "score": 68, "status": "learning" },
+        "C6-1": { "score": 75, "status": "learning" }, "C7-1": { "score": 70, "status": "learning" },
+        "C7-2": { "score": 65, "status": "learning" }, "C8-1": { "score": 74, "status": "learning" }
+      }
+    }
+  }
+}

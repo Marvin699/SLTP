@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《智慧运输运营》课程项目能力图谱</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset & Base ===== */
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Noto Serif SC", Georgia, "SimSun", serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: #333;
+    text-align: justify;
+    text-align-last: left;
+    string-set: doctitle "";
+}
+
+/* ===== Page Setup ===== */
+@page {
+    size: A4;
+    margin: 2.5cm 2cm;
+    @top-center {
+        content: string(doctitle);
+        font-size: 9pt;
+        color: #666;
+        border-bottom: 0.5pt solid #ccc;
+        padding-bottom: 0.3em;
+    }
+    @bottom-center {
+        content: counter(page);
+        font-size: 9pt;
+        color: #666;
+    }
+}
+@page cover {
+    margin: 0;
+    @top-center { content: none; }
+    @bottom-center { content: none; }
+}
+@page toc {
+    @top-center { content: none; }
+    @bottom-center { content: none; }
+}
+
+/* ===== Cover ===== */
+.cover {
+    page: cover;
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 50%, #ede7dc 100%);
+}
+.cover::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(139,115,85,0.08) 0%, rgba(139,115,85,0.15) 100%);
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+}
+.cover::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%;
+    height: 8mm;
+    background: linear-gradient(90deg, #8b7355 0%, #a08060 50%, #8b7355 100%);
+}
+.cover-decoration-top {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 25mm;
+    background: linear-gradient(90deg, #6b5b4a 0%, #8b7355 40%, #a08060 100%);
+}
+.cover-decoration-top::after {
+    content: "";
+    position: absolute;
+    bottom: -15mm; left: 20mm;
+    width: 60mm;
+    height: 0.8mm;
+    background: #8b7355;
+}
+.cover-corner-1 {
+    position: absolute;
+    top: 35mm; right: 25mm;
+    width: 25mm; height: 25mm;
+    border: 2px solid rgba(139,115,85,0.25);
+}
+.cover-corner-2 {
+    position: absolute;
+    bottom: 45mm; left: 20mm;
+    width: 18mm; height: 18mm;
+    border: 2px solid rgba(139,115,85,0.2);
+    border-radius: 50%;
+}
+.cover-line-left {
+    position: absolute;
+    top: 40mm; left: 20mm;
+    width: 1.5px;
+    height: 180mm;
+    background: linear-gradient(180deg, #8b7355 0%, transparent 100%);
+}
+.cover-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 80%;
+    z-index: 10;
+}
+.cover-label {
+    font-size: 11pt;
+    color: #8b7355;
+    letter-spacing: 0.5em;
+    margin-bottom: 1.5cm;
+    font-weight: 600;
+}
+.cover-title {
+    font-size: 30pt;
+    font-weight: 900;
+    color: #3a3228;
+    margin-bottom: 0.8cm;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+}
+.cover-subtitle {
+    font-size: 16pt;
+    font-weight: 600;
+    color: #5a5045;
+    margin-bottom: 3cm;
+    padding-bottom: 0.8cm;
+    border-bottom: 1px solid #b0a08a;
+    display: inline-block;
+}
+.cover-meta {
+    font-size: 11pt;
+    color: #4a4339;
+    line-height: 2.2;
+    text-align: left;
+    display: inline-block;
+}
+.cover-meta-item {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1em;
+}
+.cover-meta-label {
+    color: #8b7355;
+    font-weight: 600;
+    min-width: 6em;
+    text-align: right;
+}
+.cover-meta-value {
+    color: #3a3228;
+}
+.cover-bottom-bar {
+    position: absolute;
+    bottom: 15mm;
+    left: 20mm;
+    right: 20mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: #8b7355;
+    z-index: 10;
+}
+
+/* ===== TOC ===== */
+.toc-page {
+    page: toc;
+    page-break-after: always;
+}
+.toc-title {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5cm;
+    padding-bottom: 0.5cm;
+    border-bottom: 2px solid #8b7355;
+}
+.toc { list-style: none; padding: 0; margin: 0; }
+.toc li {
+    margin: 0.6em 0;
+    font-size: 12pt;
+}
+.toc a {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+}
+.toc a::after {
+    content: leader('.') target-counter(attr(href url), page);
+    flex: 1;
+    text-align: right;
+    margin-left: 0.5em;
+}
+.toc-l1 { font-weight: 700; }
+.toc-l2 { padding-left: 1.5em; font-size: 11pt; }
+
+/* ===== Headings ===== */
+h1 {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #3a3228;
+    margin-top: 0;
+    margin-bottom: 0.8cm;
+    padding-bottom: 0.3cm;
+    border-bottom: 2px solid #8b7355;
+    string-set: doctitle content();
+    page-break-after: avoid;
+}
+h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #4a4339;
+    margin-top: 1cm;
+    margin-bottom: 0.5cm;
+    padding-left: 0.5em;
+    border-left: 4px solid #8b7355;
+    page-break-after: avoid;
+}
+h3 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #5a5045;
+    margin-top: 0.8cm;
+    margin-bottom: 0.4cm;
+    page-break-after: avoid;
+}
+
+/* ===== Tables ===== */
+table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 0.8em 0;
+    font-size: 9.5pt;
+    line-height: 1.5;
+    page-break-inside: auto;
+}
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; }
+th, td {
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+    border: 0.5pt solid #bbb;
+}
+th {
+    background: #f5f2ed;
+    font-weight: 700;
+    color: #3a3228;
+    border-bottom: 1.5pt solid #8b7355;
+}
+tbody tr:nth-child(even) { background: #faf9f7; }
+caption {
+    caption-side: top;
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+    color: #4a4339;
+}
+caption::before {
+    content: attr(data-label) "  ";
+    font-weight: 700;
+}
+
+/* ===== Special table styles ===== */
+.table-three-line th,
+.table-three-line td {
+    border-left: none;
+    border-right: none;
+}
+.table-three-line th {
+    border-top: 1.5pt solid #333;
+    border-bottom: 1pt solid #333;
+}
+.table-three-line tbody tr:last-child td {
+    border-bottom: 1.5pt solid #333;
+}
+.table-three-line tbody tr { background: transparent; }
+
+/* ===== Info boxes ===== */
+.info-box {
+    background: #faf8f5;
+    border-left: 4px solid #8b7355;
+    padding: 1em 1.2em;
+    margin: 1em 0;
+    page-break-inside: avoid;
+}
+.info-box-title {
+    font-weight: 700;
+    color: #8b7355;
+    margin-bottom: 0.5em;
+}
+
+/* ===== Lists ===== */
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.3em 0; }
+
+/* ===== Prevent overflow ===== */
+pre, table, figure, img, svg, blockquote {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+figure img, figure svg { max-width: 80%; max-height: 40vh; height: auto; }
+a { word-break: break-all; color: #333; }
+
+/* ===== Page breaks ===== */
+.page-break { page-break-before: always; }
+.section { page-break-before: always; }
+
+/* ===== Tag styles ===== */
+.tag {
+    display: inline-block;
+    padding: 1pt 6pt;
+    border-radius: 2px;
+    font-size: 8pt;
+    font-weight: 600;
+    margin: 1pt 2pt;
+}
+.tag-required { background: #e8e0d4; color: #5a5045; }
+.tag-optional { background: #e0e4e8; color: #4a5568; }
+.tag-practice { background: #e8ddd4; color: #6b4c3a; }
+.tag-cert { background: #d4e8dc; color: #3a6b4a; }
+.tag-comp { background: #d4dce8; color: #3a4a6b; }
+
+/* ===== Flow chart table ===== */
+.flow-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3pt 8pt;
+    background: #f5f2ed;
+    border: 0.5pt solid #b0a08a;
+    font-size: 8.5pt;
+    margin: 1pt;
+    border-radius: 2px;
+}
+.flow-arrow {
+    display: inline-block;
+    margin: 0 3pt;
+    color: #8b7355;
+    font-weight: 700;
+}
+
+/* ===== Small text ===== */
+.small { font-size: 9pt; }
+.note { font-size: 9pt; color: #666; }
+
+/* ===== Compact table ===== */
+.table-compact th, .table-compact td {
+    padding: 4pt 6pt;
+    font-size: 8.5pt;
+}
+
+/* ===== Section intro ===== */
+.section-intro {
+    background: #faf8f5;
+    padding: 1em 1.2em;
+    margin: 0.8em 0;
+    border: 0.5pt solid #e0d8cc;
+    page-break-inside: avoid;
+}
+
+/* ===== Parallel columns layout ===== */
+.parallel-table td {
+    width: 50%;
+    vertical-align: top;
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== COVER ==================== -->
+<div class="cover">
+    <div class="cover-decoration-top"></div>
+    <div class="cover-corner-1"></div>
+    <div class="cover-corner-2"></div>
+    <div class="cover-line-left"></div>
+    <div class="cover-content">
+        <div class="cover-label">课 程 项 目 能 力 图 谱</div>
+        <h1 class="cover-title" style="border:none;string-set:none;">《智慧运输运营》</h1>
+        <div class="cover-subtitle">项目五：应急物资低空智慧运输</div>
+        <div class="cover-meta">
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">授课专业</span>
+                <span class="cover-meta-value">现代物流管理</span>
+            </div>
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">专业大类</span>
+                <span class="cover-meta-value">财经商贸大类</span>
+            </div>
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">参赛组别</span>
+                <span class="cover-meta-value">高职高专专业课程一组</span>
+            </div>
+            <div class="cover-meta-item">
+                <span class="cover-meta-label">总学时</span>
+                <span class="cover-meta-value">16 学时</span>
+            </div>
+        </div>
+    </div>
+    <div class="cover-bottom-bar">
+        <span>应急物资无人机智慧运输</span>
+        <span>能力图谱文档</span>
+    </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc-page">
+    <div class="toc-title">目  录</div>
+    <ul class="toc">
+        <li class="toc-l1"><a href="#sec1">第一部分  项目概述</a></li>
+        <li class="toc-l2"><a href="#sec1-1">1.1 项目背景</a></li>
+        <li class="toc-l2"><a href="#sec1-2">1.2 课程定位</a></li>
+        <li class="toc-l2"><a href="#sec1-3">1.3 毕业要求导向</a></li>
+        <li class="toc-l2"><a href="#sec1-4">1.4 未来发展趋势</a></li>
+        <li class="toc-l1"><a href="#sec2">第二部分  能力图谱总图</a></li>
+        <li class="toc-l1"><a href="#sec3">第三部分  反向设计逻辑对应表</a></li>
+        <li class="toc-l1"><a href="#sec4">第四部分  岗课赛证融合设计</a></li>
+        <li class="toc-l2"><a href="#sec4-1">4.1 职业技能等级证书对接表</a></li>
+        <li class="toc-l2"><a href="#sec4-2">4.2 技能大赛对接表</a></li>
+        <li class="toc-l2"><a href="#sec4-3">4.3 融合路径图</a></li>
+        <li class="toc-l1"><a href="#sec5">第五部分  课程类型与能力支撑判定</a></li>
+        <li class="toc-l2"><a href="#sec5-1">5.1 课程任务属性表</a></li>
+        <li class="toc-l2"><a href="#sec5-2">5.2 证书支撑能力对应表</a></li>
+        <li class="toc-l2"><a href="#sec5-3">5.3 竞赛支撑能力对应表</a></li>
+        <li class="toc-l1"><a href="#sec6">第六部分  五新融入</a></li>
+    </ul>
+</div>
+
+<!-- ==================== PART 1 ==================== -->
+<div class="section" id="sec1">
+<h1>第一部分  项目概述</h1>
+
+<h2 id="sec1-1">1.1 项目背景</h2>
+<p>随着低空经济的蓬勃发展，无人机物流运输作为新兴业态正在深刻改变传统物流行业格局。应急物流作为保障公共安全和社会稳定的重要支撑，在自然灾害、突发事件等紧急场景下，对物资运输的时效性、精准性和可靠性提出了更高要求。</p>
+
+<div class="info-box">
+    <div class="info-box-title">低空经济与应急物流的融合背景</div>
+    <ul>
+        <li><strong>政策驱动</strong>：国家出台《无人驾驶航空器飞行管理暂行条例》等法规，为低空物流发展提供制度保障</li>
+        <li><strong>技术成熟</strong>：5G-A、北斗导航、AI避障等技术赋能无人机物流商业化运营</li>
+        <li><strong>场景需求</strong>：地震、洪涝、公共卫生事件等应急场景对快速物资投送需求迫切</li>
+        <li><strong>产业支撑</strong>：丰翼、美团、京东等企业已形成规模化无人机配送能力</li>
+    </ul>
+</div>
+
+<p>本项目以"应急物资低空智慧运输"为载体，将无人机物流作业流程与应急物流管理深度融合，构建覆盖"任务规划—设备准备—飞行实操"全流程的教学项目，培养适应智慧物流发展的复合型技术技能人才。</p>
+
+<h2 id="sec1-2">1.2 课程定位</h2>
+<p>本课程对接<strong>智慧物流现场工程师</strong>岗位群，面向无人机物流运输作业全链条，培养具备以下核心能力的高素质技术技能人才：</p>
+
+<table>
+<caption data-label="表1-1">课程定位与岗位对接</caption>
+<thead>
+<tr><th style="width:25%;">对接维度</th><th>具体内容</th></tr>
+</thead>
+<tbody>
+<tr>
+    <td><strong>目标岗位</strong></td>
+    <td>应急物流调度员、无人机航线规划师、低空物流运营调度员、无人机装调工程师、无人机物流配送员、低空物流系统工程师、无人机驾驶员、应急物流项目经理</td>
+</tr>
+<tr>
+    <td><strong>核心岗位</strong></td>
+    <td>智慧物流现场工程师——负责无人机物流运输作业的组织、实施与优化</td>
+</tr>
+<tr>
+    <td><strong>工作领域</strong></td>
+    <td>应急物流需求分析、航线规划、设备装调、物资装载、飞行操控、运营调度</td>
+</tr>
+<tr>
+    <td><strong>培养层次</strong></td>
+    <td>高职高专——现代物流管理专业（财经商贸大类）</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="sec1-3">1.3 毕业要求导向</h2>
+<p>本项目基于"知识+能力+素质"三维框架，对标专业毕业要求，构建能力导向的课程内容体系：</p>
+
+<table>
+<caption data-label="表1-2">毕业要求三维框架</caption>
+<thead>
+<tr><th style="width:18%;">维度</th><th>具体要求</th><th style="width:35%;">对应能力</th></tr>
+</thead>
+<tbody>
+<tr>
+    <td><strong>知识维度</strong></td>
+    <td>现代物流管理基础理论、运输组织与管理基本知识、物流信息技术应用、物流系统规划与设计、物流项目运营与管理</td>
+    <td>理论知识的系统掌握与综合运用</td>
+</tr>
+<tr>
+    <td><strong>能力维度</strong></td>
+    <td>智慧运输运营能力、物流数据分析能力、物流项目运营能力、数字能力、问题解决能力</td>
+    <td>岗位核心技能与数字化应用能力</td>
+</tr>
+<tr>
+    <td><strong>素质维度</strong></td>
+    <td>思想政治素质、职业素养、安全意识、创新意识、工匠精神</td>
+    <td>职业品格与工程伦理素养</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="sec1-4">1.4 未来发展趋势</h2>
+<p>本项目紧跟行业发展前沿，融入以下五大未来趋势：</p>
+
+<table>
+<caption data-label="表1-3">行业发展趋势与课程融入</caption>
+<thead>
+<tr><th style="width:22%;">趋势</th><th style="width:40%;">内涵</th><th>课程融入点</th></tr>
+</thead>
+<tbody>
+<tr>
+    <td><strong>数字化与智能化转型</strong></td>
+    <td>AI路径规划、自主避障、数字孪生仿真等技术的广泛应用</td>
+    <td>任务1-8均融入数字技术应用场景</td>
+</tr>
+<tr>
+    <td><strong>绿色物流与双碳目标</strong></td>
+    <td>电动化运输、可降解包装、低碳运营模式的推广</td>
+    <td>任务5融入可降解空投材料，任务8融入绿色运营评估</td>
+</tr>
+<tr>
+    <td><strong>供应链韧性提升</strong></td>
+    <td>构建多元化、智能化、快速响应的应急供应链体系</td>
+    <td>任务1需求分析、任务3网络协同规划</td>
+</tr>
+<tr>
+    <td><strong>低空经济新业态</strong></td>
+    <td>低空物流网络成为城市物流基础设施的重要组成部分</td>
+    <td>任务2航线规划、任务3多航空站协同</td>
+</tr>
+<tr>
+    <td><strong>应急物流立体化</strong></td>
+    <td>无人机+有人机+地面运输的多维协同应急运输体系</td>
+    <td>任务7精准投放、任务8综合演练</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== PART 2 ==================== -->
+<div class="section" id="sec2">
+<h1>第二部分  能力图谱总图</h1>
+
+<p>本部分以"岗位任务→工作流程→能力点→课程子项目→课程任务及课时"的纵向贯通结构，展示本项目完整的能力图谱。全项目共设置<strong>8个岗位任务</strong>，对应<strong>3个子项目</strong>和<strong>8个课程任务</strong>，总计<strong>16学时</strong>。</p>
+
+<table>
+<caption data-label="表2-1">能力图谱总图——岗位任务与课程设计对照表</caption>
+<thead>
+<tr>
+    <th style="width:8%;">编号</th>
+    <th style="width:14%;">岗位任务</th>
+    <th style="width:14%;">目标岗位</th>
+    <th style="width:22%;">工作流程</th>
+    <th style="width:20%;">核心能力点</th>
+    <th style="width:12%;">子项目</th>
+    <th style="width:10%;">课程任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>JT-01</td>
+    <td>应急物流需求分析</td>
+    <td>应急物流调度员</td>
+    <td>需求接收→需求评估→任务分解→资源匹配→计划编制</td>
+    <td>应急需求快速研判、多源信息整合分析、运输方案设计、风险评估与预判</td>
+    <td>子项目一：飞行任务规划</td>
+    <td>任务1（2学时）</td>
+</tr>
+<tr>
+    <td>JT-02</td>
+    <td>无人机航线规划</td>
+    <td>无人机航线规划师</td>
+    <td>任务分析→航点设定→航线设计→安全评估→空域申请→计划审批</td>
+    <td>航点设计与优化、航线安全评估、空域法规应用、飞行计划编制、GIS系统操作</td>
+    <td>子项目一：飞行任务规划</td>
+    <td>任务2（2学时）</td>
+</tr>
+<tr>
+    <td>JT-03</td>
+    <td>多航空站网络协同调度</td>
+    <td>低空物流运营调度员</td>
+    <td>网络分析→站点布局→协同规划→运力配置→动态调度→效能评估</td>
+    <td>网络优化分析、多站点协同规划、运力动态配置、智能调度决策、运营数据分析</td>
+    <td>子项目一：飞行任务规划</td>
+    <td>任务3（2学时）</td>
+</tr>
+<tr>
+    <td>JT-04</td>
+    <td>无人机组装与系统调试</td>
+    <td>无人机装调工程师</td>
+    <td>部件检查→机体组装→系统安装→参数配置→联调测试→校准验证</td>
+    <td>机体结构组装、飞控系统配置、传感器校准、动力系统调试、通信链路测试</td>
+    <td>子项目二：飞行设备准备</td>
+    <td>任务4（2学时）</td>
+</tr>
+<tr>
+    <td>JT-05</td>
+    <td>应急物资包装装载</td>
+    <td>无人机物流配送员</td>
+    <td>物资分类→包装设计→重量配平→装载固定→重心检查→飞行前检查</td>
+    <td>应急物资分类识别、包装设计选择、重量配平计算、安全装载固定、飞行前检查标准执行</td>
+    <td>子项目二：飞行设备准备</td>
+    <td>任务5（2学时）</td>
+</tr>
+<tr>
+    <td>JT-06</td>
+    <td>多机协同装调与调度</td>
+    <td>低空物流系统工程师</td>
+    <td>系统架构→单机装调→网络配置→协同测试→调度调试→系统验收</td>
+    <td>多机系统架构设计、集群通信配置、协同飞行调试、调度系统部署、系统联调联试</td>
+    <td>子项目二：飞行设备准备</td>
+    <td>任务6（2学时）</td>
+</tr>
+<tr>
+    <td>JT-07</td>
+    <td>应急物资精准投放飞行</td>
+    <td>无人机驾驶员/飞手</td>
+    <td>任务确认→设备检查→起飞准备→航线飞行→应急判断→精准投放→返航降落→数据记录</td>
+    <td>飞行操控技能、应急判断决策、精准投放操作、特情处置、飞行数据记录</td>
+    <td>子项目三：飞行运输实操</td>
+    <td>任务7（2学时）</td>
+</tr>
+<tr>
+    <td>JT-08</td>
+    <td>综合运输演练与方案优化</td>
+    <td>应急物流项目经理</td>
+    <td>方案编制→综合演练→数据采集→效能评估→问题分析→方案优化→汇报展示</td>
+    <td>综合方案设计、演练组织指挥、效能评估分析、持续改进优化、成果汇报展示</td>
+    <td>子项目三：飞行运输实操</td>
+    <td>任务8（2学时）</td>
+</tr>
+</tbody>
+</table>
+
+<div class="info-box">
+    <div class="info-box-title">能力图谱设计说明</div>
+    <ul>
+        <li><strong>项目结构</strong>：3个子项目（飞行任务规划→飞行设备准备→飞行运输实操），形成完整工作链条</li>
+        <li><strong>学时分配</strong>：每个任务2学时，共8个任务16学时，符合集中实践教学要求</li>
+        <li><strong>能力递进</strong>：从规划分析→设备准备→实操演练，能力要求逐级提升</li>
+        <li><strong>岗位覆盖</strong>：8个岗位任务覆盖无人机物流作业全流程岗位群</li>
+    </ul>
+</div>
+</div>
+
+<!-- ==================== PART 3 ==================== -->
+<div class="section" id="sec3">
+<h1>第三部分  反向设计逻辑对应表</h1>
+
+<p>本部分按照"岗位任务→核心能力→技能点→知识点→课程模块"的反向设计逻辑，从岗位实际需求出发，逐层分解至教学实施层面，确保课程内容与岗位需求精准对接。</p>
+
+<table>
+<caption data-label="表3-1">岗位任务→核心能力→技能点→知识点→课程模块 反向设计逻辑对应表</caption>
+<thead>
+<tr>
+    <th style="width:14%;">岗位任务</th>
+    <th style="width:16%;">核心能力</th>
+    <th style="width:22%;">技能点</th>
+    <th style="width:26%;">知识点</th>
+    <th style="width:10%;">课程模块</th>
+    <th style="width:12%;">岗位名称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>应急物流需求分析</td>
+    <td>应急需求研判与方案设计</td>
+    <td>需求分析工具使用、方案编制技能、仿真软件操作</td>
+    <td>应急物流管理理论、需求预测方法、运输组织原理、风险管理基础</td>
+    <td>任务1</td>
+    <td>应急物流调度员</td>
+</tr>
+<tr>
+    <td>无人机航线规划</td>
+    <td>航线设计与安全评估</td>
+    <td>航线规划软件操作、地图判读与测量、空域申报流程、风险评估矩阵应用</td>
+    <td>航空气象学、空域管理法规、地理信息系统、飞行原理、性能计算</td>
+    <td>任务2</td>
+    <td>无人机航线规划师</td>
+</tr>
+<tr>
+    <td>多航空站协同调度</td>
+    <td>网络优化与智能调度</td>
+    <td>智能调度系统操作、数据分析与可视化、协同规划软件应用、运营方案编制</td>
+    <td>网络优化理论、多式联运组织、调度算法原理、运营指标体系、供应链管理</td>
+    <td>任务3</td>
+    <td>低空物流运营调度员</td>
+</tr>
+<tr>
+    <td>无人机组装调试</td>
+    <td>设备装调与系统校准</td>
+    <td>机械装配技能、电子焊接技能、参数调试技能、测试仪器使用、故障诊断技能</td>
+    <td>无人机系统组成、飞控原理、传感器技术、通信协议、空气动力学基础</td>
+    <td>任务4</td>
+    <td>无人机装调工程师</td>
+</tr>
+<tr>
+    <td>物资包装装载</td>
+    <td>载荷配置与安全检查</td>
+    <td>包装操作技能、配平计算技能、检查单执行、问题识别与处理</td>
+    <td>包装工程基础、重心与稳定性、危险品运输规定、装载力学、安全检查标准</td>
+    <td>任务5</td>
+    <td>无人机物流配送员</td>
+</tr>
+<tr>
+    <td>多机协同装调</td>
+    <td>集群系统部署与调试</td>
+    <td>集群系统配置、网络调试技能、协同测试执行、调度软件操作、系统优化调整</td>
+    <td>集群控制理论、网络通信技术、分布式系统、协同调度算法、系统工程方法</td>
+    <td>任务6</td>
+    <td>低空物流系统工程师</td>
+</tr>
+<tr>
+    <td>精准投放飞行</td>
+    <td>飞行操控与应急处置</td>
+    <td>视距内/超视距飞行操控、手动/自动模式切换、精准投放技能、应急处置技能、飞行日志记录</td>
+    <td>飞行操控原理、应急处置程序、气象判断、飞行法规、投放力学</td>
+    <td>任务7</td>
+    <td>无人机驾驶员/飞手</td>
+</tr>
+<tr>
+    <td>综合演练优化</td>
+    <td>项目运营与持续改进</td>
+    <td>项目管理技能、演练组织技能、数据分析技能、方案优化技能、汇报展示技能</td>
+    <td>项目管理方法、演练设计理论、绩效评估体系、PDCA循环、报告撰写规范</td>
+    <td>任务8</td>
+    <td>应急物流项目经理</td>
+</tr>
+</tbody>
+</table>
+
+<div class="info-box">
+    <div class="info-box-title">反向设计逻辑说明</div>
+    <p><strong>反向设计（Backward Design）</strong>是一种以终为始的课程设计方法。本能力图谱从岗位任务出发，依次分解出完成该任务所需的<strong>核心能力</strong>，再细化为可测量的<strong>技能点</strong>和可教授的<strong>知识点</strong>，最终落实到具体的<strong>课程模块</strong>中。这种设计方法确保了课程内容的岗位针对性和教学有效性，实现了"岗位需求—能力标准—教学内容"的精准映射。</p>
+</div>
+</div>
+
+<!-- ==================== PART 4 ==================== -->
+<div class="section" id="sec4">
+<h1>第四部分  岗课赛证融合设计</h1>
+
+<p>本项目深入贯彻"岗课赛证"综合育人理念，将岗位需求、课程教学、技能竞赛和职业证书有机融合，构建多元化人才培养路径。</p>
+
+<h2 id="sec4-1">4.1 职业技能等级证书对接表</h2>
+
+<table>
+<caption data-label="表4-1">职业技能等级证书对接表</caption>
+<thead>
+<tr>
+    <th style="width:28%;">证书名称</th>
+    <th style="width:8%;">等级</th>
+    <th style="width:26%;">证书内容</th>
+    <th style="width:20%;">对接课程任务</th>
+    <th style="width:18%;">融合方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>无人机物流运输职业技能等级证书</td>
+    <td>初级</td>
+    <td>货物分拣、末端配送、基础维修、需求分析</td>
+    <td>任务1、任务4</td>
+    <td>课程内容嵌入证书标准</td>
+</tr>
+<tr>
+    <td>无人机物流运输职业技能等级证书</td>
+    <td>中级</td>
+    <td>视距内安全飞行、设备调试检修、航线规划、信息处理</td>
+    <td>任务2、任务5、任务7</td>
+    <td>证书考核点融入教学评价</td>
+</tr>
+<tr>
+    <td>无人机物流运输职业技能等级证书</td>
+    <td>高级</td>
+    <td>航线规划、超视距飞行、运营调度</td>
+    <td>任务3、任务6、任务8</td>
+    <td>高级能力导向拓展任务</td>
+</tr>
+<tr>
+    <td>物流无人机操作与运维职业技能等级证书</td>
+    <td>初级</td>
+    <td>机身检查、视距内起降、日常维护</td>
+    <td>任务4</td>
+    <td>实操标准对接证书规范</td>
+</tr>
+<tr>
+    <td>物流无人机操作与运维职业技能等级证书</td>
+    <td>中级</td>
+    <td>系统安装配置、航线飞行、动力装置维护</td>
+    <td>任务5</td>
+    <td>操作规范融入教学环节</td>
+</tr>
+<tr>
+    <td>CAAC无人机驾驶员执照</td>
+    <td>视距内</td>
+    <td>视距内飞行操控</td>
+    <td>任务7</td>
+    <td>执照考核标准作为评价依据</td>
+</tr>
+<tr>
+    <td>CAAC无人机驾驶员执照</td>
+    <td>超视距</td>
+    <td>超视距飞行、运营调度</td>
+    <td>任务3、任务7、任务8</td>
+    <td>高级飞行能力认证支撑</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="sec4-2">4.2 技能大赛对接表</h2>
+
+<table>
+<caption data-label="表4-2">技能大赛对接表</caption>
+<thead>
+<tr>
+    <th style="width:30%;">竞赛名称</th>
+    <th style="width:10%;">级别</th>
+    <th style="width:30%;">竞赛内容</th>
+    <th style="width:18%;">对接课程任务</th>
+    <th style="width:12%;">赛项融合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>全国职业院校技能大赛——智慧物流赛项（高职组）</td>
+    <td>国赛</td>
+    <td>系统规划仿真、方案实施、素养测试、汇报答辩</td>
+    <td>任务1、任务2、任务5、任务8</td>
+    <td>全程融入</td>
+</tr>
+<tr>
+    <td>全国职业院校技能大赛——无人机操控与维护赛项</td>
+    <td>国赛</td>
+    <td>飞行操控、组装调试、检测维护</td>
+    <td>任务4、任务7</td>
+    <td>模块融入</td>
+</tr>
+<tr>
+    <td>无人系统空地协同赛</td>
+    <td>行业赛</td>
+    <td>空地协同、自主定位、集群协同</td>
+    <td>任务3、任务6、任务8</td>
+    <td>拓展融入</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="sec4-3">4.3 融合路径图</h2>
+
+<p>岗课赛证融合以岗位需求为逻辑起点，课程建设为核心载体，技能竞赛为能力检验，职业证书为能力认证，形成闭环式人才培养路径：</p>
+
+<div class="section-intro">
+<p style="text-align:center;font-weight:700;margin-bottom:0.8em;">岗课赛证融合路径</p>
+<p style="text-align:center;line-height:2;">
+<span style="display:inline-block;padding:4pt 10pt;background:#f0ebe3;border:1px solid #b0a08a;font-weight:700;">岗位需求分析</span>
+<span style="margin:0 6pt;color:#8b7355;"> → </span>
+<span style="display:inline-block;padding:4pt 10pt;background:#f0ebe3;border:1px solid #b0a08a;font-weight:700;">能力标准制定</span>
+<span style="margin:0 6pt;color:#8b7355;"> → </span>
+<span style="display:inline-block;padding:4pt 10pt;background:#f0ebe3;border:1px solid #b0a08a;font-weight:700;">课程内容开发</span>
+</p>
+<p style="text-align:center;line-height:2;">
+<span style="display:inline-block;padding:4pt 10pt;background:#e0ddd8;border:1px solid #a09890;font-weight:700;">职业证书认证</span>
+<span style="margin:0 6pt;color:#8b7355;"> ← </span>
+<span style="display:inline-block;padding:4pt 10pt;background:#e0ddd8;border:1px solid #a09890;font-weight:700;">技能竞赛检验</span>
+<span style="margin:0 6pt;color:#8b7355;"> ← </span>
+<span style="display:inline-block;padding:4pt 10pt;background:#e0ddd8;border:1px solid #a09890;font-weight:700;">教学实施评价</span>
+</p>
+<p style="text-align:center;margin-top:0.8em;font-size:9pt;color:#666;">岗位需求驱动 → 课程体系支撑 → 赛证双向赋能 → 持续迭代优化</p>
+</div>
+
+<table class="table-compact">
+<caption data-label="表4-3">岗课赛证四维融合矩阵</caption>
+<thead>
+<tr><th>维度</th><th>功能定位</th><th>在本项目中的体现</th></tr>
+</thead>
+<tbody>
+<tr>
+    <td><strong>岗</strong>（岗位）</td>
+    <td>需求源头</td>
+    <td>8个岗位任务对应智慧物流现场工程师岗位群核心工作任务</td>
+</tr>
+<tr>
+    <td><strong>课</strong>（课程）</td>
+    <td>核心载体</td>
+    <td>3个子项目、8个任务、16学时系统覆盖岗位能力要求</td>
+</tr>
+<tr>
+    <td><strong>赛</strong>（竞赛）</td>
+    <td>能力检验</td>
+    <td>对接智慧物流国赛、无人机操控维护国赛、空地协同行业赛</td>
+</tr>
+<tr>
+    <td><strong>证</strong>（证书）</td>
+    <td>能力认证</td>
+    <td>融入无人机物流运输、物流无人机操作运维、CAAC执照等7类证书</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== PART 5 ==================== -->
+<div class="section" id="sec5">
+<h1>第五部分  课程类型与能力支撑判定</h1>
+
+<h2 id="sec5-1">5.1 课程任务属性表</h2>
+
+<p>本项目8个课程任务按性质分为必修、选修和集中实践三类，各任务类型及学时分配如下：</p>
+
+<table>
+<caption data-label="表5-1">课程任务属性与类型分配表</caption>
+<thead>
+<tr>
+    <th style="width:10%;">课程任务</th>
+    <th style="width:22%;">任务名称</th>
+    <th style="width:10%;">学时</th>
+    <th style="width:10%;">必修/选修</th>
+    <th style="width:12%;">集中实践</th>
+    <th style="width:12%;">证书支撑</th>
+    <th style="width:12%;">竞赛支撑</th>
+    <th style="width:12%;">所属子项目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>任务1</td>
+    <td>运输需求分析与飞行计划制定</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td>—</td>
+    <td><span class="tag tag-cert">初级</span></td>
+    <td><span class="tag tag-comp">智慧物流</span></td>
+    <td>子项目一</td>
+</tr>
+<tr>
+    <td>任务2</td>
+    <td>点对点航线规划与空域申请</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td>—</td>
+    <td><span class="tag tag-cert">中级</span></td>
+    <td><span class="tag tag-comp">智慧物流</span></td>
+    <td>子项目一</td>
+</tr>
+<tr>
+    <td>任务3</td>
+    <td>多航空站网络航线协同规划</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td>—</td>
+    <td><span class="tag tag-cert">高级</span></td>
+    <td><span class="tag tag-comp">空地协同</span></td>
+    <td>子项目一</td>
+</tr>
+<tr>
+    <td>任务4</td>
+    <td>无人机组装装调与系统校准</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td><span class="tag tag-practice">集中实践</span></td>
+    <td><span class="tag tag-cert">初级</span></td>
+    <td><span class="tag tag-comp">操控维护</span></td>
+    <td>子项目二</td>
+</tr>
+<tr>
+    <td>任务5</td>
+    <td>物资包装装载与飞行前检查</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td><span class="tag tag-practice">集中实践</span></td>
+    <td><span class="tag tag-cert">中级</span></td>
+    <td><span class="tag tag-comp">智慧物流</span></td>
+    <td>子项目二</td>
+</tr>
+<tr>
+    <td>任务6</td>
+    <td>多机协同装调与调度系统调试</td>
+    <td>2</td>
+    <td><span class="tag tag-optional">选修</span></td>
+    <td><span class="tag tag-practice">集中实践</span></td>
+    <td><span class="tag tag-cert">高级</span></td>
+    <td><span class="tag tag-comp">空地协同</span></td>
+    <td>子项目二</td>
+</tr>
+<tr>
+    <td>任务7</td>
+    <td>飞行操控与应急物资精准投放</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td><span class="tag tag-practice">集中实践</span></td>
+    <td><span class="tag tag-cert">CAAC</span></td>
+    <td><span class="tag tag-comp">操控维护</span></td>
+    <td>子项目三</td>
+</tr>
+<tr>
+    <td>任务8</td>
+    <td>综合运输演练与方案汇报优化</td>
+    <td>2</td>
+    <td><span class="tag tag-required">必修</span></td>
+    <td><span class="tag tag-practice">集中实践</span></td>
+    <td><span class="tag tag-cert">高级</span></td>
+    <td><span class="tag tag-comp">综合</span></td>
+    <td>子项目三</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="sec5-2">5.2 证书支撑能力对应表</h2>
+
+<table>
+<caption data-label="表5-2">职业技能等级证书支撑能力对应表</caption>
+<thead>
+<tr>
+    <th style="width:22%;">证书类型</th>
+    <th style="width:18%;">对应任务</th>
+    <th style="width:30%;">支撑能力点</th>
+    <th style="width:30%;">考核融入方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>无人机物流运输（初级）</td>
+    <td>任务1、任务4</td>
+    <td>需求分析、基础维修、货物分拣、末端配送</td>
+    <td>任务评价标准嵌入证书考核要点</td>
+</tr>
+<tr>
+    <td>无人机物流运输（中级）</td>
+    <td>任务2、任务5、任务7</td>
+    <td>视距内安全飞行、设备调试检修、航线规划</td>
+    <td>过程评价与证书技能点逐项对标</td>
+</tr>
+<tr>
+    <td>无人机物流运输（高级）</td>
+    <td>任务3、任务6、任务8</td>
+    <td>超视距飞行、运营调度、航线规划优化</td>
+    <td>拓展任务能力要求对接高级标准</td>
+</tr>
+<tr>
+    <td>CAAC视距内驾驶员</td>
+    <td>任务7</td>
+    <td>视距内飞行操控、应急处置</td>
+    <td>飞行操控考核直接采用执照标准</td>
+</tr>
+<tr>
+    <td>CAAC超视距驾驶员</td>
+    <td>任务3、任务7、任务8</td>
+    <td>超视距飞行、运营调度、空地协同</td>
+    <td>高级飞行任务对接超视距能力要求</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="sec5-3">5.3 竞赛支撑能力对应表</h2>
+
+<table>
+<caption data-label="表5-3">技能大赛支撑能力对应表</caption>
+<thead>
+<tr>
+    <th style="width:20%;">竞赛名称</th>
+    <th style="width:15%;">对应任务</th>
+    <th style="width:30%;">支撑能力点</th>
+    <th style="width:35%;">融入路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>智慧物流国赛</td>
+    <td>任务1、2、5、8</td>
+    <td>系统规划仿真、方案实施、汇报答辩</td>
+    <td>任务1-2对接规划仿真模块；任务5对接方案实施模块；任务8对接汇报答辩模块</td>
+</tr>
+<tr>
+    <td>无人机操控维护国赛</td>
+    <td>任务4、7</td>
+    <td>飞行操控、组装调试、检测维护</td>
+    <td>任务4对接组装调试模块；任务7对接飞行操控模块</td>
+</tr>
+<tr>
+    <td>空地协同行业赛</td>
+    <td>任务3、6、8</td>
+    <td>空地协同、自主定位、集群协同</td>
+    <td>任务3对接协同规划模块；任务6对接集群协同模块；任务8对接综合演练模块</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== PART 6 ==================== -->
+<div class="section" id="sec6">
+<h1>第六部分  五新融入</h1>
+
+<p>本项目紧密跟踪行业前沿，将<strong>新技术、新工艺、新规范、新材料、新装备</strong>（简称"五新"）系统融入各课程任务中，确保教学内容的前沿性和职业性。</p>
+
+<table>
+<caption data-label="表6-1">五新融入与课程任务对应关系表</caption>
+<thead>
+<tr>
+    <th style="width:8%;">任务</th>
+    <th style="width:14%;">任务名称</th>
+    <th style="width:20%;">新技术</th>
+    <th style="width:16%;">新工艺</th>
+    <th style="width:18%;">新规范</th>
+    <th style="width:12%;">新材料</th>
+    <th style="width:12%;">新装备</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>任务1</td>
+    <td>运输需求分析与飞行计划制定</td>
+    <td>数字孪生仿真技术、AI需求预测</td>
+    <td>应急物流标准化作业流程</td>
+    <td>《无人机物流配送运行规范》</td>
+    <td>智能包装材料</td>
+    <td>物流调度信息系统</td>
+</tr>
+<tr>
+    <td>任务2</td>
+    <td>点对点航线规划与空域申请</td>
+    <td>北斗+RTK厘米级定位、AI路径规划算法</td>
+    <td>点对点配送标准化流程</td>
+    <td>《国家空域基础分类方法》</td>
+    <td>—</td>
+    <td>地面站规划系统</td>
+</tr>
+<tr>
+    <td>任务3</td>
+    <td>多航空站网络航线协同规划</td>
+    <td>5G-A+边缘计算、数字孪生平台、群体智能</td>
+    <td>干-支-末三级协同配送</td>
+    <td>《民用轻小型无人驾驶航空器物流配送试运行审定指南》</td>
+    <td>—</td>
+    <td>丰翼方舟40、京东JDX50</td>
+</tr>
+<tr>
+    <td>任务4</td>
+    <td>无人机组装装调与系统校准</td>
+    <td>飞控智能校准技术、自主检测系统</td>
+    <td>模块化快速装调工艺</td>
+    <td>GB/T 43668-2024《物流无人机货物吊挂控制通用要求》</td>
+    <td>T800碳纤维复材、芳纶复合材料</td>
+    <td>丰翼方舟40、调试工具套装</td>
+</tr>
+<tr>
+    <td>任务5</td>
+    <td>物资包装装载与飞行前检查</td>
+    <td>智能称重与平衡系统</td>
+    <td>冷链温控运输工艺、索降连续配送</td>
+    <td>《无人机物流配送运营规范》包装要求</td>
+    <td>温控冷链箱、智能缓冲材料</td>
+    <td>智能分拣机器人</td>
+</tr>
+<tr>
+    <td>任务6</td>
+    <td>多机协同装调与调度系统调试</td>
+    <td>5G/5G-A通信、群体智能、V2X空地协同通信</td>
+    <td>无人机+自动接驳柜模式</td>
+    <td>UTMISS国家监管平台接入规范</td>
+    <td>—</td>
+    <td>双尾蝎D、ES1000支线无人机</td>
+</tr>
+<tr>
+    <td>任务7</td>
+    <td>飞行操控与应急物资精准投放</td>
+    <td>AI决策系统、激光雷达+视觉融合避障、自主避障</td>
+    <td>空投精准投放工艺</td>
+    <td>SORA特定运行风险评估</td>
+    <td>可降解空投包装材料</td>
+    <td>丰翼丰舟90、美团FP400</td>
+</tr>
+<tr>
+    <td>任务8</td>
+    <td>综合运输演练与方案汇报优化</td>
+    <td>区块链溯源、数字孪生演练平台、低轨卫星通信</td>
+    <td>无人机+高铁联运</td>
+    <td>《民用航空法》修订草案</td>
+    <td>—</td>
+    <td>系留无人机基站</td>
+</tr>
+</tbody>
+</table>
+
+<div class="info-box">
+    <div class="info-box-title">五新融入设计说明</div>
+    <ul>
+        <li><strong>新技术</strong>：5G-A、北斗+RTK、AI路径规划、数字孪生、群体智能、区块链等前沿技术贯穿全部8个任务</li>
+        <li><strong>新工艺</strong>：干-支-末协同配送、模块化快速装调、冷链温控运输、空投精准投放等新工艺纳入教学内容</li>
+        <li><strong>新规范</strong>：《无人机物流配送运行规范》《国家空域基础分类方法》等国家及行业最新标准作为教学依据</li>
+        <li><strong>新材料</strong>：T800碳纤维复合材料、可降解空投材料、智能缓冲材料等新材料引入实践教学</li>
+        <li><strong>新装备</strong>：丰翼方舟40/丰舟90、美团FP400、京东JDX50等行业主流装备作为教学设备</li>
+    </ul>
+</div>
+
+<table class="table-compact">
+<caption data-label="表6-2">五新融入统计汇总</caption>
+<thead>
+<tr><th style="width:15%;">类别</th><th style="width:35%;">代表性内容</th><th style="width:25%;">覆盖任务</th><th style="width:25%;">融入方式</th></tr>
+</thead>
+<tbody>
+<tr>
+    <td><strong>新技术</strong></td>
+    <td>AI、5G-A、北斗、数字孪生、群体智能、区块链</td>
+    <td>任务1-8（全覆盖）</td>
+    <td>技术讲解+软件操作+案例分析</td>
+</tr>
+<tr>
+    <td><strong>新工艺</strong></td>
+    <td>三级协同配送、模块化装调、精准投放、高铁联运</td>
+    <td>任务1-8（全覆盖）</td>
+    <td>工艺流程学习+实操训练</td>
+</tr>
+<tr>
+    <td><strong>新规范</strong></td>
+    <td>国家法规、行业标准、审定指南、风险评估规范</td>
+    <td>任务1-8（全覆盖）</td>
+    <td>规范解读+合规性训练</td>
+</tr>
+<tr>
+    <td><strong>新材料</strong></td>
+    <td>碳纤维复材、可降解包装、温控冷链箱、智能缓冲材料</td>
+    <td>任务1、4、5、7</td>
+    <td>材料认知+应用实操</td>
+</tr>
+<tr>
+    <td><strong>新装备</strong></td>
+    <td>丰翼系列、美团FP400、京东JDX50、双尾蝎D等</td>
+    <td>任务3-8</td>
+    <td>装备认知+操作训练</td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-intro" style="margin-top:1.5cm;">
+<p style="text-align:center;font-weight:700;color:#8b7355;margin-bottom:0.5em;">— 文档结束 —</p>
+<p style="text-align:center;font-size:9pt;color:#999;">《智慧运输运营》课程项目能力图谱 · 项目五：应急物资低空智慧运输</p>
+</div>
+</div>
+
+</body>
+</html>

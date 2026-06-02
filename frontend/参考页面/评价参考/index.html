@@ -1,0 +1,3100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>低空应急智慧评价系统</title>
+  <!-- ECharts 5.x CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <!-- FontAwesome 6.x CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ==================== CSS变量定义 ==================== */
+    :root {
+      --bg-primary: #0a1628;
+      --bg-panel: #0d1f35;
+      --bg-card: rgba(13, 31, 53, 0.85);
+      --primary: #00d4ff;
+      --secondary: #1e88e5;
+      --success: #00e676;
+      --warning: #ff9100;
+      --danger: #ff1744;
+      --text-primary: #e0e6ed;
+      --text-secondary: #8b9dc3;
+      --border: rgba(0, 212, 255, 0.2);
+      --border-glow: rgba(0, 212, 255, 0.5);
+      --gradient-primary: linear-gradient(135deg, #00d4ff, #1e88e5);
+      --shadow-glow: 0 0 15px rgba(0, 212, 255, 0.15);
+      --shadow-glow-strong: 0 0 25px rgba(0, 212, 255, 0.3);
+      --radius: 8px;
+      --transition: all 0.3s ease;
+    }
+
+    /* ==================== 全局重置与基础样式 ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* 科技感网格背景 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 滚动条样式 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+
+    /* ==================== 布局框架 ==================== */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === 顶部导航栏 === */
+    .top-bar {
+      height: 56px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: var(--shadow-glow);
+      z-index: 10;
+    }
+    .top-bar-left { display: flex; align-items: center; gap: 16px; }
+    .top-bar-right { display: flex; align-items: center; gap: 16px; }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--gradient-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff;
+    }
+    .app-title {
+      font-size: 18px; font-weight: 700;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .role-toggle {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px;
+    }
+    .role-btn {
+      padding: 6px 16px;
+      border: none; border-radius: 16px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px; cursor: pointer;
+      transition: var(--transition);
+    }
+    .role-btn.active {
+      background: var(--gradient-primary);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    }
+    .role-btn:hover:not(.active) { color: var(--primary); }
+    .clock-box {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px; font-variant-numeric: tabular-nums;
+    }
+    .clock-box i { color: var(--primary); }
+
+    /* === 主体区域 === */
+    .main-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* === 左侧边栏 === */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 5;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .sidebar-header i { color: var(--primary); }
+    .group-section { margin-bottom: 4px; }
+    .group-title {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      background: rgba(0, 212, 255, 0.05);
+      border-left: 3px solid var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition);
+    }
+    .group-title:hover { background: rgba(0, 212, 255, 0.1); }
+    .group-title i { font-size: 10px; transition: transform 0.3s; }
+    .group-title.collapsed i { transform: rotate(-90deg); }
+    .student-list { overflow: hidden; transition: max-height 0.3s ease; }
+    .student-item {
+      padding: 10px 16px 10px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+    .student-item:hover {
+      background: rgba(0, 212, 255, 0.08);
+      border-left-color: var(--secondary);
+    }
+    .student-item.active {
+      background: rgba(0, 212, 255, 0.12);
+      border-left-color: var(--primary);
+    }
+    .student-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: #fff;
+      flex-shrink: 0;
+    }
+    .student-info { flex: 1; min-width: 0; }
+    .student-name { font-size: 13px; font-weight: 500; }
+    .student-role {
+      font-size: 11px; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .student-role .leader-badge {
+      background: var(--warning); color: var(--bg-primary);
+      padding: 1px 6px; border-radius: 4px;
+      font-size: 10px; font-weight: 600;
+    }
+    .student-score {
+      font-size: 13px; font-weight: 700; color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* === 内容区域 === */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 16px 20px;
+      gap: 12px;
+    }
+
+    /* === Tab导航 === */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      padding: 10px 24px;
+      border: none; border-radius: 6px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex; align-items: center; gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+    .tab-btn:hover { color: var(--primary); background: rgba(0, 212, 255, 0.05); }
+    .tab-btn.active {
+      background: var(--gradient-primary);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+    }
+    .tab-btn i { font-size: 14px; }
+
+    /* === Tab内容面板 === */
+    .tab-panels { flex: 1; overflow: hidden; position: relative; }
+    .tab-panel {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      padding-right: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(20px);
+      transition: all 0.35s ease;
+    }
+    .tab-panel.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(0);
+    }
+
+    /* === 底部状态栏 === */
+    .status-bar {
+      height: 32px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .status-left { display: flex; align-items: center; gap: 16px; }
+    .status-right { display: flex; align-items: center; gap: 8px; }
+    .ai-status {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ai-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ==================== 通用组件样式 ==================== */
+    /* 面板卡片 */
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-glow);
+      transition: var(--transition);
+    }
+    .panel-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow-strong);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-title i { color: var(--primary); font-size: 16px; }
+    .panel-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* 表单元素 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .form-input, .form-select, .form-textarea {
+      padding: 10px 14px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-size: 13px;
+      transition: var(--transition);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-input::placeholder { color: rgba(139, 157, 195, 0.5); }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { opacity: 1; }
+
+    /* 按钮样式 */
+    .btn {
+      padding: 10px 20px;
+      border: none; border-radius: var(--radius);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: rgba(30, 136, 229, 0.15);
+      color: var(--secondary);
+      border: 1px solid var(--secondary);
+    }
+    .btn-secondary:hover { background: rgba(30, 136, 229, 0.25); }
+    .btn-success {
+      background: rgba(0, 230, 118, 0.15);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    .btn-success:hover { background: rgba(0, 230, 118, 0.25); }
+    .btn-warning {
+      background: rgba(255, 145, 0, 0.15);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+    .btn-warning:hover { background: rgba(255, 145, 0, 0.25); }
+    .btn-danger {
+      background: rgba(255, 23, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+    .btn-danger:hover { background: rgba(255, 23, 68, 0.25); }
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+    .btn-lg { padding: 14px 28px; font-size: 15px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Toggle开关 */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle-switch {
+      position: relative;
+      width: 44px; height: 24px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .toggle-switch.active {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px; left: 2px;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-switch.active::after { transform: translateX(20px); }
+    .toggle-label { font-size: 13px; color: var(--text-secondary); }
+
+    /* Slider滑块 */
+    .slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .slider-header { display: flex; justify-content: space-between; font-size: 12px; }
+    .slider-value { color: var(--primary); font-weight: 700; }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--bg-primary);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    }
+
+    /* 分数显示 */
+    .score-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .score-display.danger { background: rgba(255, 23, 68, 0.1); color: var(--danger); border-color: var(--danger); }
+    .score-display.warning { background: rgba(255, 145, 0, 0.1); color: var(--warning); border-color: var(--warning); }
+    .score-display.success { background: rgba(0, 230, 118, 0.1); color: var(--success); border-color: var(--success); }
+
+    /* 提示标签 */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-primary { background: rgba(0, 212, 255, 0.15); color: var(--primary); }
+    .badge-success { background: rgba(0, 230, 118, 0.15); color: var(--success); }
+    .badge-warning { background: rgba(255, 145, 0, 0.15); color: var(--warning); }
+    .badge-danger { background: rgba(255, 23, 68, 0.15); color: var(--danger); }
+
+    /* 警告信息条 */
+    .alert-bar {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .alert-bar.warning {
+      background: rgba(255, 145, 0, 0.1);
+      border: 1px solid rgba(255, 145, 0, 0.3);
+      color: var(--warning);
+    }
+    .alert-bar.danger {
+      background: rgba(255, 23, 68, 0.1);
+      border: 1px solid rgba(255, 23, 68, 0.3);
+      color: var(--danger);
+    }
+
+    /* 公式展示框 */
+    .formula-box {
+      background: var(--bg-primary);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: var(--primary);
+      line-height: 1.8;
+    }
+
+    /* 成绩明细表格 */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th {
+      background: rgba(0, 212, 255, 0.08);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.08);
+      color: var(--text-primary);
+    }
+    .data-table tr:hover td { background: rgba(0, 212, 255, 0.04); }
+
+    /* 成绩卡片网格 */
+    .score-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .score-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      text-align: center;
+      transition: var(--transition);
+    }
+    .score-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow);
+    }
+    .score-card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 8px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .score-card-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .score-card-detail {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    /* ==================== 评价操作页面 ==================== */
+    .eval-sections { display: flex; flex-direction: column; gap: 16px; }
+    .eval-section { margin-bottom: 8px; }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title i { color: var(--secondary); }
+    .peer-review-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .peer-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .peer-name { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+    .peer-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* AI分析面板 */
+    .ai-panel {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(30, 136, 229, 0.05));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    /* ==================== 数据大屏样式 ==================== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr;
+      grid-template-rows: auto 1fr 1fr auto;
+      gap: 16px;
+      height: 100%;
+    }
+    .kpi-bar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+      opacity: 0.6;
+    }
+    .kpi-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow-strong);
+      transform: translateY(-2px);
+    }
+    .kpi-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: rgba(0, 212, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .kpi-info { flex: 1; }
+    .kpi-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi-unit { font-size: 13px; color: var(--text-secondary); margin-left: 4px; }
+    .kpi-trend {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .kpi-trend.up { color: var(--success); }
+    .kpi-trend.down { color: var(--danger); }
+
+    .dash-left {
+      grid-row: 2 / 4;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dash-center {
+      grid-row: 2 / 4;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dash-right {
+      grid-row: 2 / 4;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dash-bottom {
+      grid-column: 1 / -1;
+    }
+
+    .dash-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .dash-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .dash-card-title i { color: var(--primary); }
+    .dash-chart { flex: 1; min-height: 0; }
+
+    /* 预警事件流 */
+    .event-stream {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .event-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      border-left: 3px solid var(--primary);
+      font-size: 12px;
+      animation: slideIn 0.4s ease;
+    }
+    .event-item.warning { border-left-color: var(--warning); }
+    .event-item.danger { border-left-color: var(--danger); }
+    .event-time { color: var(--text-secondary); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .event-text { color: var(--text-primary); }
+    .event-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* 排行榜 */
+    .rank-list { display: flex; flex-direction: column; gap: 8px; }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-primary);
+      border-radius: var(--radius);
+      transition: var(--transition);
+    }
+    .rank-item:hover { background: rgba(0, 212, 255, 0.08); }
+    .rank-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .rank-num.gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+    .rank-num.silver { background: linear-gradient(135deg, #c0c0c0, #808080); color: #000; }
+    .rank-num.bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+    .rank-num.normal { background: var(--bg-panel); color: var(--text-secondary); }
+    .rank-info { flex: 1; }
+    .rank-name { font-size: 13px; font-weight: 500; }
+    .rank-group { font-size: 11px; color: var(--text-secondary); }
+    .rank-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--success);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ==================== 个人画像页面 ==================== */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 16px;
+      height: 100%;
+    }
+    .profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-glow);
+    }
+    .profile-header-area {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .profile-avatar-lg {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+      flex-shrink: 0;
+    }
+    .profile-info-main { flex: 1; }
+    .profile-name-lg { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .profile-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .profile-meta { font-size: 13px; color: var(--text-secondary); }
+    .profile-total-score {
+      text-align: center;
+      padding: 16px 24px;
+      background: var(--bg-primary);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .total-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .total-value {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+    .profile-left { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+    .profile-right { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+    .radar-container { height: 320px; }
+    .chart-sm { height: 220px; }
+
+    /* 增值报告 */
+    .growth-report {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .growth-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+    }
+    .growth-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .growth-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .growth-value.positive { color: var(--success); }
+    .growth-value.negative { color: var(--danger); }
+    .growth-bar {
+      height: 4px;
+      background: var(--bg-panel);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .growth-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+
+    /* 教师评语 */
+    .comment-box {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      min-height: 100px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-primary);
+      width: 100%;
+      resize: vertical;
+    }
+
+    /* ==================== 动画效果 ==================== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.5s ease; }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .count-up { animation: countUp 0.6s ease; }
+
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.1); }
+      50% { box-shadow: 0 0 25px rgba(0, 212, 255, 0.25); }
+    }
+    .glow-pulse { animation: glow-pulse 3s infinite; }
+
+    /* 数字滚动效果容器 */
+    .num-roll {
+      display: inline-block;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 响应式 */
+    @media (max-width: 1279px) {
+      .sidebar { width: 200px; }
+      .profile-grid { grid-template-columns: 1fr; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .kpi-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- ==================== 应用主容器 ==================== -->
+  <div class="app-container">
+    <!-- 顶部导航栏 -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <div class="logo-icon"><i class="fas fa-helicopter"></i></div>
+        <span class="app-title">低空应急智慧评价系统</span>
+        <div class="role-toggle">
+          <button class="role-btn active" data-role="teacher" onclick="switchRole('teacher')">
+            <i class="fas fa-chalkboard-teacher"></i> 教师
+          </button>
+          <button class="role-btn" data-role="student" onclick="switchRole('student')">
+            <i class="fas fa-user-graduate"></i> 学生
+          </button>
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <div class="clock-box">
+          <i class="far fa-clock"></i>
+          <span id="realtime-clock">--:--:--</span>
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="resetToDemoData()">
+          <i class="fas fa-redo"></i> 重置示例数据
+        </button>
+      </div>
+    </header>
+
+    <!-- 主体区域 -->
+    <div class="main-body">
+      <!-- 左侧边栏：学生列表 -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <i class="fas fa-users"></i>
+          <span>学员名单</span>
+          <span id="student-count" style="margin-left:auto;color:var(--primary);font-weight:600;">30人</span>
+        </div>
+        <div id="student-list-container"></div>
+      </aside>
+
+      <!-- 内容区域 -->
+      <main class="content-area">
+        <!-- Tab导航 -->
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="eval" onclick="switchTab('eval')">
+            <i class="fas fa-clipboard-check"></i> 评价操作
+          </button>
+          <button class="tab-btn" data-tab="dashboard" onclick="switchTab('dashboard')">
+            <i class="fas fa-chart-line"></i> 数据大屏
+          </button>
+          <button class="tab-btn" data-tab="profile" onclick="switchTab('profile')">
+            <i class="fas fa-user-circle"></i> 个人画像
+          </button>
+        </nav>
+
+        <!-- Tab内容面板 -->
+        <div class="tab-panels">
+          <!-- === 面板1: 评价操作 === -->
+          <div class="tab-panel active" id="panel-eval">
+            <div id="eval-content">
+              <div class="panel-card">
+                <div class="panel-header">
+                  <div>
+                    <div class="panel-title"><i class="fas fa-info-circle"></i> 操作指引</div>
+                    <div class="panel-subtitle">请先选择左侧学生，再进行评价操作</div>
+                  </div>
+                </div>
+                <p style="color:var(--text-secondary);font-size:13px;line-height:1.8;">
+                  本系统支持三类评价方式：<br>
+                  1. <strong style="color:var(--primary)">过程性评价</strong>（权重40%）：工单日志、课堂展示、组内自评<br>
+                  2. <strong style="color:var(--primary)">结果性评价</strong>（权重60%）：小组分×60% + 个人分×40%<br>
+                  3. <strong style="color:var(--primary)">发展性评价</strong>：附加加分项 + 安全否决机制
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- === 面板2: 数据大屏 === -->
+          <div class="tab-panel" id="panel-dashboard">
+            <div class="dashboard-grid" id="dashboard-content">
+              <!-- KPI栏 -->
+              <div class="kpi-bar">
+                <div class="kpi-card">
+                  <div class="kpi-icon"><i class="fas fa-chart-bar"></i></div>
+                  <div class="kpi-info">
+                    <div class="kpi-label">班级平均总评</div>
+                    <div class="kpi-value" id="kpi-avg">--</div>
+                  </div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-icon"><i class="fas fa-trophy"></i></div>
+                  <div class="kpi-info">
+                    <div class="kpi-label">优秀率（≥90分）</div>
+                    <div class="kpi-value" id="kpi-excellent">--<span class="kpi-unit">%</span></div>
+                  </div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-icon"><i class="fas fa-arrow-up"></i></div>
+                  <div class="kpi-info">
+                    <div class="kpi-label">增值进步率</div>
+                    <div class="kpi-value" id="kpi-growth">--<span class="kpi-unit">%</span></div>
+                  </div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-icon" style="background:rgba(255,23,68,0.1);color:var(--danger);"><i class="fas fa-exclamation-triangle"></i></div>
+                  <div class="kpi-info">
+                    <div class="kpi-label">安全否决人数</div>
+                    <div class="kpi-value" id="kpi-safety" style="color:var(--danger);">--</div>
+                  </div>
+                </div>
+              </div>
+              <!-- 左侧 -->
+              <div class="dash-left">
+                <div class="dash-card">
+                  <div class="dash-card-title"><i class="fas fa-fire"></i> 个人投入度热力图</div>
+                  <div class="dash-chart" id="heatmap-chart"></div>
+                </div>
+                <div class="dash-card">
+                  <div class="dash-card-title"><i class="fas fa-project-diagram"></i> 团队协作网络</div>
+                  <div class="dash-chart" id="network-chart"></div>
+                </div>
+              </div>
+              <!-- 中央 -->
+              <div class="dash-center">
+                <div class="dash-card">
+                  <div class="dash-card-title"><i class="fas fa-crosshairs"></i> 班级能力雷达 vs 岗位模型</div>
+                  <div class="dash-chart" id="radar-class-chart"></div>
+                </div>
+                <div class="dash-card">
+                  <div class="dash-card-title"><i class="fas fa-chart-area"></i> 班级成绩分布</div>
+                  <div class="dash-chart" id="distribution-chart"></div>
+                </div>
+              </div>
+              <!-- 右侧 -->
+              <div class="dash-right">
+                <div class="dash-card">
+                  <div class="dash-card-title"><i class="fas fa-bell"></i> AI预警事件流</div>
+                  <div class="event-stream" id="event-stream"></div>
+                </div>
+                <div class="dash-card">
+                  <div class="dash-card-title"><i class="fas fa-star"></i> 精彩瞬间</div>
+                  <div class="event-stream" id="highlight-stream"></div>
+                </div>
+              </div>
+              <!-- 底部 -->
+              <div class="dash-bottom">
+                <div class="dash-card" style="flex-direction:row;align-items:center;">
+                  <div style="flex-shrink:0;margin-right:16px;">
+                    <div class="dash-card-title" style="margin-bottom:4px;"><i class="fas fa-crown"></i> 增值排行榜 TOP5</div>
+                    <div style="font-size:12px;color:var(--text-secondary);">基于后测-前测绝对增值排序</div>
+                  </div>
+                  <div class="rank-list" id="rank-top5" style="flex:1;flex-direction:row;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- === 面板3: 个人画像 === -->
+          <div class="tab-panel" id="panel-profile">
+            <div class="profile-grid" id="profile-content">
+              <!-- 等待选择提示 -->
+              <div class="panel-card" style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+                <i class="fas fa-user-circle" style="font-size:64px;color:var(--border);margin-bottom:16px;"></i>
+                <h3 style="color:var(--text-secondary);font-weight:400;">请在左侧选择一名学生查看个人画像</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer class="status-bar">
+      <div class="status-left">
+        <span id="last-update">更新时间: --</span>
+        <span>当前选中: <strong id="current-student" style="color:var(--primary);">未选择</strong></span>
+      </div>
+      <div class="status-right">
+        <div class="ai-status">
+          <div class="ai-dot"></div>
+          <span>AI分析引擎在线</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- ==================== JavaScript代码 ==================== -->
+  <script>
+  // ============================================
+  // 第一部分: 全局状态与数据模型
+  // ============================================
+  
+  /** 全局应用状态 */
+  const AppState = {
+    currentRole: 'teacher',    // 当前角色: teacher | student
+    currentStudentId: null,    // 当前选中的学生ID
+    currentTab: 'eval',        // 当前Tab: eval | dashboard | profile
+    students: [],              // 学生数据数组
+    groups: [],                // 小组数据数组
+    charts: {},                // ECharts实例缓存
+    demoDataInited: false      // 是否已初始化示例数据
+  };
+
+  /** localStorage存储键名 */
+  const STORAGE_KEY = 'LowAltitudeEvalSystem';
+
+  /** 能力维度定义（6项核心能力） */
+  const ABILITY_DIMS = [
+    { key: 'plan', name: '应急方案制定' },
+    { key: 'route', name: '航线规划' },
+    { key: 'maintain', name: '设备运维' },
+    { key: 'flight', name: '飞行操控' },
+    { key: 'team', name: '团队协作' },
+    { key: 'safety', name: '安全意识' }
+  ];
+
+  /** 岗位目标能力模型（满分100） */
+  const TARGET_MODEL = [85, 80, 75, 90, 85, 95];
+
+  /** 生成唯一ID */
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+
+  // ============================================
+  // 第二部分: 数据初始化与localStorage
+  // ============================================
+
+  /**
+   * 创建示例数据集
+   * 30名学生，6个小组，每组5人
+   * 包含完整的前测、后测、评价数据
+   */
+  function createDemoData() {
+    const groups = [];
+    const students = [];
+    const groupNames = ['雄鹰组', '猎鹰组', '飞虎组', '蛟龙组', '战狼组', '雷霆组'];
+    const surnames = ['王', '李', '张', '刘', '陈', '杨', '赵', '黄', '周', '吴', '徐', '孙', '马', '朱', '胡', '郭', '何', '高', '林', '罗', '郑', '梁', '谢', '宋', '唐', '许', '韩', '冯', '邓', '曹'];
+    const names = ['明轩', '梓涵', '子豪', '思琪', '俊杰', '雨萱', '浩然', '欣怡', '博文', '雅婷', '睿渊', '晓雯', '弘文', '梦瑶', '烨霖', '佳琪', '晟睿', '诗涵', '修洁', '语嫣', '楷瑞', '若曦', '建辉', '可馨', '峻熙', '沐晴', '嘉懿', '瑾萱', '煜城', '思妍'];
+    
+    // 为每个学生生成稳定随机数生成器（基于姓名hash）
+    function seededRandom(seed) {
+      let s = seed;
+      return function() {
+        s = (s * 16807 + 0) % 2147483647;
+        return (s - 1) / 2147483646;
+      };
+    }
+    function nameHash(s) {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i);
+      return Math.abs(h);
+    }
+
+    for (let g = 0; g < 6; g++) {
+      const groupId = `g${g + 1}`;
+      groups.push({ id: groupId, name: groupNames[g], order: g + 1 });
+      
+      for (let m = 0; m < 5; m++) {
+        const idx = g * 5 + m;
+        const name = surnames[idx] + names[idx];
+        const hash = nameHash(name);
+        const rng = seededRandom(hash);
+        
+        // 生成前测分数(30-75随机)
+        const preTest = ABILITY_DIMS.map(() => Math.round(30 + rng() * 45));
+        
+        // 过程性评价数据
+        const workLog = Math.round(60 + rng() * 35);        // 60-95
+        const classPresentation = Math.round(55 + rng() * 40); // 55-95
+        const peerReview = Math.round(50 + rng() * 45);      // 50-95
+        
+        // 组内贡献分（5人总和需≤70）
+        const contribution = Math.round(10 + rng() * 22); // 10-32
+        
+        // 小组分（教师/专家录入）
+        const groupScore = {
+          planResult: Math.round(65 + rng() * 30),   // 65-95
+          practical: Math.round(60 + rng() * 35),    // 60-95
+          defense: Math.round(70 + rng() * 25)       // 70-95
+        };
+        
+        // 同辈互评（其他组员给分，生成3-5个评分）
+        const peerScores = [];
+        const peerCount = 3 + Math.floor(rng() * 3);
+        for (let p = 0; p < peerCount; p++) peerScores.push(Math.round(60 + rng() * 35));
+        
+        // 发展性评价
+        const realBreakthrough = Math.floor(rng() * 6); // 0-5
+        const techBreakthrough = Math.floor(rng() * 4);  // 0-3
+        const management = Math.floor(rng() * 3);        // 0-2
+        
+        // 安全否决（约5%概率）
+        const safetyVeto = rng() < 0.05;
+        
+        // 模拟飞行数据
+        const flightSim = {
+          deliveryAccuracy: rng() * 100, // 投放精度 0-100
+          flightScore: Math.round(60 + rng() * 35) // 飞行评分
+        };
+        
+        // 历史轨迹（8周过程性得分趋势）
+        const history = [];
+        let hScore = 45 + rng() * 20;
+        for (let w = 0; w < 8; w++) {
+          hScore += (rng() - 0.3) * 15;
+          hScore = Math.max(40, Math.min(98, hScore));
+          history.push(Math.round(hScore));
+        }
+        
+        // AI追踪活跃度
+        const aiTracking = Math.round(50 + rng() * 50);
+        
+        students.push({
+          id: `s${idx + 1}`,
+          name,
+          groupId,
+          role: m === 0 ? '组长' : '组员',
+          preTest,
+          // 后测将在计算时自动生成
+          postTest: [0, 0, 0, 0, 0, 0],
+          processEval: {
+            workLog,
+            classPresentation,
+            peerReview,
+            contribution,
+            peerScores,
+            aiTracking
+          },
+          resultEval: {
+            groupScore,
+            personalScore: 0,
+            peerAvg: 0
+          },
+          development: {
+            realBreakthrough,
+            techBreakthrough,
+            management
+          },
+          safetyVeto,
+          teacherComment: '',
+          flightSim,
+          history
+        });
+      }
+    }
+    
+    return { groups, students };
+  }
+
+  /**
+   * 从localStorage加载数据
+   * 如果没有数据则自动创建示例数据
+   */
+  function loadData() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        AppState.students = data.students || [];
+        AppState.groups = data.groups || [];
+      }
+      // 如果没有数据或数据为空，创建示例数据
+      if (!AppState.students || AppState.students.length === 0) {
+        const demo = createDemoData();
+        AppState.students = demo.students;
+        AppState.groups = demo.groups;
+        AppState.demoDataInited = true;
+        saveData();
+      }
+    } catch (e) {
+      console.error('加载数据失败:', e);
+      const demo = createDemoData();
+      AppState.students = demo.students;
+      AppState.groups = demo.groups;
+    }
+  }
+
+  /** 保存数据到localStorage */
+  function saveData() {
+    try {
+      const data = {
+        students: AppState.students,
+        groups: AppState.groups,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      updateLastSaveTime();
+    } catch (e) {
+      console.error('保存数据失败:', e);
+    }
+  }
+
+  /** 重置为示例数据 */
+  function resetToDemoData() {
+    if (confirm('确定要重置所有数据为示例数据吗？当前数据将被覆盖。')) {
+      const demo = createDemoData();
+      AppState.students = demo.students;
+      AppState.groups = demo.groups;
+      AppState.currentStudentId = null;
+      saveData();
+      renderSidebar();
+      renderCurrentTab();
+      updateStatusBar();
+    }
+  }
+
+  /** 更新最后保存时间显示 */
+  function updateLastSaveTime() {
+    const el = document.getElementById('last-update');
+    if (el) {
+      const now = new Date();
+      el.textContent = '更新时间: ' + now.toLocaleTimeString('zh-CN');
+    }
+  }
+
+  // ============================================
+  // 第三部分: 评价计算引擎（核心算法）
+  // ============================================
+
+  /**
+   * 计算过程性评价得分（满分100，权重40%）
+   * 公式: 工单日志×0.3 + 课堂展示×0.3 + 组内自评×0.4
+   * @param {Object} student - 学生对象
+   * @returns {number} 过程性评价得分(0-100)
+   */
+  function calcProcessScore(student) {
+    const p = student.processEval;
+    // 校验各单项上限
+    const workLog = Math.min(100, Math.max(0, p.workLog || 0));
+    const presentation = Math.min(100, Math.max(0, p.classPresentation || 0));
+    const peer = Math.min(100, Math.max(0, p.peerReview || 0));
+    return Math.round(workLog * 0.3 + presentation * 0.3 + peer * 0.4);
+  }
+
+  /**
+   * 计算结果性评价得分（满分100，权重60%）
+   * 关键公式: 结果性得分 = 小组分×60% + 个人分×40%
+   * 
+   * 小组分 = 方案成果×0.3 + 实操验收×0.5 + 答辩展示×0.2
+   * 个人分 = (贡献分/组内总分池)×100 × 0.7 + 同辈互评平均分 × 0.3
+   * 
+   * @param {Object} student - 学生对象
+   * @returns {Object} {total, groupPart, personalPart, groupDetail, personalDetail}
+   */
+  function calcResultScore(student) {
+    const gs = student.resultEval.groupScore;
+    // 小组分计算
+    const groupScore = Math.round(
+      (gs.planResult || 0) * 0.3 +
+      (gs.practical || 0) * 0.5 +
+      (gs.defense || 0) * 0.2
+    );
+    
+    // 个人分计算 - 需要先获取组内总分池
+    const groupMembers = AppState.students.filter(s => s.groupId === student.groupId);
+    const totalContribution = groupMembers.reduce((sum, m) => 
+      sum + (m.processEval.contribution || 0), 0);
+    const contributionRatio = totalContribution > 0 
+      ? (student.processEval.contribution || 0) / totalContribution 
+      : 0;
+    const peerScores = student.processEval.peerScores || [];
+    const peerAvg = peerScores.length > 0 
+      ? peerScores.reduce((a, b) => a + b, 0) / peerScores.length 
+      : 0;
+    const personalScore = Math.round(contributionRatio * 100 * 0.7 + peerAvg * 0.3);
+    
+    // 结果性总分 = 小组分×60% + 个人分×40%
+    const total = Math.round(groupScore * 0.6 + personalScore * 0.4);
+    
+    return {
+      total,
+      groupPart: groupScore,
+      personalPart: personalScore,
+      groupDetail: { planResult: gs.planResult, practical: gs.practical, defense: gs.defense },
+      personalDetail: { contribution: student.processEval.contribution, totalContribution, contributionRatio, peerAvg }
+    };
+  }
+
+  /**
+   * 计算发展性评价附加分（总和≤10分）
+   * 真用户突破(0-5) + 技术突破(0-3) + 管理创新(0-2)
+   * @param {Object} student - 学生对象
+   * @returns {number} 附加分(0-10)
+   */
+  function calcDevelopmentScore(student) {
+    const d = student.development;
+    const rb = Math.min(5, Math.max(0, d.realBreakthrough || 0));
+    const tb = Math.min(3, Math.max(0, d.techBreakthrough || 0));
+    const mg = Math.min(2, Math.max(0, d.management || 0));
+    return Math.min(10, rb + tb + mg);
+  }
+
+  /**
+   * 计算后测分数（增值评价核心算法）
+   * 
+   * 后测自动计算公式（每条能力独立计算）:
+   * postTest = preTest * 0.2 + processRelated * 0.3 + resultRelated * 0.5
+   * 
+   * 各能力对应关系:
+   * - 应急方案制定 → workLog*0.3 + planResult*0.5 + preTest*0.2
+   * - 航线规划     → workLog*0.3 + practical*0.5 + preTest*0.2
+   * - 设备运维     → aiTracking*0.3 + practical*0.5 + preTest*0.2
+   * - 飞行操控     → presentation*0.3 + practical*0.5 + preTest*0.2
+   * - 团队协作     → peerReview*0.3 + groupScore*0.5 + preTest*0.2
+   * - 安全意识     → workLog*0.3 + practical*0.4 + defense*0.1 + preTest*0.2
+   * 
+   * @param {Object} student - 学生对象
+   * @param {number} processScore - 过程性评价得分
+   * @param {Object} resultScore - 结果性评价对象
+   */
+  function calcPostTest(student, processScore, resultScore) {
+    const pre = student.preTest;
+    const p = student.processEval;
+    const gs = resultScore.groupDetail;
+    const groupScore = resultScore.groupPart;
+    
+    // 能力1: 应急方案制定
+    const plan = Math.round(pre[0] * 0.2 + (p.workLog || 0) * 0.3 + (gs.planResult || 0) * 0.5);
+    // 能力2: 航线规划
+    const route = Math.round(pre[1] * 0.2 + (p.workLog || 0) * 0.3 + (gs.practical || 0) * 0.5);
+    // 能力3: 设备运维
+    const maintain = Math.round(pre[2] * 0.2 + (p.aiTracking || 0) * 0.3 + (gs.practical || 0) * 0.5);
+    // 能力4: 飞行操控
+    const flight = Math.round(pre[3] * 0.2 + (p.classPresentation || 0) * 0.3 + (gs.practical || 0) * 0.5);
+    // 能力5: 团队协作
+    const team = Math.round(pre[4] * 0.2 + (p.peerReview || 0) * 0.3 + groupScore * 0.5);
+    // 能力6: 安全意识
+    const safety = Math.round(pre[5] * 0.2 + (p.workLog || 0) * 0.3 + (gs.practical || 0) * 0.4 + (gs.defense || 0) * 0.1);
+    
+    return [plan, route, maintain, flight, team, safety].map(v => Math.min(100, Math.max(0, v)));
+  }
+
+  /**
+   * 计算增值指标
+   * @param {Object} student - 学生对象
+   * @returns {Object} {absoluteGrowth, relativeRank, bestItem, weakItem, growthByDim}
+   */
+  function calcGrowth(student) {
+    const growthByDim = student.postTest.map((post, i) => ({
+      dim: ABILITY_DIMS[i].name,
+      pre: student.preTest[i],
+      post,
+      growth: post - student.preTest[i]
+    }));
+    
+    // 绝对增值 = 后测均值 - 前测均值
+    const preAvg = student.preTest.reduce((a, b) => a + b, 0) / 6;
+    const postAvg = student.postTest.reduce((a, b) => a + b, 0) / 6;
+    const absoluteGrowth = Math.round((postAvg - preAvg) * 10) / 10;
+    
+    // 进步最大项和待提升项
+    const sorted = [...growthByDim].sort((a, b) => b.growth - a.growth);
+    const bestItem = sorted[0];
+    const weakItem = sorted[sorted.length - 1];
+    
+    return { absoluteGrowth, growthByDim, bestItem, weakItem };
+  }
+
+  /**
+   * 计算班级相对排名（百分位）
+   * @param {Object} targetStudent - 目标学生
+   * @returns {number} 百分位排名(0-100)
+   */
+  function calcRelativeRank(targetStudent) {
+    const preAvg = targetStudent.preTest.reduce((a, b) => a + b, 0) / 6;
+    const postAvg = targetStudent.postTest.reduce((a, b) => a + b, 0) / 6;
+    const myGrowth = postAvg - preAvg;
+    
+    // 计算所有人的增值
+    const allGrowths = AppState.students.map(s => {
+      const pa = s.postTest.reduce((a, b) => a + b, 0) / 6;
+      const pr = s.preTest.reduce((a, b) => a + b, 0) / 6;
+      return pa - pr;
+    }).sort((a, b) => a - b);
+    
+    // 找到目标学生的排名位置
+    let rank = 0;
+    for (let i = 0; i < allGrowths.length; i++) {
+      if (allGrowths[i] >= myGrowth) { rank = i; break; }
+    }
+    return Math.round((1 - rank / allGrowths.length) * 100);
+  }
+
+  /**
+   * 计算学生总评得分
+   * 公式: 总评 = 过程性×0.4 + 结果性×0.6 + 附加分
+   * 安全否决启用时总评上限59分
+   * 
+   * @param {Object} student - 学生对象
+   * @returns {Object} 完整评价结果
+   */
+  function calcTotalScore(student) {
+    // 1. 过程性评价（满分100）
+    const processScore = calcProcessScore(student);
+    
+    // 2. 结果性评价
+    const resultScore = calcResultScore(student);
+    
+    // 3. 计算后测（增值评价）
+    student.postTest = calcPostTest(student, processScore, resultScore);
+    
+    // 4. 发展性评价附加分
+    const devScore = calcDevelopmentScore(student);
+    
+    // 5. 总评 = 过程性×0.4 + 结果性×0.6 + 附加分
+    let totalScore = Math.round(processScore * 0.4 + resultScore.total * 0.6 + devScore);
+    totalScore = Math.min(100, totalScore);
+    
+    // 6. 安全否决（启用后总评上限59分）
+    const safetyVeto = student.safetyVeto;
+    if (safetyVeto && totalScore > 59) totalScore = 59;
+    
+    // 7. 增值指标
+    const growth = calcGrowth(student);
+    const relativeRank = calcRelativeRank(student);
+    
+    // 更新学生对象中的衍生数据
+    student.resultEval.personalScore = resultScore.personalPart;
+    student.resultEval.peerAvg = resultScore.personalDetail.peerAvg;
+    
+    return {
+      processScore,
+      resultScore: resultScore.total,
+      resultDetail: resultScore,
+      devScore,
+      totalScore,
+      safetyVeto,
+      growth: {
+        absoluteGrowth: growth.absoluteGrowth,
+        relativeRank,
+        bestItem: growth.bestItem,
+        weakItem: growth.weakItem,
+        growthByDim: growth.growthByDim
+      }
+    };
+  }
+
+  /**
+   * 重新计算所有学生的评分
+   */
+  function recalcAll() {
+    AppState.students.forEach(s => calcTotalScore(s));
+  }
+
+  /**
+   * AI活跃度追踪 - 计算过程性活跃度
+   * 基于工单日志完成度、展示参与度、互评完成度
+   * @param {Object} student - 学生对象
+   * @returns {number} 活跃度分数(0-100)
+   */
+  function calcAIActivity(student) {
+    const p = student.processEval;
+    const workLogRate = Math.min(1, (p.workLog || 0) / 80);        // 80分视为满勤
+    const presentationRate = Math.min(1, (p.classPresentation || 0) / 80);
+    const peerRate = Math.min(1, (p.peerReview || 0) / 70);
+    const peerSubmitRate = (p.peerScores || []).length > 0 ? 1 : 0.5;
+    return Math.round((workLogRate * 0.4 + presentationRate * 0.3 + peerRate * 0.2 + peerSubmitRate * 0.1) * 100);
+  }
+
+  // ============================================
+  // 第四部分: UI渲染函数
+  // ============================================
+
+  /** 切换角色 */
+  function switchRole(role) {
+    AppState.currentRole = role;
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.role === role);
+    });
+    // 学生角色下只能看自己
+    if (role === 'student') {
+      // 学生模式下默认选第一个学生（实际场景应该是登录学生）
+      if (!AppState.currentStudentId) {
+        AppState.currentStudentId = AppState.students[0]?.id || null;
+      }
+    }
+    renderSidebar();
+    renderCurrentTab();
+  }
+
+  /** 切换Tab */
+  function switchTab(tab) {
+    AppState.currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      panel.classList.toggle('active', panel.id === 'panel-' + tab);
+    });
+    renderCurrentTab();
+  }
+
+  /** 选择学生 */
+  function selectStudent(studentId) {
+    AppState.currentStudentId = studentId;
+    renderSidebar();
+    renderCurrentTab();
+    updateStatusBar();
+  }
+
+  /** 渲染当前Tab内容 */
+  function renderCurrentTab() {
+    recalcAll();
+    saveData();
+    switch (AppState.currentTab) {
+      case 'eval': renderEvalTab(); break;
+      case 'dashboard': renderDashboardTab(); break;
+      case 'profile': renderProfileTab(); break;
+    }
+  }
+
+  /** 更新状态栏 */
+  function updateStatusBar() {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    const el = document.getElementById('current-student');
+    if (el) {
+      el.textContent = student ? `${student.name} (${student.role})` : '未选择';
+    }
+  }
+
+  // --- 侧边栏渲染 ---
+  function renderSidebar() {
+    const container = document.getElementById('student-list-container');
+    if (!container) return;
+    
+    // 教师角色显示全部，学生角色只显示自己（这里简化为显示同组）
+    let displayGroups = AppState.groups;
+    let displayStudents = AppState.students;
+    
+    if (AppState.currentRole === 'student' && AppState.currentStudentId) {
+      const me = AppState.students.find(s => s.id === AppState.currentStudentId);
+      if (me) {
+        displayGroups = AppState.groups.filter(g => g.id === me.groupId);
+        displayStudents = AppState.students.filter(s => s.groupId === me.groupId);
+      }
+    }
+    
+    let html = '';
+    displayGroups.forEach(group => {
+      const members = displayStudents.filter(s => s.groupId === group.id);
+      // 计算每个人的总评用于显示
+      members.forEach(m => { if (!m._calc) m._calc = calcTotalScore(m); });
+      
+      html += `
+        <div class="group-section">
+          <div class="group-title" onclick="toggleGroup('${group.id}')">
+            <span>${group.name}</span>
+            <i class="fas fa-chevron-down" id="group-icon-${group.id}"></i>
+          </div>
+          <div class="student-list" id="group-list-${group.id}">
+            ${members.map(s => {
+              const calc = s._calc || calcTotalScore(s);
+              const isActive = s.id === AppState.currentStudentId;
+              return `
+                <div class="student-item ${isActive ? 'active' : ''}" onclick="selectStudent('${s.id}')">
+                  <div class="student-avatar">${s.name.charAt(0)}</div>
+                  <div class="student-info">
+                    <div class="student-name">${s.name}</div>
+                    <div class="student-role">
+                      ${s.role === '组长' ? '<span class="leader-badge">组长</span>' : '<span>组员</span>'}
+                    </div>
+                  </div>
+                  <div class="student-score">${calc.totalScore}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+    
+    // 更新人数显示
+    const countEl = document.getElementById('student-count');
+    if (countEl) countEl.textContent = AppState.currentRole === 'teacher' 
+      ? `${AppState.students.length}人` 
+      : `${displayStudents.length}人`;
+  }
+
+  /** 展开/折叠小组 */
+  function toggleGroup(groupId) {
+    const list = document.getElementById('group-list-' + groupId);
+    const icon = document.getElementById('group-icon-' + groupId);
+    if (list) {
+      const isCollapsed = list.style.maxHeight === '0px';
+      list.style.maxHeight = isCollapsed ? '1000px' : '0px';
+      icon.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+    }
+  }
+
+  // ============================================
+  // 第五部分: 评价操作Tab渲染
+  // ============================================
+
+  function renderEvalTab() {
+    const container = document.getElementById('eval-content');
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    
+    if (!student) {
+      container.innerHTML = `
+        <div class="panel-card" style="text-align:center;padding:60px 20px;">
+          <i class="fas fa-mouse-pointer" style="font-size:48px;color:var(--border);margin-bottom:16px;"></i>
+          <h3 style="color:var(--text-secondary);font-weight:400;">请从左侧选择一名学生进行评价</h3>
+        </div>
+      `;
+      return;
+    }
+    
+    const calc = calcTotalScore(student);
+    const isTeacher = AppState.currentRole === 'teacher';
+    
+    // 获取同组成员（组内自评用）
+    const groupMembers = AppState.students.filter(s => s.groupId === student.groupId && s.id !== student.id);
+    
+    container.innerHTML = `
+      <!-- 学生信息头 -->
+      <div class="panel-card" style="padding:14px 20px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="student-avatar" style="width:40px;height:40px;font-size:16px;">${student.name.charAt(0)}</div>
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:600;">${student.name} 
+              <span class="badge ${student.role === '组长' ? 'badge-warning' : 'badge-primary'}">${student.role}</span>
+              ${calc.safetyVeto ? '<span class="badge badge-danger"><i class="fas fa-ban"></i> 安全否决</span>' : ''}
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">
+              ${AppState.groups.find(g => g.id === student.groupId)?.name || ''} | 
+              总评: <strong style="color:var(--primary)">${calc.totalScore}</strong>分
+            </div>
+          </div>
+          <div class="score-display ${calc.totalScore >= 90 ? 'success' : calc.totalScore >= 60 ? '' : 'danger'}">
+            <i class="fas fa-calculator"></i> 总评: ${calc.totalScore}分
+          </div>
+        </div>
+      </div>
+
+      <!-- 过程性评价 -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title"><i class="fas fa-tasks"></i> 过程性评价</div>
+            <div class="panel-subtitle">权重40% | 满分100 = 工单日志×30% + 课堂展示×30% + 组内自评×40%</div>
+          </div>
+          <div class="score-display">当前: ${calc.processScore}分</div>
+        </div>
+        
+        <div class="form-grid" style="margin-bottom:16px;">
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-book"></i> 工单日志 (30分)</label>
+            <input type="number" class="form-input" id="input-workLog" value="${student.processEval.workLog || ''}" 
+              min="0" max="100" placeholder="0-100"
+              onchange="updateProcessEval('workLog', this.value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-chalkboard-teacher"></i> 课堂展示 (30分)</label>
+            <input type="number" class="form-input" id="input-presentation" value="${student.processEval.classPresentation || ''}" 
+              min="0" max="100" placeholder="0-100"
+              onchange="updateProcessEval('classPresentation', this.value)">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-users"></i> 组内自评-互评分 (40分)</label>
+            <input type="number" class="form-input" id="input-peerReview" value="${student.processEval.peerReview || ''}" 
+              min="0" max="100" placeholder="0-100"
+              onchange="updateProcessEval('peerReview', this.value)">
+          </div>
+        </div>
+
+        <!-- AI过程追踪 -->
+        <div class="ai-panel">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <i class="fas fa-robot" style="color:var(--primary);"></i>
+            <strong style="font-size:13px;">AI过程追踪</strong>
+            <span class="badge ${student.processEval.aiTracking >= 60 ? 'badge-success' : 'badge-warning'}" id="ai-activity-badge">
+              活跃度: ${calcAIActivity(student)}分
+            </span>
+            ${student.processEval.aiTracking < 60 ? '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> 低活跃预警</span>' : ''}
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">AI追踪活跃度</label>
+              <input type="number" class="form-input" id="input-aiTracking" value="${student.processEval.aiTracking || ''}" 
+                min="0" max="100" onchange="updateProcessEval('aiTracking', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <!-- 课堂展示AI分析 -->
+        <div style="margin-top:16px;">
+          <button class="btn btn-secondary btn-sm" onclick="generatePresentationAnalysis()">
+            <i class="fas fa-magic"></i> AI演讲分析 - 生成六维雷达图
+          </button>
+          <div id="presentation-radar" style="height:260px;margin-top:12px;display:none;"></div>
+        </div>
+      </div>
+
+      <!-- 组内自评 - 贡献分分配 -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title"><i class="fas fa-hand-holding-heart"></i> 组内自评 - 贡献分分配</div>
+            <div class="panel-subtitle">组内总分池上限70分（5人组）| 你的贡献分</div>
+          </div>
+        </div>
+        <div class="peer-review-grid">
+          <div class="peer-item">
+            <div class="peer-name"><i class="fas fa-user"></i> ${student.name} (自己)</div>
+            <input type="number" class="peer-input" id="input-contribution" 
+              value="${student.processEval.contribution || ''}" min="0" max="70"
+              onchange="updateContribution(this.value)">
+          </div>
+          ${groupMembers.map(m => `
+            <div class="peer-item">
+              <div class="peer-name"><i class="fas fa-user"></i> ${m.name}</div>
+              <input type="number" class="peer-input" value="${m.processEval.contribution || ''}" 
+                min="0" max="70" readonly style="opacity:0.6;"
+                title="仅 editable  by ${m.name}">
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-secondary);">
+          <i class="fas fa-info-circle"></i> 
+          当前组内已分配: <strong id="contrib-total" style="color:var(--primary)">--</strong> / 70分
+          <span id="contrib-warn" style="color:var(--danger);display:none;margin-left:8px;">
+            <i class="fas fa-exclamation-circle"></i> 超出上限！
+          </span>
+        </div>
+      </div>
+
+      <!-- 结果性评价 -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title"><i class="fas fa-award"></i> 结果性评价</div>
+            <div class="panel-subtitle">权重60% | 结果性得分 = 小组分×60% + 个人分×40%</div>
+          </div>
+          <div class="score-display">当前: ${calc.resultScore}分</div>
+        </div>
+
+        <!-- 公式展示 -->
+        <div class="formula-box" style="margin-bottom:16px;">
+          <div><strong>小组分</strong> = 方案成果×0.3 + 实操验收×0.5 + 答辩展示×0.2</div>
+          <div><strong>个人分</strong> = (贡献分/组内总分池)×100 × 0.7 + 同辈互评平均分 × 0.3</div>
+          <div><strong>结果性得分</strong> = 小组分×0.6 + 个人分×0.4 = ${calc.resultDetail.groupPart}×0.6 + ${calc.resultDetail.personalPart}×0.4 = <span style="color:var(--success)">${calc.resultScore}</span></div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-users-cog"></i> 小组分录入 (${isTeacher ? '教师/专家' : '仅教师可编辑'})</div>
+        <div class="form-grid" style="margin-bottom:16px;">
+          <div class="form-group">
+            <label class="form-label">方案成果 (30分)</label>
+            <input type="number" class="form-input" id="input-planResult" 
+              value="${student.resultEval.groupScore.planResult || ''}" min="0" max="100"
+              ${!isTeacher ? 'disabled' : 'onchange="updateGroupScore(\'planResult\', this.value)"'}>
+          </div>
+          <div class="form-group">
+            <label class="form-label">实操验收 (50分)</label>
+            <input type="number" class="form-input" id="input-practical" 
+              value="${student.resultEval.groupScore.practical || ''}" min="0" max="100"
+              ${!isTeacher ? 'disabled' : 'onchange="updateGroupScore(\'practical\', this.value)"'}>
+          </div>
+          <div class="form-group">
+            <label class="form-label">答辩展示 (20分)</label>
+            <input type="number" class="form-input" id="input-defense" 
+              value="${student.resultEval.groupScore.defense || ''}" min="0" max="100"
+              ${!isTeacher ? 'disabled' : 'onchange="updateGroupScore(\'defense\', this.value)"'}>
+          </div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-user-cog"></i> 个人分明细</div>
+        <table class="data-table" style="margin-bottom:16px;">
+          <thead>
+            <tr><th>项目</th><th>数值</th><th>说明</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>贡献分</td>
+              <td>${calc.resultDetail.personalDetail.contribution}</td>
+              <td>组内自评分配得分</td>
+            </tr>
+            <tr>
+              <td>组内总分池</td>
+              <td>${calc.resultDetail.personalDetail.totalContribution}</td>
+              <td>全组贡献分总和</td>
+            </tr>
+            <tr>
+              <td>贡献占比</td>
+              <td>${(calc.resultDetail.personalDetail.contributionRatio * 100).toFixed(1)}%</td>
+              <td>贡献分/总分池</td>
+            </tr>
+            <tr>
+              <td>同辈互评均分</td>
+              <td>${calc.resultDetail.personalDetail.peerAvg.toFixed(1)}</td>
+              <td>来自${student.processEval.peerScores?.length || 0}位组员评分</td>
+            </tr>
+            <tr style="background:rgba(0,212,255,0.05);">
+              <td><strong>个人分合计</strong></td>
+              <td><strong style="color:var(--primary)">${calc.resultDetail.personalPart}</strong></td>
+              <td>贡献转化×0.7 + 互评×0.3</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- 模拟飞行实操 -->
+        <div class="section-title"><i class="fas fa-plane"></i> 模拟飞行实操</div>
+        <div style="display:flex;gap:16px;align-items:flex-end;margin-bottom:12px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">投放精度 (%)</label>
+            <input type="number" class="form-input" id="input-delivery" 
+              value="${student.flightSim.deliveryAccuracy ? student.flightSim.deliveryAccuracy.toFixed(1) : ''}" 
+              min="0" max="100" step="0.1" readonly>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">飞行评分</label>
+            <input type="number" class="form-input" id="input-flightScore" 
+              value="${student.flightSim.flightScore || ''}" min="0" max="100" readonly>
+          </div>
+          <button class="btn btn-primary" onclick="runFlightSimulation()">
+            <i class="fas fa-play"></i> 开始模拟飞行
+          </button>
+        </div>
+        <div id="flight-result" style="display:none;">
+          <div class="alert-bar warning">
+            <i class="fas fa-paper-plane"></i>
+            <span id="flight-result-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 发展性评价与安全否决 -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title"><i class="fas fa-star"></i> 发展性评价</div>
+            <div class="panel-subtitle">附加分上限10分 | 当前: +${calc.devScore}分</div>
+          </div>
+        </div>
+        
+        <div class="form-grid" style="margin-bottom:20px;">
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span>真用户突破 (0-5分)</span>
+              <span class="slider-value" id="val-real">${student.development.realBreakthrough}</span>
+            </div>
+            <input type="range" min="0" max="5" value="${student.development.realBreakthrough}"
+              oninput="updateDevelopment('realBreakthrough', this.value)">
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span>技术突破 (0-3分)</span>
+              <span class="slider-value" id="val-tech">${student.development.techBreakthrough}</span>
+            </div>
+            <input type="range" min="0" max="3" value="${student.development.techBreakthrough}"
+              oninput="updateDevelopment('techBreakthrough', this.value)">
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span>管理创新 (0-2分)</span>
+              <span class="slider-value" id="val-mgmt">${student.development.management}</span>
+            </div>
+            <input type="range" min="0" max="2" value="${student.development.management}"
+              oninput="updateDevelopment('management', this.value)">
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border);padding-top:16px;">
+          <div class="section-title"><i class="fas fa-shield-alt"></i> 安全否决机制</div>
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div class="toggle-wrap">
+              <div class="toggle-switch ${student.safetyVeto ? 'active' : ''}" 
+                onclick="toggleSafetyVeto()" id="safety-toggle"></div>
+              <span class="toggle-label" style="color:${student.safetyVeto ? 'var(--danger)' : 'var(--text-secondary)'};font-weight:600;"
+                id="safety-label">
+                ${student.safetyVeto ? '已启用 - 总评上限59分' : '已关闭'}
+              </span>
+            </div>
+            ${student.safetyVeto 
+              ? '<span class="badge badge-danger"><i class="fas fa-ban"></i> 安全否决生效中 - 当前总评已被限制</span>' 
+              : '<span class="badge badge-success"><i class="fas fa-check-circle"></i> 安全状态正常</span>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- 前测输入 -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title"><i class="fas fa-clipboard-list"></i> 课前能力前测</div>
+            <div class="panel-subtitle">6项核心能力初始值（1-100）- 用于增值评价计算</div>
+          </div>
+        </div>
+        <div class="form-grid">
+          ${ABILITY_DIMS.map((dim, i) => `
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-chart-line"></i> ${dim.name}</label>
+              <input type="number" class="form-input" value="${student.preTest[i]}" 
+                min="1" max="100" onchange="updatePreTest(${i}, this.value)">
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-secondary);">
+          <i class="fas fa-lightbulb"></i> 
+          后测将自动计算: postTest = preTest×0.2 + processRelated×0.3 + resultRelated×0.5
+        </div>
+      </div>
+
+      <!-- 教师评语 -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-comment-alt"></i> 教师评语</div>
+          <button class="btn btn-primary btn-sm" onclick="saveTeacherComment()">
+            <i class="fas fa-save"></i> 保存评语
+          </button>
+        </div>
+        <textarea class="comment-box" id="teacher-comment" placeholder="请输入教师评语...">${student.teacherComment || ''}</textarea>
+      </div>
+    `;
+    
+    // 更新贡献分校验显示
+    updateContributionDisplay(student);
+  }
+
+  /** 更新贡献分显示和校验 */
+  function updateContributionDisplay(student) {
+    const groupMembers = AppState.students.filter(s => s.groupId === student.groupId);
+    const total = groupMembers.reduce((sum, m) => sum + (parseFloat(m.processEval.contribution) || 0), 0);
+    const totalEl = document.getElementById('contrib-total');
+    const warnEl = document.getElementById('contrib-warn');
+    if (totalEl) totalEl.textContent = total.toFixed(1);
+    if (warnEl) warnEl.style.display = total > 70 ? 'inline' : 'none';
+  }
+
+  // ============================================
+  // 第六部分: 数据输入处理函数
+  // ============================================
+
+  function updateProcessEval(field, value) {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    student.processEval[field] = parseFloat(value) || 0;
+    saveData();
+    renderEvalTab();
+  }
+
+  function updateContribution(value) {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    const v = parseFloat(value) || 0;
+    // 校验: 组内总分不能超过70
+    const groupMembers = AppState.students.filter(s => s.groupId === student.groupId);
+    const otherTotal = groupMembers
+      .filter(m => m.id !== student.id)
+      .reduce((sum, m) => sum + (parseFloat(m.processEval.contribution) || 0), 0);
+    if (v + otherTotal > 70) {
+      alert(`组内贡献分总和不能超过70分！其他成员已分配${otherTotal}分，您最多可分配${(70 - otherTotal).toFixed(1)}分。`);
+      return;
+    }
+    student.processEval.contribution = v;
+    saveData();
+    renderEvalTab();
+  }
+
+  function updateGroupScore(field, value) {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    student.resultEval.groupScore[field] = parseFloat(value) || 0;
+    saveData();
+    renderEvalTab();
+  }
+
+  function updateDevelopment(field, value) {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    student.development[field] = parseInt(value) || 0;
+    // 校验总和≤10
+    const d = student.development;
+    const total = (d.realBreakthrough || 0) + (d.techBreakthrough || 0) + (d.management || 0);
+    if (total > 10) {
+      alert('发展性评价附加分总和不能超过10分！');
+      return;
+    }
+    document.getElementById('val-real').textContent = d.realBreakthrough;
+    document.getElementById('val-tech').textContent = d.techBreakthrough;
+    document.getElementById('val-mgmt').textContent = d.management;
+    saveData();
+    // 只更新分数显示，不重绘整个页面
+    recalcAll();
+  }
+
+  function toggleSafetyVeto() {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    student.safetyVeto = !student.safetyVeto;
+    saveData();
+    renderEvalTab();
+  }
+
+  function updatePreTest(index, value) {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    student.preTest[index] = parseInt(value) || 0;
+    saveData();
+    renderEvalTab();
+  }
+
+  function saveTeacherComment() {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    const comment = document.getElementById('teacher-comment')?.value || '';
+    student.teacherComment = comment;
+    saveData();
+    // 显示保存成功提示
+    const btn = event.target;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> 已保存';
+    btn.style.background = 'var(--success)';
+    setTimeout(() => { btn.innerHTML = original; btn.style.background = ''; }, 1500);
+  }
+
+  /** AI演讲分析 - 生成六维雷达图 */
+  function generatePresentationAnalysis() {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    const container = document.getElementById('presentation-radar');
+    container.style.display = 'block';
+    
+    // 基于课堂展示分数生成模拟的六维分析数据
+    const presentationScore = student.processEval.classPresentation || 70;
+    const base = presentationScore / 100;
+    const data = [
+      Math.round(100 * base * (0.8 + Math.random() * 0.4)),
+      Math.round(100 * base * (0.8 + Math.random() * 0.4)),
+      Math.round(100 * base * (0.7 + Math.random() * 0.5)),
+      Math.round(100 * base * (0.8 + Math.random() * 0.4)),
+      Math.round(100 * base * (0.7 + Math.random() * 0.5)),
+      Math.round(100 * base * (0.8 + Math.random() * 0.4))
+    ].map(v => Math.min(100, Math.max(0, v)));
+    
+    initChart('presentation-radar', (chart) => {
+      chart.setOption({
+        tooltip: { trigger: 'item' },
+        radar: {
+          indicator: ABILITY_DIMS.map(d => ({ name: d.name, max: 100 })),
+          shape: 'polygon',
+          splitNumber: 4,
+          axisName: { color: 'var(--text-secondary)', fontSize: 11 },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.15)' } },
+          splitArea: { areaStyle: { color: ['rgba(0,212,255,0.02)', 'rgba(0,212,255,0.05)'] } },
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }
+        },
+        series: [{
+          type: 'radar',
+          data: [{
+            value: data,
+            name: '演讲分析',
+            areaStyle: { color: 'rgba(0, 212, 255, 0.2)' },
+            lineStyle: { color: '#00d4ff', width: 2 },
+            itemStyle: { color: '#00d4ff' }
+          }]
+        }]
+      });
+    });
+  }
+
+  /** 模拟飞行实操 */
+  function runFlightSimulation() {
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    if (!student) return;
+    
+    // 随机生成投放精度和飞行评分
+    const deliveryAccuracy = 50 + Math.random() * 50; // 50-100
+    const flightScore = Math.round(60 + Math.random() * 35); // 60-95
+    
+    student.flightSim.deliveryAccuracy = deliveryAccuracy;
+    student.flightSim.flightScore = flightScore;
+    saveData();
+    
+    // 显示结果
+    const resultDiv = document.getElementById('flight-result');
+    const resultText = document.getElementById('flight-result-text');
+    resultDiv.style.display = 'block';
+    resultText.innerHTML = `
+      模拟飞行完成！投放精度: <strong style="color:var(--primary)">${deliveryAccuracy.toFixed(1)}%</strong> | 
+      飞行评分: <strong style="color:var(--primary)">${flightScore}</strong>分 |
+      评级: <strong style="color:${flightScore >= 85 ? 'var(--success)' : flightScore >= 70 ? 'var(--warning)' : 'var(--danger)'}">${flightScore >= 85 ? '优秀' : flightScore >= 70 ? '良好' : '需改进'}</strong>
+    `;
+    
+    // 更新输入框
+    document.getElementById('input-delivery').value = deliveryAccuracy.toFixed(1);
+    document.getElementById('input-flightScore').value = flightScore;
+  }
+
+
+  // ============================================
+  // 第七部分: ECharts图表初始化与配置
+  // ============================================
+
+  /**
+   * 初始化或更新ECharts图表
+   * @param {string} domId - DOM元素ID
+   * @param {Function} configFn - 配置函数(chart => void)
+   */
+  function initChart(domId, configFn) {
+    const dom = document.getElementById(domId);
+    if (!dom) return;
+    // 延迟初始化确保DOM已渲染
+    requestAnimationFrame(() => {
+      let chart = AppState.charts[domId];
+      if (!chart) {
+        chart = echarts.init(dom, null, { renderer: 'canvas' });
+        AppState.charts[domId] = chart;
+      }
+      configFn(chart);
+      chart.resize();
+    });
+  }
+
+  /**
+   * 获取ECharts深色主题通用配置
+   */
+  function getChartTheme() {
+    return {
+      backgroundColor: 'transparent',
+      textStyle: { fontFamily: 'Microsoft YaHei, sans-serif' }
+    };
+  }
+
+  /**
+   * 创建个人六维能力雷达图（前测vs后测对比）
+   * @param {string} domId - 容器ID
+   * @param {Object} student - 学生对象
+   */
+  function renderAbilityRadar(domId, student) {
+    initChart(domId, (chart) => {
+      chart.setOption({
+        ...getChartTheme(),
+        tooltip: { trigger: 'item' },
+        legend: {
+          data: ['课前前测', '课后后测'],
+          bottom: 0,
+          textStyle: { color: '#8b9dc3', fontSize: 12 }
+        },
+        radar: {
+          indicator: ABILITY_DIMS.map(d => ({ name: d.name, max: 100 })),
+          shape: 'polygon',
+          splitNumber: 5,
+          axisName: { color: '#8b9dc3', fontSize: 11 },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.15)' } },
+          splitArea: { areaStyle: { color: ['rgba(0,212,255,0.02)', 'rgba(0,212,255,0.06)'] } },
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }
+        },
+        series: [{
+          type: 'radar',
+          data: [
+            {
+              value: student.preTest,
+              name: '课前前测',
+              areaStyle: { color: 'rgba(139, 157, 195, 0.15)' },
+              lineStyle: { color: '#8b9dc3', width: 2, type: 'dashed' },
+              itemStyle: { color: '#8b9dc3' },
+              symbol: 'circle',
+              symbolSize: 6
+            },
+            {
+              value: student.postTest,
+              name: '课后后测',
+              areaStyle: { color: 'rgba(0, 212, 255, 0.25)' },
+              lineStyle: { color: '#00d4ff', width: 2 },
+              itemStyle: { color: '#00d4ff' },
+              symbol: 'circle',
+              symbolSize: 6
+            }
+          ]
+        }]
+      });
+    });
+  }
+
+  /**
+   * 创建历史轨迹折线图
+   * @param {string} domId - 容器ID
+   * @param {Object} student - 学生对象
+   */
+  function renderHistoryLine(domId, student) {
+    initChart(domId, (chart) => {
+      const weeks = student.history.map((_, i) => `第${i + 1}周`);
+      chart.setOption({
+        ...getChartTheme(),
+        tooltip: { trigger: 'axis' },
+        grid: { top: 30, right: 20, bottom: 30, left: 45 },
+        xAxis: {
+          type: 'category',
+          data: weeks,
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        yAxis: {
+          type: 'value',
+          min: 0, max: 100,
+          axisLine: { show: false },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.08)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        series: [{
+          type: 'line',
+          data: student.history,
+          smooth: true,
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(0, 212, 255, 0.3)' },
+              { offset: 1, color: 'rgba(0, 212, 255, 0.02)' }
+            ])
+          },
+          lineStyle: { color: '#00d4ff', width: 2 },
+          itemStyle: { color: '#00d4ff' },
+          symbol: 'circle',
+          symbolSize: 8
+        }]
+      });
+    });
+  }
+
+  /**
+   * 渲染数据大屏 - 个人投入度热力图（学生×周次）
+   */
+  function renderHeatmap() {
+    initChart('heatmap-chart', (chart) => {
+      // 准备热力图数据: x轴=周次(1-8), y轴=学生, value=过程性得分
+      const students = AppState.students.slice(0, 15); // 取前15名学生避免过于拥挤
+      const yData = students.map(s => s.name);
+      const xData = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'];
+      const data = [];
+      students.forEach((s, y) => {
+        s.history.forEach((val, x) => {
+          data.push([x, y, val]);
+        });
+      });
+      
+      chart.setOption({
+        tooltip: { position: 'top' },
+        grid: { top: 10, right: 10, bottom: 30, left: 60 },
+        xAxis: {
+          type: 'category',
+          data: xData,
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 10 }
+        },
+        yAxis: {
+          type: 'category',
+          data: yData,
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 10 }
+        },
+        visualMap: {
+          min: 40, max: 100,
+          calculable: true,
+          orient: 'horizontal',
+          left: 'center',
+          bottom: 0,
+          inRange: {
+            color: ['#0a1628', '#1e3a5f', '#1e88e5', '#00d4ff', '#00e676']
+          },
+          textStyle: { color: '#8b9dc3', fontSize: 10 }
+        },
+        series: [{
+          type: 'heatmap',
+          data,
+          label: { show: false },
+          itemStyle: {
+            borderColor: 'rgba(0,212,255,0.1)',
+            borderWidth: 1
+          },
+          emphasis: {
+            itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0, 212, 255, 0.5)' }
+          }
+        }]
+      });
+    });
+  }
+
+  /**
+   * 渲染数据大屏 - 团队协作网络图（力导向图）
+   */
+  function renderNetworkGraph() {
+    initChart('network-chart', (chart) => {
+      // 构建节点和边: 同组成员之间有连接
+      const nodes = [];
+      const links = [];
+      const groupColors = ['#00d4ff', '#1e88e5', '#00e676', '#ff9100', '#ff1744', '#e040fb'];
+      
+      AppState.students.forEach((s, i) => {
+        const gIdx = AppState.groups.findIndex(g => g.id === s.groupId);
+        nodes.push({
+          id: s.id,
+          name: s.name,
+          value: s._calc?.totalScore || 70,
+          symbolSize: 12 + (s._calc?.totalScore || 70) / 8,
+          itemStyle: { color: groupColors[gIdx % groupColors.length] },
+          category: gIdx
+        });
+      });
+      
+      // 同组成员之间创建连接
+      AppState.groups.forEach((g, gi) => {
+        const members = AppState.students.filter(s => s.groupId === g.id);
+        for (let i = 0; i < members.length; i++) {
+          for (let j = i + 1; j < members.length; j++) {
+            links.push({
+              source: members[i].id,
+              target: members[j].id,
+              lineStyle: { color: groupColors[gi % groupColors.length], opacity: 0.4, width: 1 }
+            });
+          }
+        }
+      });
+      
+      chart.setOption({
+        tooltip: { formatter: '{b}: {c}分' },
+        series: [{
+          type: 'graph',
+          layout: 'force',
+          data: nodes,
+          links,
+          roam: true,
+          label: { show: true, position: 'right', color: '#8b9dc3', fontSize: 10 },
+          force: { repulsion: 200, edgeLength: 60 },
+          lineStyle: { curveness: 0.1 },
+          emphasis: {
+            focus: 'adjacency',
+            lineStyle: { width: 3, opacity: 1 }
+          }
+        }]
+      });
+    });
+  }
+
+  /**
+   * 渲染数据大屏 - 班级能力雷达图 vs 岗位模型
+   */
+  function renderClassRadar() {
+    initChart('radar-class-chart', (chart) => {
+      // 计算班级后测平均
+      const avgPost = ABILITY_DIMS.map((_, i) => {
+        const sum = AppState.students.reduce((acc, s) => acc + s.postTest[i], 0);
+        return Math.round(sum / AppState.students.length);
+      });
+      
+      chart.setOption({
+        ...getChartTheme(),
+        tooltip: { trigger: 'item' },
+        legend: {
+          data: ['班级后测均值', '目标岗位模型', '差距'],
+          bottom: 0,
+          textStyle: { color: '#8b9dc3', fontSize: 11 }
+        },
+        radar: {
+          indicator: ABILITY_DIMS.map(d => ({ name: d.name, max: 100 })),
+          shape: 'polygon',
+          splitNumber: 5,
+          axisName: { color: '#8b9dc3', fontSize: 11 },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.15)' } },
+          splitArea: { areaStyle: { color: ['rgba(0,212,255,0.02)', 'rgba(0,212,255,0.06)'] } },
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }
+        },
+        series: [{
+          type: 'radar',
+          data: [
+            {
+              value: avgPost,
+              name: '班级后测均值',
+              areaStyle: { color: 'rgba(0, 212, 255, 0.2)' },
+              lineStyle: { color: '#00d4ff', width: 2 },
+              itemStyle: { color: '#00d4ff' }
+            },
+            {
+              value: TARGET_MODEL,
+              name: '目标岗位模型',
+              areaStyle: { color: 'rgba(255, 145, 0, 0.1)' },
+              lineStyle: { color: '#ff9100', width: 2, type: 'dashed' },
+              itemStyle: { color: '#ff9100' }
+            }
+          ]
+        }]
+      });
+    });
+  }
+
+  /**
+   * 渲染数据大屏 - 班级成绩分布
+   */
+  function renderDistribution() {
+    initChart('distribution-chart', (chart) => {
+      // 统计各分数段人数
+      const ranges = ['0-59', '60-69', '70-79', '80-89', '90-100'];
+      const counts = [0, 0, 0, 0, 0];
+      const colors = ['#ff1744', '#ff9100', '#ffc107', '#00d4ff', '#00e676'];
+      
+      AppState.students.forEach(s => {
+        const calc = calcTotalScore(s);
+        if (calc.totalScore >= 90) counts[4]++;
+        else if (calc.totalScore >= 80) counts[3]++;
+        else if (calc.totalScore >= 70) counts[2]++;
+        else if (calc.totalScore >= 60) counts[1]++;
+        else counts[0]++;
+      });
+      
+      chart.setOption({
+        ...getChartTheme(),
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { top: 20, right: 20, bottom: 30, left: 40 },
+        xAxis: {
+          type: 'category',
+          data: ranges,
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        yAxis: {
+          type: 'value',
+          axisLine: { show: false },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.08)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        series: [{
+          type: 'bar',
+          data: counts.map((c, i) => ({
+            value: c,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: colors[i] },
+                { offset: 1, color: colors[i] + '44' }
+              ]),
+              borderRadius: [4, 4, 0, 0]
+            }
+          })),
+          barWidth: '50%',
+          label: { show: true, position: 'top', color: '#e0e6ed', fontSize: 13, fontWeight: 'bold' }
+        }]
+      });
+    });
+  }
+
+  /**
+   * 渲染个人画像 - 增值趋势柱状图
+   * @param {string} domId - 容器ID
+   * @param {Object} student - 学生对象
+   */
+  function renderGrowthBar(domId, student) {
+    initChart(domId, (chart) => {
+      const growth = calcGrowth(student);
+      const dims = growth.growthByDim;
+      const xData = dims.map(d => d.dim.substr(0, 4));
+      const preData = dims.map(d => d.pre);
+      const postData = dims.map(d => d.post);
+      
+      chart.setOption({
+        ...getChartTheme(),
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        legend: {
+          data: ['前测', '后测'],
+          bottom: 0,
+          textStyle: { color: '#8b9dc3', fontSize: 11 }
+        },
+        grid: { top: 20, right: 10, bottom: 35, left: 40 },
+        xAxis: {
+          type: 'category',
+          data: xData,
+          axisLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 10 }
+        },
+        yAxis: {
+          type: 'value',
+          max: 100,
+          axisLine: { show: false },
+          splitLine: { lineStyle: { color: 'rgba(0,212,255,0.08)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 10 }
+        },
+        series: [
+          {
+            name: '前测',
+            type: 'bar',
+            data: preData,
+            itemStyle: { color: 'rgba(139, 157, 195, 0.6)', borderRadius: [3, 3, 0, 0] },
+            barWidth: 12
+          },
+          {
+            name: '后测',
+            type: 'bar',
+            data: postData,
+            itemStyle: { color: 'rgba(0, 212, 255, 0.8)', borderRadius: [3, 3, 0, 0] },
+            barWidth: 12
+          }
+        ]
+      });
+    });
+  }
+
+  // ============================================
+  // 第八部分: 数据大屏Tab渲染
+  // ============================================
+
+  function renderDashboardTab() {
+    // 重新计算所有学生
+    recalcAll();
+    
+    // 计算KPI数据
+    const allCalcs = AppState.students.map(s => calcTotalScore(s));
+    const avgTotal = Math.round(allCalcs.reduce((a, b) => a + b.totalScore, 0) / allCalcs.length * 10) / 10;
+    const excellentRate = Math.round(allCalcs.filter(c => c.totalScore >= 90).length / allCalcs.length * 100);
+    const growthPositiveRate = Math.round(allCalcs.filter(c => c.growth.absoluteGrowth > 0).length / allCalcs.length * 100);
+    const safetyVetoCount = allCalcs.filter(c => c.safetyVeto).length;
+    
+    // 更新KPI卡片
+    animateNumber('kpi-avg', avgTotal);
+    animateNumber('kpi-excellent', excellentRate);
+    animateNumber('kpi-growth', growthPositiveRate);
+    animateNumber('kpi-safety', safetyVetoCount);
+    
+    // 渲染图表
+    renderHeatmap();
+    renderNetworkGraph();
+    renderClassRadar();
+    renderDistribution();
+    
+    // 渲染AI预警事件流
+    renderEventStream();
+    
+    // 渲染精彩瞬间
+    renderHighlightStream();
+    
+    // 渲染增值排行榜TOP5
+    renderTop5Ranking();
+  }
+
+  /** 数字滚动动画 */
+  function animateNumber(elementId, targetValue) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const isFloat = String(targetValue).includes('.');
+    const start = parseFloat(el.textContent) || 0;
+    const duration = 800;
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      const current = start + (targetValue - start) * easeProgress;
+      el.textContent = isFloat ? current.toFixed(1) : Math.round(current);
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  /** 渲染AI预警事件流 */
+  function renderEventStream() {
+    const container = document.getElementById('event-stream');
+    if (!container) return;
+    
+    // 生成预警事件
+    const events = [];
+    AppState.students.forEach(s => {
+      const calc = calcTotalScore(s);
+      const activity = calcAIActivity(s);
+      
+      if (activity < 60) {
+        events.push({
+          type: 'warning',
+          time: new Date().toLocaleTimeString('zh-CN'),
+          text: `${s.name}(${AppState.groups.find(g=>g.id===s.groupId)?.name}) 过程性活跃度偏低(${activity}分)，建议关注`
+        });
+      }
+      if (calc.processScore < 50) {
+        events.push({
+          type: 'danger',
+          time: new Date().toLocaleTimeString('zh-CN'),
+          text: `${s.name} 过程性评价得分仅${calc.processScore}分，存在不及格风险`
+        });
+      }
+      if (s.safetyVeto) {
+        events.push({
+          type: 'danger',
+          time: new Date().toLocaleTimeString('zh-CN'),
+          text: `${s.name} 已触发安全否决，总评被限制在59分以下`
+        });
+      }
+    });
+    
+    // 补充一些通用事件
+    const lowAvgGroups = AppState.groups.filter(g => {
+      const members = AppState.students.filter(s => s.groupId === g.id);
+      const avg = members.reduce((sum, m) => sum + (m._calc?.totalScore || 70), 0) / members.length;
+      return avg < 70;
+    });
+    lowAvgGroups.forEach(g => {
+      events.push({
+        type: 'warning',
+        time: new Date().toLocaleTimeString('zh-CN'),
+        text: `${g.name} 小组平均成绩偏低，建议加强团队协作指导`
+      });
+    });
+    
+    // 去重并限制数量
+    const uniqueEvents = events.slice(0, 12);
+    
+    container.innerHTML = uniqueEvents.map(e => `
+      <div class="event-item ${e.type}">
+        <div class="event-dot"></div>
+        <span class="event-time">${e.time}</span>
+        <span class="event-text">${e.text}</span>
+      </div>
+    `).join('');
+  }
+
+  /** 渲染精彩瞬间 */
+  function renderHighlightStream() {
+    const container = document.getElementById('highlight-stream');
+    if (!container) return;
+    
+    // 找出亮点学生
+    const highlights = [];
+    
+    // 增值最大的学生
+    const sortedByGrowth = [...AppState.students]
+      .map(s => ({ ...s, growthVal: calcGrowth(s).absoluteGrowth }))
+      .sort((a, b) => b.growthVal - a.growthVal)
+      .slice(0, 3);
+    sortedByGrowth.forEach(s => {
+      highlights.push({
+        type: 'success',
+        text: `${s.name} 增值${s.growthVal > 0 ? '+' : ''}${s.growthVal}分，进步显著！`
+      });
+    });
+    
+    // 高分学生
+    const topStudents = [...AppState.students]
+      .map(s => ({ s, calc: calcTotalScore(s) }))
+      .filter(x => x.calc.totalScore >= 90)
+      .slice(0, 3);
+    topStudents.forEach(x => {
+      highlights.push({
+        type: 'primary',
+        text: `${x.s.name} 总评${x.calc.totalScore}分，表现优异！`
+      });
+    });
+    
+    // 团队协作出色的小组
+    AppState.groups.forEach(g => {
+      const members = AppState.students.filter(s => s.groupId === g.id);
+      const avgPeer = members.reduce((sum, m) => sum + (m.processEval.peerReview || 0), 0) / members.length;
+      if (avgPeer >= 80) {
+        highlights.push({
+          type: 'primary',
+          text: `${g.name} 组内互评平均分${avgPeer.toFixed(1)}分，团队协作优秀`
+        });
+      }
+    });
+    
+    container.innerHTML = highlights.map(h => `
+      <div class="event-item ${h.type}">
+        <div class="event-dot"></div>
+        <span class="event-text">${h.text}</span>
+      </div>
+    `).join('');
+  }
+
+  /** 渲染增值排行榜TOP5 */
+  function renderTop5Ranking() {
+    const container = document.getElementById('rank-top5');
+    if (!container) return;
+    
+    // 按增值排序取前5
+    const top5 = [...AppState.students]
+      .map(s => ({
+        ...s,
+        growthVal: calcGrowth(s).absoluteGrowth,
+        groupName: AppState.groups.find(g => g.id === s.groupId)?.name || ''
+      }))
+      .sort((a, b) => b.growthVal - a.growthVal)
+      .slice(0, 5);
+    
+    container.innerHTML = top5.map((s, i) => `
+      <div class="rank-item" style="flex:1;cursor:pointer;" onclick="selectStudent('${s.id}');switchTab('profile');">
+        <div class="rank-num ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${s.name}</div>
+          <div class="rank-group">${s.groupName}</div>
+        </div>
+        <div class="rank-value">${s.growthVal > 0 ? '+' : ''}${s.growthVal}</div>
+      </div>
+    `).join('');
+  }
+
+  // ============================================
+  // 第九部分: 个人画像Tab渲染
+  // ============================================
+
+  function renderProfileTab() {
+    const container = document.getElementById('profile-content');
+    const student = AppState.students.find(s => s.id === AppState.currentStudentId);
+    
+    if (!student) {
+      container.innerHTML = `
+        <div class="panel-card" style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+          <i class="fas fa-user-circle" style="font-size:64px;color:var(--border);margin-bottom:16px;"></i>
+          <h3 style="color:var(--text-secondary);font-weight:400;">请在左侧选择一名学生查看个人画像</h3>
+        </div>
+      `;
+      return;
+    }
+    
+    const calc = calcTotalScore(student);
+    const group = AppState.groups.find(g => g.id === student.groupId);
+    const growth = calc.growth;
+    
+    container.innerHTML = `
+      <!-- 头部信息区 -->
+      <div class="profile-header-area profile-card">
+        <div class="profile-avatar-lg">${student.name.charAt(0)}</div>
+        <div class="profile-info-main">
+          <div class="profile-name-lg">${student.name}</div>
+          <div class="profile-tags">
+            <span class="badge badge-primary">${group?.name || ''}</span>
+            <span class="badge ${student.role === '组长' ? 'badge-warning' : 'badge-primary'}">${student.role}</span>
+            ${calc.safetyVeto ? '<span class="badge badge-danger"><i class="fas fa-ban"></i> 安全否决</span>' : '<span class="badge badge-success"><i class="fas fa-shield-alt"></i> 安全正常</span>'}
+          </div>
+          <div class="profile-meta">
+            <i class="fas fa-graduation-cap"></i> 低空应急救援技术专业 | 
+            <i class="fas fa-calendar"></i> 2024春季学期
+          </div>
+        </div>
+        <div class="profile-total-score">
+          <div class="total-label">综合总评</div>
+          <div class="total-value ${calc.totalScore >= 90 ? 'success' : calc.totalScore >= 60 ? '' : 'danger'}" 
+            style="color:${calc.totalScore >= 90 ? 'var(--success)' : calc.totalScore < 60 ? 'var(--danger)' : 'var(--primary)'};">
+            ${calc.totalScore}
+          </div>
+          <div class="total-label" style="margin-top:4px;">分</div>
+        </div>
+      </div>
+
+      <!-- 左侧列 -->
+      <div class="profile-left">
+        <!-- 六维能力雷达图 -->
+        <div class="profile-card">
+          <div class="panel-title" style="margin-bottom:8px;"><i class="fas fa-radar"></i> 六维能力成长图</div>
+          <div class="panel-subtitle" style="margin-bottom:12px;">前测(虚线) vs 后测(实线) 直观对比</div>
+          <div class="radar-container" id="profile-radar"></div>
+        </div>
+
+        <!-- 增值报告 -->
+        <div class="profile-card">
+          <div class="panel-title" style="margin-bottom:12px;"><i class="fas fa-chart-line"></i> 增值评价报告</div>
+          <div class="growth-report">
+            <div class="growth-item">
+              <div class="growth-label">绝对增值</div>
+              <div class="growth-value ${growth.absoluteGrowth >= 0 ? 'positive' : 'negative'}">
+                ${growth.absoluteGrowth >= 0 ? '+' : ''}${growth.absoluteGrowth}
+              </div>
+              <div class="growth-bar">
+                <div class="growth-bar-fill" style="width:${Math.min(100, Math.max(0, 50 + growth.absoluteGrowth))}%;background:${growth.absoluteGrowth >= 0 ? 'var(--success)' : 'var(--danger)'};"></div>
+              </div>
+            </div>
+            <div class="growth-item">
+              <div class="growth-label">相对排名</div>
+              <div class="growth-value positive">${growth.relativeRank}%</div>
+              <div class="growth-bar">
+                <div class="growth-bar-fill" style="width:${growth.relativeRank}%;background:var(--primary);"></div>
+              </div>
+            </div>
+            <div class="growth-item">
+              <div class="growth-label">进步最大项</div>
+              <div class="growth-value positive" style="font-size:16px;">${growth.bestItem?.dim || '-'}</div>
+              <div style="font-size:12px;color:var(--success);margin-top:4px;">+${growth.bestItem?.growth || 0}分</div>
+            </div>
+            <div class="growth-item">
+              <div class="growth-label">待提升项</div>
+              <div class="growth-value ${(growth.weakItem?.growth || 0) >= 0 ? 'positive' : 'negative'}" style="font-size:16px;">${growth.weakItem?.dim || '-'}</div>
+              <div style="font-size:12px;color:${(growth.weakItem?.growth || 0) >= 0 ? 'var(--success)' : 'var(--danger)'};margin-top:4px;">${(growth.weakItem?.growth || 0) >= 0 ? '+' : ''}${growth.weakItem?.growth || 0}分</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 各项能力增值明细 -->
+        <div class="profile-card">
+          <div class="panel-title" style="margin-bottom:8px;"><i class="fas fa-chart-bar"></i> 各项能力增值对比</div>
+          <div class="chart-sm" id="profile-growth-bar"></div>
+        </div>
+      </div>
+
+      <!-- 右侧列 -->
+      <div class="profile-right">
+        <!-- 成绩明细卡片 -->
+        <div class="profile-card">
+          <div class="panel-title" style="margin-bottom:12px;"><i class="fas fa-list-alt"></i> 成绩明细</div>
+          <div class="score-cards">
+            <div class="score-card">
+              <div class="score-card-label">过程性评价 (40%)</div>
+              <div class="score-card-value" style="color:var(--primary);">${calc.processScore}</div>
+              <div class="score-card-detail">工单+展示+互评</div>
+            </div>
+            <div class="score-card">
+              <div class="score-card-label">结果性评价 (60%)</div>
+              <div class="score-card-value" style="color:var(--secondary);">${calc.resultScore}</div>
+              <div class="score-card-detail">小组${calc.resultDetail.groupPart}×0.6 + 个人${calc.resultDetail.personalPart}×0.4</div>
+            </div>
+            <div class="score-card">
+              <div class="score-card-label">小组分</div>
+              <div class="score-card-value" style="color:#e040fb;">${calc.resultDetail.groupPart}</div>
+              <div class="score-card-detail">方案${calc.resultDetail.groupDetail.planResult}×0.3+实操${calc.resultDetail.groupDetail.practical}×0.5+答辩${calc.resultDetail.groupDetail.defense}×0.2</div>
+            </div>
+            <div class="score-card">
+              <div class="score-card-label">个人分</div>
+              <div class="score-card-value" style="color:var(--warning);">${calc.resultDetail.personalPart}</div>
+              <div class="score-card-detail">贡献转化+互评均分${calc.resultDetail.personalDetail.peerAvg.toFixed(1)}</div>
+            </div>
+            <div class="score-card">
+              <div class="score-card-label">附加分</div>
+              <div class="score-card-value" style="color:var(--success);">+${calc.devScore}</div>
+              <div class="score-card-detail">突破${student.development.realBreakthrough}+技术${student.development.techBreakthrough}+管理${student.development.management}</div>
+            </div>
+            <div class="score-card">
+              <div class="score-card-label">模拟飞行</div>
+              <div class="score-card-value" style="color:#00bcd4;">${student.flightSim.flightScore || '--'}</div>
+              <div class="score-card-detail">投放精度${student.flightSim.deliveryAccuracy ? student.flightSim.deliveryAccuracy.toFixed(1) + '%' : '--'}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 历史轨迹折线图 -->
+        <div class="profile-card">
+          <div class="panel-title" style="margin-bottom:8px;"><i class="fas fa-history"></i> 过程性得分历史轨迹</div>
+          <div class="panel-subtitle" style="margin-bottom:12px;">8周过程性评价得分趋势</div>
+          <div class="chart-sm" id="profile-history"></div>
+        </div>
+
+        <!-- 教师评语 -->
+        <div class="profile-card">
+          <div class="panel-title" style="margin-bottom:12px;"><i class="fas fa-comment-dots"></i> 教师评语</div>
+          <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.8;color:var(--text-primary);min-height:60px;">
+            ${student.teacherComment || '<span style="color:var(--text-secondary);font-style:italic;">暂无评语...</span>'}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 初始化图表
+    setTimeout(() => {
+      renderAbilityRadar('profile-radar', student);
+      renderGrowthBar('profile-growth-bar', student);
+      renderHistoryLine('profile-history', student);
+    }, 100);
+  }
+
+
+  // ============================================
+  // 第十部分: 应用初始化与全局事件
+  // ============================================
+
+  /**
+   * 应用初始化入口
+   * 加载数据 -> 计算评分 -> 渲染UI -> 启动时钟
+   */
+  function initApp() {
+    // 1. 从localStorage加载数据（无数据则创建示例数据）
+    loadData();
+    
+    // 2. 预计算所有学生的评分（确保后测等衍生数据已生成）
+    recalcAll();
+    
+    // 3. 渲染侧边栏学生列表
+    renderSidebar();
+    
+    // 4. 渲染当前Tab内容
+    renderCurrentTab();
+    
+    // 5. 更新状态栏
+    updateStatusBar();
+    updateLastSaveTime();
+    
+    // 6. 启动实时时钟
+    startClock();
+    
+    // 7. 监听窗口resize，调整图表尺寸
+    window.addEventListener('resize', onWindowResize);
+    
+    console.log('[低空应急智慧评价系统] 初始化完成');
+    console.log(`- 学生数: ${AppState.students.length}`);
+    console.log(`- 小组数: ${AppState.groups.length}`);
+    console.log(`- 当前角色: ${AppState.currentRole}`);
+  }
+
+  /** 实时时钟更新 */
+  function startClock() {
+    function update() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+      const dateStr = now.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', weekday: 'short' });
+      const el = document.getElementById('realtime-clock');
+      if (el) el.textContent = dateStr + ' ' + timeStr;
+    }
+    update();
+    setInterval(update, 1000);
+  }
+
+  /** 窗口大小改变时重新调整图表 */
+  function onWindowResize() {
+    Object.values(AppState.charts).forEach(chart => {
+      if (chart && chart.resize) chart.resize();
+    });
+  }
+
+  /**
+   * 导出当前数据为JSON文件
+   */
+  function exportData() {
+    const data = { students: AppState.students, groups: AppState.groups, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `低空应急评价数据_${new Date().toLocaleDateString('zh-CN')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // DOM加载完成后初始化
+  document.addEventListener('DOMContentLoaded', initApp);
+
+  // 页面可见性变化时保存数据（防止意外关闭丢失数据）
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveData();
+  });
+
+  // 页面关闭前保存
+  window.addEventListener('beforeunload', saveData);
+
+  </script>
+</body>
+</html>

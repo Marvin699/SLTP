@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>应急物资低空智慧运输 - 项目能力图谱</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== 基础重置 ===== */
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: #333;
+    text-align: justify;
+    text-align-last: left;
+}
+
+/* ===== 页面设置 ===== */
+@page {
+    size: A4;
+    margin: 2.2cm 1.8cm 2.2cm 1.8cm;
+    @top-center {
+        content: string(doctitle);
+        font-size: 9pt;
+        color: #666;
+        border-bottom: 0.5pt solid #ccc;
+        padding-bottom: 4pt;
+    }
+    @bottom-center {
+        content: counter(page);
+        font-size: 9pt;
+        color: #666;
+    }
+}
+@page cover {
+    margin: 0;
+    @top-center { content: none; }
+    @bottom-center { content: none; }
+}
+@page toc {
+    @top-center { content: none; }
+}
+
+body { string-set: doctitle ""; }
+h1.section-title { string-set: doctitle content(); }
+
+/* ===== 封面设计 - Swiss专业风格 ===== */
+.cover {
+    page: cover;
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+    page-break-after: always;
+}
+.cover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(180deg, #2c5282 0%, #1a365d 100%);
+    clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+}
+.cover::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8mm;
+    background: #c53030;
+}
+.cover-deco-top {
+    position: absolute;
+    top: 15mm;
+    left: 15mm;
+    width: 40mm;
+    height: 3pt;
+    background: #c53030;
+}
+.cover-deco-square {
+    position: absolute;
+    top: 20mm;
+    left: 15mm;
+    width: 8mm;
+    height: 8mm;
+    border: 2pt solid #2c5282;
+}
+.cover-deco-line {
+    position: absolute;
+    top: 35mm;
+    left: 15mm;
+    width: 60mm;
+    height: 0.5pt;
+    background: #999;
+}
+.cover-content {
+    position: absolute;
+    top: 50%;
+    left: 12%;
+    transform: translateY(-50%);
+    width: 52%;
+    z-index: 10;
+}
+.cover-label {
+    font-size: 11pt;
+    color: #c53030;
+    letter-spacing: 3pt;
+    font-weight: 600;
+    margin-bottom: 8mm;
+}
+.cover-title {
+    font-size: 26pt;
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1.3;
+    margin-bottom: 6mm;
+}
+.cover-subtitle {
+    font-size: 14pt;
+    color: #2c5282;
+    font-weight: 600;
+    margin-bottom: 15mm;
+    padding-bottom: 8mm;
+    border-bottom: 1.5pt solid #c53030;
+    display: inline-block;
+}
+.cover-meta {
+    font-size: 10.5pt;
+    color: #4a5568;
+    line-height: 2.2;
+}
+.cover-meta-row {
+    display: flex;
+    margin-bottom: 2mm;
+}
+.cover-meta-label {
+    width: 28mm;
+    font-weight: 600;
+    color: #2d3748;
+}
+.cover-meta-value {
+    flex: 1;
+}
+.cover-right-content {
+    position: absolute;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+    width: 32%;
+    z-index: 10;
+    color: white;
+}
+.cover-right-title {
+    font-size: 12pt;
+    font-weight: 600;
+    margin-bottom: 6mm;
+    letter-spacing: 2pt;
+    opacity: 0.9;
+}
+.cover-right-list {
+    font-size: 9.5pt;
+    line-height: 2;
+    opacity: 0.85;
+}
+.cover-right-list div {
+    border-bottom: 0.5pt solid rgba(255,255,255,0.2);
+    padding-bottom: 2pt;
+    margin-bottom: 3pt;
+}
+.cover-footer {
+    position: absolute;
+    bottom: 18mm;
+    left: 15mm;
+    font-size: 9pt;
+    color: #718096;
+}
+
+/* ===== 目录页 ===== */
+.toc-page {
+    page: toc;
+    page-break-after: always;
+}
+.toc-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #1a202c;
+    text-align: center;
+    margin-bottom: 12mm;
+    padding-bottom: 4mm;
+    border-bottom: 2pt solid #2c5282;
+}
+.toc { list-style: none; padding: 0; margin: 0; }
+.toc li {
+    margin-bottom: 4mm;
+    font-size: 11pt;
+}
+.toc a {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+}
+.toc a::after {
+    content: leader(".") target-counter(attr(href url), page);
+    flex: 1;
+    text-align: right;
+}
+.toc-h1 { font-weight: 600; font-size: 12pt; }
+.toc-h2 { padding-left: 8mm; font-size: 10.5pt; color: #555; }
+
+/* ===== 标题层级 ===== */
+h1.section-title {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #1a365d;
+    margin-top: 0;
+    margin-bottom: 8mm;
+    padding-bottom: 3mm;
+    border-bottom: 2.5pt solid #c53030;
+    page-break-after: avoid;
+}
+h2.sub-title {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #2c5282;
+    margin-top: 8mm;
+    margin-bottom: 4mm;
+    padding-left: 4mm;
+    border-left: 3pt solid #c53030;
+    page-break-after: avoid;
+}
+h3.sub-sub-title {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #333;
+    margin-top: 5mm;
+    margin-bottom: 3mm;
+    page-break-after: avoid;
+}
+
+/* ===== 段落和文本 ===== */
+p {
+    margin: 3mm 0;
+    text-indent: 2em;
+}
+.no-indent { text-indent: 0; }
+
+/* ===== 三线表 ===== */
+table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 5mm 0 8mm 0;
+    font-size: 9pt;
+    line-height: 1.5;
+    page-break-inside: auto;
+}
+thead { display: table-header-group; }
+thead tr {
+    border-top: 2pt solid #333;
+    border-bottom: 1pt solid #333;
+}
+th {
+    padding: 3mm 2mm;
+    text-align: center;
+    font-weight: 600;
+    background: #f7f8fa;
+    color: #1a365d;
+}
+td {
+    padding: 2.5mm 2mm;
+    text-align: left;
+    vertical-align: top;
+}
+tbody tr {
+    border-bottom: 0.5pt solid #ddd;
+}
+tbody tr:last-child {
+    border-bottom: 2pt solid #333;
+}
+tr { page-break-inside: avoid; }
+
+caption {
+    caption-side: top;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 3mm;
+    color: #333;
+    font-size: 10pt;
+}
+caption::before {
+    content: attr(data-label) "  ";
+    font-weight: 700;
+}
+
+/* ===== 特殊表格样式 ===== */
+.table-small { font-size: 8pt; }
+.table-small th, .table-small td { padding: 2mm 1.5mm; }
+.table-wrap { word-break: break-all; }
+
+/* ===== 列表 ===== */
+ul, ol {
+    margin: 3mm 0;
+    padding-left: 6mm;
+}
+li { margin-bottom: 1.5mm; }
+
+/* ===== 强调框 ===== */
+.highlight-box {
+    border-left: 3pt solid #2c5282;
+    padding: 4mm 5mm;
+    margin: 5mm 0;
+    background: #f7f8fa;
+}
+.highlight-box-red {
+    border-left: 3pt solid #c53030;
+    padding: 4mm 5mm;
+    margin: 5mm 0;
+    background: #fff5f5;
+}
+
+/* ===== 信息卡片（纯CSS，无圆角阴影） ===== */
+.info-row {
+    display: flex;
+    gap: 4mm;
+    margin: 4mm 0;
+    flex-wrap: wrap;
+}
+.info-item {
+    flex: 1;
+    min-width: 45%;
+    border: 1pt solid #e2e8f0;
+    padding: 4mm;
+    background: #fafafa;
+}
+.info-item-label {
+    font-size: 9pt;
+    color: #718096;
+    margin-bottom: 1mm;
+}
+.info-item-value {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* ===== 五新标签 ===== */
+.new-tag {
+    display: inline-block;
+    padding: 1mm 2.5mm;
+    margin: 1mm;
+    font-size: 8pt;
+    font-weight: 600;
+    border: 1pt solid;
+}
+.new-tag-tech { color: #2c5282; background: #ebf8ff; border-color: #90cdf4; }
+.new-tag-process { color: #276749; background: #f0fff4; border-color: #68d391; }
+.new-tag-spec { color: #744210; background: #fffaf0; border-color: #f6ad55; }
+.new-tag-material { color: #702459; background: #fff5f7; border-color: #f687b3; }
+.new-tag-equip { color: #1a202c; background: #e2e8f0; border-color: #a0aec0; }
+
+/* ===== 分页控制 ===== */
+.page-break { page-break-after: always; }
+.section { page-break-before: always; }
+.section:first-of-type { page-break-before: auto; }
+figure, .highlight-box, .highlight-box-red { page-break-inside: avoid; }
+
+/* ===== 防溢出 ===== */
+pre, table, figure, img, svg, blockquote {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+pre { overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+a { word-break: break-all; color: #2c5282; }
+
+/* ===== 页眉装饰线 ===== */
+.header-line {
+    border-bottom: 0.5pt solid #ccc;
+    margin-bottom: 5mm;
+    padding-bottom: 2mm;
+    font-size: 8pt;
+    color: #666;
+}
+
+/* ===== 任务编号标签 ===== */
+.task-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1mm 3mm;
+    font-size: 8pt;
+    font-weight: 700;
+    color: white;
+    background: #2c5282;
+    margin-right: 2mm;
+}
+.subproject-header {
+    background: #edf2f7;
+    padding: 2mm 4mm;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 4mm 0 2mm 0;
+    border-left: 3pt solid #c53030;
+}
+
+/* ===== 能力点标签 ===== */
+.cap-tag {
+    display: inline-block;
+    padding: 0.8mm 2mm;
+    margin: 0.5mm;
+    font-size: 7.5pt;
+    background: #e2e8f0;
+    color: #4a5568;
+    border: 0.5pt solid #cbd5e0;
+}
+
+/* =====  workflow 流程 ===== */
+.workflow-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1mm;
+    margin: 2mm 0;
+    font-size: 8.5pt;
+}
+.workflow-step {
+    padding: 1mm 2.5mm;
+    background: #f7fafc;
+    border: 0.5pt solid #e2e8f0;
+    color: #4a5568;
+}
+.workflow-arrow {
+    color: #c53030;
+    font-weight: 700;
+    font-size: 9pt;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 封面 ===== -->
+<div class="cover">
+    <div class="cover-deco-top"></div>
+    <div class="cover-deco-square"></div>
+    <div class="cover-deco-line"></div>
+
+    <div class="cover-content">
+        <div class="cover-label">项目能力图谱</div>
+        <div class="cover-title">《智慧运输运营》<br>课程项目能力图谱</div>
+        <div class="cover-subtitle">项目五：应急物资低空智慧运输</div>
+        <div class="cover-meta">
+            <div class="cover-meta-row">
+                <span class="cover-meta-label">授课专业</span>
+                <span class="cover-meta-value">现代物流管理</span>
+            </div>
+            <div class="cover-meta-row">
+                <span class="cover-meta-label">专业大类</span>
+                <span class="cover-meta-value">财经商贸大类</span>
+            </div>
+            <div class="cover-meta-row">
+                <span class="cover-meta-label">参赛组别</span>
+                <span class="cover-meta-value">高职高专专业课程一组</span>
+            </div>
+            <div class="cover-meta-row">
+                <span class="cover-meta-label">项目总学时</span>
+                <span class="cover-meta-value">16 学时（8个任务）</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="cover-right-content">
+        <div class="cover-right-title">教学结构</div>
+        <div class="cover-right-list">
+            <div>子项目一：飞行任务规划（6学时）</div>
+            <div style="padding-left:3mm;font-size:8.5pt;opacity:0.7;">任务1-3：需求分析 / 航线规划 / 协同调度</div>
+            <div>子项目二：飞行设备准备（4学时）</div>
+            <div style="padding-left:3mm;font-size:8.5pt;opacity:0.7;">任务4-5：物资装载 / 多机装调</div>
+            <div>子项目三：飞行运输实操（6学时）</div>
+            <div style="padding-left:3mm;font-size:8.5pt;opacity:0.7;">任务6-8：仿真演练 / 飞行实操 / 汇报答辩</div>
+        </div>
+    </div>
+
+    <div class="cover-footer">低空经济新业态 | 岗课赛证综合育人</div>
+</div>
+
+<!-- ===== 目录 ===== -->
+<div class="toc-page">
+    <div class="toc-title">目  录</div>
+    <ul class="toc">
+        <li class="toc-h1"><a href="#sec1">第一部分  项目概述</a></li>
+        <li class="toc-h2"><a href="#sec1-1">1.1 项目背景与课程定位</a></li>
+        <li class="toc-h2"><a href="#sec1-2">1.2 毕业要求导向</a></li>
+        <li class="toc-h2"><a href="#sec1-3">1.3 未来发展趋势</a></li>
+        <li class="toc-h1"><a href="#sec2">第二部分  能力图谱总图</a></li>
+        <li class="toc-h1"><a href="#sec3">第三部分  反向设计逻辑对应表</a></li>
+        <li class="toc-h1"><a href="#sec4">第四部分  岗课赛证融合设计</a></li>
+        <li class="toc-h2"><a href="#sec4-1">4.1 职业技能等级证书对接</a></li>
+        <li class="toc-h2"><a href="#sec4-2">4.2 技能大赛对接</a></li>
+        <li class="toc-h2"><a href="#sec4-3">4.3 融合路径说明</a></li>
+        <li class="toc-h1"><a href="#sec5">第五部分  课程类型与能力支撑判定</a></li>
+        <li class="toc-h1"><a href="#sec6">第六部分  五新融入</a></li>
+    </ul>
+</div>
+
+<!-- ===== 第一部分：项目概述 ===== -->
+<div class="section" id="sec1">
+<h1 class="section-title">第一部分  项目概述</h1>
+
+<h2 class="sub-title" id="sec1-1">1.1 项目背景与课程定位</h2>
+
+<h3 class="sub-sub-title">1.1.1 项目背景</h3>
+<p>随着低空经济纳入国家战略新兴产业，无人机物流运输正成为应急物流体系的重要组成部分。2024年，中国低空经济市场规模突破5000亿元，预计2030年将达到万亿级规模。应急物资低空智慧运输作为无人机物流的核心应用场景，涉及需求分析、航线规划、设备装调、飞行操控、协同调度等多个环节，对从业人员的综合能力提出了较高要求。</p>
+
+<p>应急物流作为保障公共安全和社会稳定的关键环节，在自然灾害、突发公共卫生事件等紧急情况下发挥着不可替代的作用。传统地面应急物流受道路损毁、交通拥堵等因素制约，难以实现快速响应。无人机低空运输凭借其灵活机动、不受地面条件限制的优势，与地面物流形成"空地一体"的立体化应急物流网络，显著提升应急物资投送的时效性和覆盖范围。</p>
+
+<h3 class="sub-sub-title">1.1.2 课程定位</h3>
+<p class="no-indent">本课程对接"智慧物流现场工程师"新岗位，聚焦应急物资低空智慧运输核心能力培养。课程设计遵循"岗课赛证"综合育人理念，以真实岗位任务为载体，以工作过程为导向，培养学生的：</p>
+<ul>
+    <li><strong>专业核心能力</strong>：无人机飞行任务规划、航线设计、设备装调、飞行操控、协同调度等核心技能；</li>
+    <li><strong>数字化能力</strong>：数字孪生仿真、AI辅助决策、智能调度系统操作等数字技能；</li>
+    <li><strong>综合职业素养</strong>：安全意识、应急处置、团队协作、创新思维等职业素质。</li>
+</ul>
+
+<div class="highlight-box">
+    <strong>课程特色</strong>：以"子项目-任务"为组织单元，按照"规划→准备→实操"的工作逻辑递进编排，对接无人机物流运输和物流无人机操作与运维两项1+X证书及CAAC无人机驾驶员执照，融合全国职业院校技能大赛智慧物流赛项和无人机操控与维护赛项的核心考核点。
+</div>
+
+<h2 class="sub-title" id="sec1-2">1.2 毕业要求导向</h2>
+<p class="no-indent">本课程支撑现代物流管理专业毕业要求的三维框架：</p>
+
+<table>
+    <caption data-label="表 1">毕业要求支撑矩阵</caption>
+    <thead>
+        <tr>
+            <th style="width:18%">维度</th>
+            <th style="width:35%">毕业要求要点</th>
+            <th style="width:47%">本课程支撑说明</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="6"><strong>知识</strong></td>
+            <td>现代物流管理基础理论</td>
+            <td>应急物流管理、运输组织原理等知识模块</td>
+        </tr>
+        <tr>
+            <td>运输组织与管理基本知识</td>
+            <td>航线规划、运力配置、调度算法等知识模块</td>
+        </tr>
+        <tr>
+            <td>物流信息技术应用</td>
+            <td>GIS系统、数字孪生、智能调度系统操作</td>
+        </tr>
+        <tr>
+            <td>物流系统规划与设计</td>
+            <td>网络航线规划、站点布局、协同规划等任务</td>
+        </tr>
+        <tr>
+            <td>物流项目运营与管理</td>
+            <td>飞行计划编制、效能评估、方案优化等任务</td>
+        </tr>
+        <tr>
+            <td>无人机物流法规与标准</td>
+            <td>空域管理法规、SORA方法论、运行规范等</td>
+        </tr>
+        <tr>
+            <td rowspan="7"><strong>能力</strong></td>
+            <td>智慧运输运营能力</td>
+            <td>全流程应急物资运输方案设计与实施</td>
+        </tr>
+        <tr>
+            <td>物流数据分析能力</td>
+            <td>需求预测、运营数据分析、效能评估</td>
+        </tr>
+        <tr>
+            <td>物流项目运营能力</td>
+            <td>飞行任务规划、多机协同调度、项目管理</td>
+        </tr>
+        <tr>
+            <td>无人机飞行操控能力</td>
+            <td>视距内/超视距飞行、精准投放、避障操作</td>
+        </tr>
+        <tr>
+            <td>数字能力</td>
+            <td>仿真软件、航线规划系统、调度平台操作</td>
+        </tr>
+        <tr>
+            <td>问题解决能力</td>
+            <td>特情应急处置、故障诊断排除、方案优化</td>
+        </tr>
+        <tr>
+            <td>应急处置能力</td>
+            <td>应急评估、风险预案、空地协同应急演练</td>
+        </tr>
+        <tr>
+            <td rowspan="6"><strong>素质</strong></td>
+            <td>思想政治素质</td>
+            <td>应急物流的国家战略意义与社会责任担当</td>
+        </tr>
+        <tr>
+            <td>职业素养</td>
+            <td>标准化作业、检查单制度、规范操作意识</td>
+        </tr>
+        <tr>
+            <td>安全意识</td>
+            <td>飞行安全、空域安全、货物安全检查</td>
+        </tr>
+        <tr>
+            <td>创新意识</td>
+            <td>低空空域创新应用、智慧物流模式创新</td>
+        </tr>
+        <tr>
+            <td>工匠精神</td>
+            <td>精准操控、精益求精的设备装调与检查</td>
+        </tr>
+        <tr>
+            <td>团队协作精神</td>
+            <td>多机组协同、空地配合、团队应急演练</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2 class="sub-title" id="sec1-3">1.3 未来发展趋势</h2>
+<p class="no-indent">低空经济与应急物流领域呈现以下发展趋势，本课程内容前瞻性地融入这些前沿方向：</p>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:25%">趋势方向</th>
+            <th style="width:40%">核心内涵</th>
+            <th style="width:35%">课程融入点</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>低空经济万亿级市场</strong></td>
+            <td>2024年低空经济规模突破5000亿元，预计2030年超万亿元，无人机物流是核心应用场景</td>
+            <td>任务8综合方案中融入低空经济产业分析</td>
+        </tr>
+        <tr>
+            <td><strong>应急物流立体化</strong></td>
+            <td>空地一体、干-支-末三级协同的立体应急物流网络成为新基建重点</td>
+            <td>任务3网络规划、任务8空地协同演练</td>
+        </tr>
+        <tr>
+            <td><strong>数字化与智能化转型</strong></td>
+            <td>AI路径规划、数字孪生仿真、自主避障、群体智能等技术重塑物流运营</td>
+            <td>任务1 AI预测、任务2 AI规划、任务6虚拟仿真、任务7自主避障</td>
+        </tr>
+        <tr>
+            <td><strong>绿色物流与双碳目标</strong></td>
+            <td>新能源无人机、可降解包装、低碳配送路径成为行业发展新要求</td>
+            <td>任务4可降解包装材料、任务2低碳路径优化</td>
+        </tr>
+        <tr>
+            <td><strong>供应链韧性提升</strong></td>
+            <td>多元化运输通道、应急储备网络、快速响应机制成为供应链建设重点</td>
+            <td>任务1应急评估、任务3协同调度、任务8综合演练</td>
+        </tr>
+    </tbody>
+</table>
+</div>
+
+<!-- ===== 第二部分：能力图谱总图 ===== -->
+<div class="section" id="sec2">
+<h1 class="section-title">第二部分  能力图谱总图</h1>
+
+<p class="no-indent">本部分以"岗位任务→工作流程→能力点→课程子项目→课程任务及课时"的五维映射结构，完整呈现应急物资低空智慧运输项目的能力图谱。共覆盖<strong>8个岗位任务</strong>，对应<strong>3个子项目</strong>、<strong>8个课程任务</strong>，总学时<strong>16学时</strong>。</p>
+
+<div class="subproject-header">子项目一：飞行任务规划（6学时）</div>
+<table class="table-small">
+    <caption data-label="表 2">能力图谱映射表 - 子项目一</caption>
+    <thead>
+        <tr>
+            <th style="width:8%">岗位任务编号</th>
+            <th style="width:15%">岗位任务名称</th>
+            <th style="width:14%">对应岗位</th>
+            <th style="width:22%">工作流程</th>
+            <th style="width:22%">核心能力点</th>
+            <th style="width:10%">课程任务</th>
+            <th style="width:9%">课时</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-01</strong></td>
+            <td>应急运输需求分析与飞行计划制定</td>
+            <td>应急物流调度员/低空物流运营专员</td>
+            <td style="font-size:7.5pt">需求接收<span class="workflow-arrow">→</span>应急评估<span class="workflow-arrow">→</span>任务分解<span class="workflow-arrow">→</span>资源匹配<span class="workflow-arrow">→</span>飞行计划编制<span class="workflow-arrow">→</span>风险预案制定</td>
+            <td style="font-size:7.5pt">应急需求快速研判、多源信息整合分析、运输方案设计、风险评估与预判...</td>
+            <td style="text-align:center">任务1</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-02</strong></td>
+            <td>单点航线规划与空域申请</td>
+            <td>无人机航线规划师/低空物流调度员</td>
+            <td style="font-size:7.5pt">任务分析<span class="workflow-arrow">→</span>航点设定<span class="workflow-arrow">→</span>航线设计<span class="workflow-arrow">→</span>安全评估<span class="workflow-arrow">→</span>SORA风险评估<span class="workflow-arrow">→</span>空域申请<span class="workflow-arrow">→</span>计划审批</td>
+            <td style="font-size:7.5pt">航点设计与优化、航线安全评估、空域法规应用、飞行计划编制...</td>
+            <td style="text-align:center">任务2</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-03</strong></td>
+            <td>网络航线规划与协同调度</td>
+            <td>低空物流运营调度员/配送经理</td>
+            <td style="font-size:7.5pt">网络分析<span class="workflow-arrow">→</span>站点布局<span class="workflow-arrow">→</span>协同规划<span class="workflow-arrow">→</span>运力配置<span class="workflow-arrow">→</span>动态调度<span class="workflow-arrow">→</span>效能评估<span class="workflow-arrow">→</span>方案优化</td>
+            <td style="font-size:7.5pt">网络优化分析、多站点协同规划、运力动态配置、智能调度决策...</td>
+            <td style="text-align:center">任务3</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<div class="subproject-header">子项目二：飞行设备准备（4学时）</div>
+<table class="table-small">
+    <caption data-label="表 3">能力图谱映射表 - 子项目二</caption>
+    <thead>
+        <tr>
+            <th style="width:8%">岗位任务编号</th>
+            <th style="width:15%">岗位任务名称</th>
+            <th style="width:14%">对应岗位</th>
+            <th style="width:22%">工作流程</th>
+            <th style="width:22%">核心能力点</th>
+            <th style="width:10%">课程任务</th>
+            <th style="width:9%">课时</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-04</strong></td>
+            <td>物资包装装载与行前准备</td>
+            <td>无人机物流配送员/特种货物操作员</td>
+            <td style="font-size:7.5pt">物资分类<span class="workflow-arrow">→</span>包装设计<span class="workflow-arrow">→</span>重量配平<span class="workflow-arrow">→</span>装载固定<span class="workflow-arrow">→</span>重心检查<span class="workflow-arrow">→</span>飞行前检查<span class="workflow-arrow">→</span>安全检查单确认</td>
+            <td style="font-size:7.5pt">应急物资分类识别、包装方案设计选择、重量配平计算、安全装载固定...</td>
+            <td style="text-align:center">任务4</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-05</strong></td>
+            <td>多机协同装调与系统调试</td>
+            <td>无人机装调工程师/低空物流系统工程师</td>
+            <td style="font-size:7.5pt">系统架构<span class="workflow-arrow">→</span>单机装调<span class="workflow-arrow">→</span>网络配置<span class="workflow-arrow">→</span>集群通信测试<span class="workflow-arrow">→</span>协同飞行调试<span class="workflow-arrow">→</span>调度系统部署<span class="workflow-arrow">→</span>系统联调联试</td>
+            <td style="font-size:7.5pt">多机系统架构设计、集群通信配置、协同飞行调试、调度系统部署...</td>
+            <td style="text-align:center">任务5</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<div class="subproject-header">子项目三：飞行运输实操（6学时）</div>
+<table class="table-small">
+    <caption data-label="表 4">能力图谱映射表 - 子项目三</caption>
+    <thead>
+        <tr>
+            <th style="width:8%">岗位任务编号</th>
+            <th style="width:15%">岗位任务名称</th>
+            <th style="width:14%">对应岗位</th>
+            <th style="width:22%">工作流程</th>
+            <th style="width:22%">核心能力点</th>
+            <th style="width:10%">课程任务</th>
+            <th style="width:9%">课时</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-06</strong></td>
+            <td>飞行模拟与虚拟仿真演练</td>
+            <td>无人机飞行模拟训练员/虚拟仿真操作员</td>
+            <td style="font-size:7.5pt">仿真环境搭建<span class="workflow-arrow">→</span>飞行参数设置<span class="workflow-arrow">→</span>模拟飞行训练<span class="workflow-arrow">→</span>特情场景设置<span class="workflow-arrow">→</span>应急处置演练<span class="workflow-arrow">→</span>数据采集分析<span class="workflow-arrow">→</span>评估反馈优化</td>
+            <td style="font-size:7.5pt">虚拟仿真系统操作、飞行模拟训练、特情场景构建、应急处置决策...</td>
+            <td style="text-align:center">任务6</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-07</strong></td>
+            <td>飞行实操与物资精准投放</td>
+            <td>无人机驾驶员（飞手）/应急物流投送操作员</td>
+            <td style="font-size:7.5pt">任务确认<span class="workflow-arrow">→</span>设备检查<span class="workflow-arrow">→</span>起飞准备<span class="workflow-arrow">→</span>航线飞行<span class="workflow-arrow">→</span>动态避障<span class="workflow-arrow">→</span>应急判断<span class="workflow-arrow">→</span>精准投放<span class="workflow-arrow">→</span>返航降落<span class="workflow-arrow">→</span>数据记录</td>
+            <td style="font-size:7.5pt">飞行操控技能（视距内/超视距）、动态避障决策、精准投放操作、特情应急处置...</td>
+            <td style="text-align:center">任务7</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>JT-08</strong></td>
+            <td>方案汇报与应急模拟演练</td>
+            <td>应急物流项目经理/低空物流运营主管</td>
+            <td style="font-size:7.5pt">综合方案编制<span class="workflow-arrow">→</span>团队分工<span class="workflow-arrow">→</span>综合演练<span class="workflow-arrow">→</span>数据采集<span class="workflow-arrow">→</span>效能评估<span class="workflow-arrow">→</span>问题分析<span class="workflow-arrow">→</span>方案优化<span class="workflow-arrow">→</span>成果汇报展示</td>
+            <td style="font-size:7.5pt">综合方案设计、演练组织指挥、效能评估分析、持续改进优化...</td>
+            <td style="text-align:center">任务8</td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<div class="highlight-box">
+    <strong>结构说明</strong>：能力图谱以岗位任务为逻辑起点，通过解析典型工作流程提炼核心能力点，进而映射为课程任务。三个子项目按照"规划→准备→实操"的递进逻辑组织，符合岗位工作过程顺序和职业能力成长规律。
+</div>
+</div>
+
+<!-- ===== 第三部分：反向设计逻辑对应表 ===== -->
+<div class="section" id="sec3">
+<h1 class="section-title">第三部分  反向设计逻辑对应表</h1>
+
+<p class="no-indent">本表呈现从岗位任务到课程模块的反向设计逻辑，体现"岗位需求驱动、能力本位设计"的课程开发理念。以岗位真实任务为起点，逐级分解为核心能力、技能点和知识点，最终落实到具体课程任务。</p>
+
+<table class="table-small table-wrap">
+    <caption data-label="表 5">岗位任务→核心能力→技能点→知识点→课程模块 反向设计逻辑对应表</caption>
+    <thead>
+        <tr>
+            <th style="width:16%">岗位任务</th>
+            <th style="width:15%">核心能力</th>
+            <th style="width:24%">技能点</th>
+            <th style="width:26%">知识点</th>
+            <th style="width:10%">课程模块</th>
+            <th style="width:9%">学时</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td><strong>应急运输需求分析与飞行计划制定</strong></td>
+            <td>应急需求研判与飞行计划编制</td>
+            <td style="font-size:7.5pt">需求分析工具使用、方案编制、仿真软件操作、应急评估</td>
+            <td style="font-size:7.5pt">应急物流管理、需求预测、飞行计划要素、风险管理</td>
+            <td style="text-align:center"><strong>任务1</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>单点航线规划与空域申请</strong></td>
+            <td>航线设计与安全评估</td>
+            <td style="font-size:7.5pt">航线规划软件操作、空域申报、风险评估矩阵、气象判读</td>
+            <td style="font-size:7.5pt">航空气象、空域管理法规、SORA方法论、GIS</td>
+            <td style="text-align:center"><strong>任务2</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>网络航线规划与协同调度</strong></td>
+            <td>网络优化与智能协同调度</td>
+            <td style="font-size:7.5pt">智能调度系统操作、协同规划软件、多机协同指挥</td>
+            <td style="font-size:7.5pt">网络优化、群体智能、分布式系统、供应链</td>
+            <td style="text-align:center"><strong>任务3</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>物资包装装载与行前准备</strong></td>
+            <td>载荷配置与安全检查</td>
+            <td style="font-size:7.5pt">包装操作、配平计算、检查单执行、冷链操作</td>
+            <td style="font-size:7.5pt">包装工程、重心稳定性、危险品规定、冷链原理</td>
+            <td style="text-align:center"><strong>任务4</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>多机协同装调与系统调试</strong></td>
+            <td>集群系统部署与调试</td>
+            <td style="font-size:7.5pt">集群配置、网络调试、协同测试、故障诊断</td>
+            <td style="font-size:7.5pt">集群控制、通信技术、系统工程、飞控原理</td>
+            <td style="text-align:center"><strong>任务5</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>飞行模拟与虚拟仿真演练</strong></td>
+            <td>虚拟仿真操作与特情处置</td>
+            <td style="font-size:7.5pt">模拟器操作、场景搭建、特情处置、数据分析</td>
+            <td style="font-size:7.5pt">仿真技术、飞行原理、应急处置、数字孪生</td>
+            <td style="text-align:center"><strong>任务6</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>飞行实操与物资精准投放</strong></td>
+            <td>飞行操控与精准投放</td>
+            <td style="font-size:7.5pt">飞行操控、模式切换、精准投放、避障操作</td>
+            <td style="font-size:7.5pt">操控原理、投放力学、避障技术、飞行法规</td>
+            <td style="text-align:center"><strong>任务7</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+        <tr>
+            <td><strong>方案汇报与应急模拟演练</strong></td>
+            <td>项目运营与综合演练</td>
+            <td style="font-size:7.5pt">项目管理、演练组织、方案优化、汇报展示</td>
+            <td style="font-size:7.5pt">项目管理、演练设计、绩效评估、低空经济法规</td>
+            <td style="text-align:center"><strong>任务8</strong></td>
+            <td style="text-align:center">2学时</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title">反向设计逻辑说明</h2>
+<p class="no-indent">本课程采用"反向设计"（Backward Design）理念，设计流程如下：</p>
+<ol>
+    <li><strong>岗位调研</strong>：通过企业调研、岗位分析，确定应急物资低空智慧运输领域的8个典型岗位任务；</li>
+    <li><strong>工作流程分析</strong>：对每个岗位任务进行工作过程解构，明确典型工作流程和关键节点；</li>
+    <li><strong>能力点提炼</strong>：从工作流程中提炼核心能力点，形成能力清单；</li>
+    <li><strong>知识-技能映射</strong>：将能力点分解为具体的知识点和技能点；</li>
+    <li><strong>课程模块组织</strong>：按照"规划→准备→实操"的逻辑，将知识技能点组织为8个课程任务。</li>
+</ol>
+
+<div class="highlight-box-red">
+    <strong>设计特色</strong>：反向设计确保课程内容的岗位适配性，避免传统"学科导向"课程与岗位需求脱节的弊端。每个课程任务均明确对应1-2个岗位任务，学生通过课程学习即可获得岗位所需的完整能力。
+</div>
+</div>
+
+<!-- ===== 第四部分：岗课赛证融合设计 ===== -->
+<div class="section" id="sec4">
+<h1 class="section-title">第四部分  岗课赛证融合设计</h1>
+
+<p class="no-indent">本课程深度融合岗位标准、技能竞赛要求和职业技能等级证书标准，实现"岗课赛证"四位一体协同育人。学生通过课程学习，可同时提升竞赛能力和考证能力，实现"一课多证、学赛互促"的良性循环。</p>
+
+<h2 class="sub-title" id="sec4-1">4.1 职业技能等级证书对接</h2>
+<p class="no-indent">本课程对接6项职业技能等级标准和2项CAAC驾驶员执照，覆盖课程全部8个任务：</p>
+
+<table class="table-small">
+    <caption data-label="表 6">职业技能等级证书对接表</caption>
+    <thead>
+        <tr>
+            <th style="width:4%">序号</th>
+            <th style="width:24%">证书名称</th>
+            <th style="width:6%">等级</th>
+            <th style="width:15%">对接课程任务</th>
+            <th style="width:36%">证书核心内容</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="text-align:center">1</td>
+            <td>无人机物流运输职业技能等级证书（初级）</td>
+            <td style="text-align:center">初级</td>
+            <td style="text-align:center">任务1、任务4</td>
+            <td style="font-size:7.5pt">需求分析、货物分拣、末端配送、基础维修、行前准备</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">2</td>
+            <td>无人机物流运输职业技能等级证书（中级）</td>
+            <td style="text-align:center">中级</td>
+            <td style="text-align:center">任务2、任务4、任务6、任务7</td>
+            <td style="font-size:7.5pt">视距内安全飞行、航线规划、设备调试检修、模拟飞行、精准投放</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">3</td>
+            <td>无人机物流运输职业技能等级证书（高级）</td>
+            <td style="text-align:center">高级</td>
+            <td style="text-align:center">任务3、任务5、任务8</td>
+            <td style="font-size:7.5pt">网络规划、超视距飞行、多机协同、运营调度、项目管理</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">4</td>
+            <td>物流无人机操作与运维职业技能等级证书（初级）</td>
+            <td style="text-align:center">初级</td>
+            <td style="text-align:center">任务1</td>
+            <td style="font-size:7.5pt">机身检查、视距内起降、日常维护、运营前准备</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">5</td>
+            <td>物流无人机操作与运维职业技能等级证书（中级）</td>
+            <td style="text-align:center">中级</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:7.5pt">系统安装配置、航线飞行、载荷配置、动力装置维护</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">6</td>
+            <td>物流无人机操作与运维职业技能等级证书（高级）</td>
+            <td style="text-align:center">高级</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:7.5pt">系统调试、超视距作业、运营调度、应急处置预案设计</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">7</td>
+            <td>CAAC无人机驾驶员执照（视距内VLOS）</td>
+            <td style="text-align:center">视距内</td>
+            <td style="text-align:center">任务2、任务6、任务7</td>
+            <td style="font-size:7.5pt">视距内飞行操控、GPS模式飞行</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">8</td>
+            <td>CAAC无人机驾驶员执照（超视距BVLOS/机长）</td>
+            <td style="text-align:center">超视距</td>
+            <td style="text-align:center">任务3、任务7、任务8</td>
+            <td style="font-size:7.5pt">超视距飞行、姿态模式、运营调度、任务组织指挥</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title" id="sec4-2">4.2 技能大赛对接</h2>
+<p class="no-indent">本课程对接3项重要技能竞赛，将赛项考核要点融入课程任务：</p>
+
+<table>
+    <caption data-label="表 7">技能大赛对接表</caption>
+    <thead>
+        <tr>
+            <th style="width:5%">序号</th>
+            <th style="width:30%">竞赛名称</th>
+            <th style="width:8%">级别</th>
+            <th style="width:20%">对接课程任务</th>
+            <th style="width:37%">竞赛核心内容</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="text-align:center">1</td>
+            <td>全国职业院校技能大赛-智慧物流赛项（高职组）</td>
+            <td style="text-align:center">国赛</td>
+            <td style="text-align:center">任务1、任务2、任务4、任务6、任务8</td>
+            <td style="font-size:9pt">系统规划仿真、方案实施、素养测试、汇报答辩</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">2</td>
+            <td>全国职业院校技能大赛-无人机操控与维护赛项</td>
+            <td style="text-align:center">国赛</td>
+            <td style="text-align:center">任务5、任务6、任务7</td>
+            <td style="font-size:9pt">飞行操控、组装调试、检测维护、虚拟飞行</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center">3</td>
+            <td>无人系统空地协同赛</td>
+            <td style="text-align:center">行业赛</td>
+            <td style="text-align:center">任务3、任务5、任务7、任务8</td>
+            <td style="font-size:9pt">空地协同、自主定位、集群协同、精准投放</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title" id="sec4-3">4.3 融合路径说明</h2>
+
+<h3 class="sub-sub-title">4.3.1 证书融合路径</h3>
+<p class="no-indent">课程按照"初-中-高"三级能力递进路径组织证书内容：</p>
+<ul>
+    <li><strong>初级层（任务1、4）</strong>：对接无人机物流运输（初级）、物流无人机操作与运维（初级），培养需求分析和行前准备基础能力；</li>
+    <li><strong>中级层（任务2、4、6、7）</strong>：对接无人机物流运输（中级）、CAAC视距内驾驶员，培养航线规划、设备准备和基础飞行能力；</li>
+    <li><strong>高级层（任务3、5、7、8）</strong>：对接无人机物流运输（高级）、物流无人机操作与运维（高级）、CAAC超视距驾驶员，培养协同调度、系统调试和复杂任务能力。</li>
+</ul>
+
+<h3 class="sub-sub-title">4.3.2 竞赛融合路径</h3>
+<p class="no-indent">按照"仿真操作→设备实操→综合演练"的递进路径融入竞赛要求：</p>
+<ul>
+    <li><strong>智慧物流国赛</strong>：侧重系统规划仿真和方案设计，融入任务1、2的规划模块；</li>
+    <li><strong>无人机操控维护国赛</strong>：侧重飞行操控和设备维护，融入任务5、6、7的实操模块；</li>
+    <li><strong>空地协同行业赛</strong>：侧重集群协同和空地配合，融入任务3、5、7、8的综合模块。</li>
+</ul>
+
+<div class="highlight-box">
+    <strong>融合成效</strong>：通过岗课赛证融合设计，学生完成本课程学习后，可达到无人机物流运输初级证书要求，具备中级证书60%以上的能力储备；同时具备参加智慧物流赛项和无人机操控与维护赛项的基础能力。
+</div>
+</div>
+
+<!-- ===== 第五部分：课程类型与能力支撑判定 ===== -->
+<div class="section" id="sec5">
+<h1 class="section-title">第五部分  课程类型与能力支撑判定</h1>
+
+<h2 class="sub-title">5.1 课程任务属性表</h2>
+<p class="no-indent">本课程共设置8个任务，其中必修7项、选修1项，集中实践环节覆盖5个任务：</p>
+
+<table>
+    <caption data-label="表 8">课程任务属性一览表</caption>
+    <thead>
+        <tr>
+            <th style="width:6%">任务编号</th>
+            <th style="width:22%">任务名称</th>
+            <th style="width:10%">所属子项目</th>
+            <th style="width:6%">学时</th>
+            <th style="width:8%">课程类型</th>
+            <th style="width:8%">集中实践</th>
+            <th style="width:20%">对接证书</th>
+            <th style="width:20%">对接竞赛</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="text-align:center"><strong>任务1</strong></td>
+            <td>应急运输需求分析与飞行计划制定</td>
+            <td style="text-align:center;font-size:8pt">飞行任务规划</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">否</td>
+            <td style="font-size:7.5pt">无人机物流运输（初级）-需求分析模块<br>物流无人机操作与运维（初级）-运营前准备</td>
+            <td style="font-size:7.5pt">智慧物流赛项-系统规划仿真<br>1+X物流职业素养测试</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务2</strong></td>
+            <td>单点航线规划与空域申请</td>
+            <td style="text-align:center;font-size:8pt">飞行任务规划</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">否</td>
+            <td style="font-size:7.5pt">无人机物流运输（中级）-航线规划模块<br>CAAC视距内驾驶员</td>
+            <td style="font-size:7.5pt">智慧物流赛项-规划仿真<br>无人机操控与维护赛项</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务3</strong></td>
+            <td>网络航线规划与协同调度</td>
+            <td style="text-align:center;font-size:8pt">飞行任务规划</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">否</td>
+            <td style="font-size:7.5pt">无人机物流运输（高级）-运营调度模块<br>CAAC超视距驾驶员</td>
+            <td style="font-size:7.5pt">无人系统空地协同赛-集群协同<br>智慧物流赛项-方案设计</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务4</strong></td>
+            <td>物资包装装载与行前准备</td>
+            <td style="text-align:center;font-size:8pt">飞行设备准备</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">是</td>
+            <td style="font-size:7.5pt">物流无人机操作与运维（中级）-载荷配置模块<br>无人机物流运输（中级）-设备准备</td>
+            <td style="font-size:7.5pt">智慧物流赛项-方案实施<br>无人机操控与维护赛项-飞行前检查</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务5</strong></td>
+            <td>多机协同装调与系统调试</td>
+            <td style="text-align:center;font-size:8pt">飞行设备准备</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">选修</td>
+            <td style="text-align:center">是</td>
+            <td style="font-size:7.5pt">物流无人机操作与运维（高级）-系统调试模块<br>无人机物流运输（高级）-多机协同</td>
+            <td style="font-size:7.5pt">无人系统空地协同赛-空地协同<br>无人机操控与维护赛项-组装调试</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务6</strong></td>
+            <td>飞行模拟与虚拟仿真演练</td>
+            <td style="text-align:center;font-size:8pt">飞行运输实操</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">是</td>
+            <td style="font-size:7.5pt">无人机物流运输（中级）-模拟飞行模块<br>CAAC视距内驾驶员-模拟训练</td>
+            <td style="font-size:7.5pt">无人机操控与维护赛项-虚拟飞行<br>智慧物流赛项-仿真操作</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务7</strong></td>
+            <td>飞行实操与物资精准投放</td>
+            <td style="text-align:center;font-size:8pt">飞行运输实操</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">是</td>
+            <td style="font-size:7.5pt">CAAC无人机驾驶员执照（视距内/超视距）<br>无人机物流运输（中级/高级）-飞行操控</td>
+            <td style="font-size:7.5pt">无人机操控与维护赛项-飞行操控<br>无人系统空地协同赛-精准投放</td>
+        </tr>
+
+        <tr>
+            <td style="text-align:center"><strong>任务8</strong></td>
+            <td>方案汇报与应急模拟演练</td>
+            <td style="text-align:center;font-size:8pt">飞行运输实操</td>
+            <td style="text-align:center">2学时</td>
+            <td style="text-align:center">必修</td>
+            <td style="text-align:center">是</td>
+            <td style="font-size:7.5pt">无人机物流运输（高级）-运营调度与项目管理<br>CAAC超视距驾驶员</td>
+            <td style="font-size:7.5pt">智慧物流赛项-方案汇报答辩<br>无人系统空地协同赛</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title">5.2 证书支撑能力对应表</h2>
+<table>
+    <caption data-label="表 9">职业技能等级证书对课程任务的支撑覆盖</caption>
+    <thead>
+        <tr>
+            <th style="width:25%">证书名称</th>
+            <th style="width:15%">支撑任务</th>
+            <th style="width:10%">覆盖学时</th>
+            <th style="width:50%">支撑能力说明</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="font-size:9pt">无人机物流运输职业技能等级证书（初级）</td>
+            <td style="text-align:center">任务1、任务4</td>
+            <td style="text-align:center">4学时</td>
+            <td style="font-size:8.5pt">需求分析、货物分拣、末端配送、基础维修、行前准备</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">无人机物流运输职业技能等级证书（中级）</td>
+            <td style="text-align:center">任务2、任务4、任务6、任务7</td>
+            <td style="text-align:center">8学时</td>
+            <td style="font-size:8.5pt">视距内安全飞行、航线规划、设备调试检修、模拟飞行、精准投放</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">无人机物流运输职业技能等级证书（高级）</td>
+            <td style="text-align:center">任务3、任务5、任务8</td>
+            <td style="text-align:center">6学时</td>
+            <td style="font-size:8.5pt">网络规划、超视距飞行、多机协同、运营调度、项目管理</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">物流无人机操作与运维职业技能等级证书（初级）</td>
+            <td style="text-align:center">任务1</td>
+            <td style="text-align:center">2学时</td>
+            <td style="font-size:8.5pt">机身检查、视距内起降、日常维护、运营前准备</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">物流无人机操作与运维职业技能等级证书（中级）</td>
+            <td style="text-align:center">任务4</td>
+            <td style="text-align:center">2学时</td>
+            <td style="font-size:8.5pt">系统安装配置、航线飞行、载荷配置、动力装置维护</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">物流无人机操作与运维职业技能等级证书（高级）</td>
+            <td style="text-align:center">任务5</td>
+            <td style="text-align:center">2学时</td>
+            <td style="font-size:8.5pt">系统调试、超视距作业、运营调度、应急处置预案设计</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">CAAC无人机驾驶员执照（视距内VLOS）</td>
+            <td style="text-align:center">任务2、任务6、任务7</td>
+            <td style="text-align:center">6学时</td>
+            <td style="font-size:8.5pt">视距内飞行操控、GPS模式飞行</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">CAAC无人机驾驶员执照（超视距BVLOS/机长）</td>
+            <td style="text-align:center">任务3、任务7、任务8</td>
+            <td style="text-align:center">6学时</td>
+            <td style="font-size:8.5pt">超视距飞行、姿态模式、运营调度、任务组织指挥</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title">5.3 竞赛支撑能力对应表</h2>
+<table>
+    <caption data-label="表 10">技能竞赛对课程任务的支撑覆盖</caption>
+    <thead>
+        <tr>
+            <th style="width:30%">竞赛名称</th>
+            <th style="width:15%">支撑任务</th>
+            <th style="width:8%">覆盖学时</th>
+            <th style="width:47%">支撑能力说明</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td style="font-size:9pt">全国职业院校技能大赛-智慧物流赛项（高职组）</td>
+            <td style="text-align:center">任务1、任务2、任务4、任务6、任务8</td>
+            <td style="text-align:center">10学时</td>
+            <td style="font-size:8.5pt">系统规划仿真、方案实施、素养测试、汇报答辩</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">全国职业院校技能大赛-无人机操控与维护赛项</td>
+            <td style="text-align:center">任务5、任务6、任务7</td>
+            <td style="text-align:center">6学时</td>
+            <td style="font-size:8.5pt">飞行操控、组装调试、检测维护、虚拟飞行</td>
+        </tr>
+
+        <tr>
+            <td style="font-size:9pt">无人系统空地协同赛</td>
+            <td style="text-align:center">任务3、任务5、任务7、任务8</td>
+            <td style="text-align:center">8学时</td>
+            <td style="font-size:8.5pt">空地协同、自主定位、集群协同、精准投放</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<div class="highlight-box">
+    <strong>统计汇总</strong>：8个课程任务中，7个为必修（14学时），1个为选修（2学时）。5个任务含集中实践环节（10学时）。证书覆盖率达100%，竞赛支撑覆盖率达100%，实现岗课赛证的深度融合。
+</div>
+</div>
+
+
+<h2 class="sub-title">6.4 新材料融入</h2>
+<table class="table-small">
+    <caption data-label="表 14">新材料与课程任务对应表</caption>
+    <thead>
+        <tr>
+            <th style="width:12%">材料类别</th>
+            <th style="width:30%">具体材料</th>
+            <th style="width:15%">融入任务</th>
+            <th style="width:43%">应用场景</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td>结构材料</td>
+            <td>T800碳纤维复材</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:8pt">无人机机身、货舱结构件轻量化与强度增强</td>
+        </tr>
+
+        <tr>
+            <td>结构材料</td>
+            <td>T800碳纤维货舱</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:8pt">无人机机身、货舱结构件轻量化与强度增强</td>
+        </tr>
+
+        <tr>
+            <td>环保材料</td>
+            <td>可降解空投包装材料</td>
+            <td style="text-align:center">任务4、任务7</td>
+            <td style="font-size:8pt">应急空投包装材料，环境友好型降解</td>
+        </tr>
+
+        <tr>
+            <td>能源材料</td>
+            <td>固态电池</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:8pt">无人机高能量密度动力电池</td>
+        </tr>
+
+        <tr>
+            <td>温控材料</td>
+            <td>智能温控传感包装材料</td>
+            <td style="text-align:center">任务1</td>
+            <td style="font-size:8pt">医药、生鲜等温控物资运输包装</td>
+        </tr>
+
+        <tr>
+            <td>防护材料</td>
+            <td>智能缓冲材料</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:8pt">易碎物资缓冲保护包装</td>
+        </tr>
+
+        <tr>
+            <td>温控材料</td>
+            <td>温控冷链箱</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:8pt">医药、生鲜等温控物资运输包装</td>
+        </tr>
+
+        <tr>
+            <td>结构材料</td>
+            <td>芳纶复合材料</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:8pt">无人机机身、货舱结构件轻量化与强度增强</td>
+        </tr>
+
+        <tr>
+            <td>结构材料</td>
+            <td>芳纶抗冲击材料</td>
+            <td style="text-align:center">任务7</td>
+            <td style="font-size:8pt">无人机机身、货舱结构件轻量化与强度增强</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title">6.5 新装备融入</h2>
+<table class="table-small">
+    <caption data-label="表 15">新装备与课程任务对应表</caption>
+    <thead>
+        <tr>
+            <th style="width:12%">装备类别</th>
+            <th style="width:28%">具体装备</th>
+            <th style="width:15%">融入任务</th>
+            <th style="width:45%">功能说明</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">ES1000支线无人机</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:8pt">电动垂直起降支线无人机，载重超500kg</td>
+        </tr>
+
+        <tr>
+            <td>调度系统</td>
+            <td style="font-size:9pt">UTMISS国家监管平台</td>
+            <td style="text-align:center">任务1</td>
+            <td style="font-size:8pt">无人机任务调度与飞行监控系统，支持多机协同和空域管理</td>
+        </tr>
+
+        <tr>
+            <td>仿真设备</td>
+            <td style="font-size:9pt">VR仿真设备</td>
+            <td style="text-align:center">任务6</td>
+            <td style="font-size:8pt">飞行模拟训练与虚拟仿真设备，用于安全高效的飞行训练</td>
+        </tr>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">丰翼丰舟90</td>
+            <td style="text-align:center">任务7</td>
+            <td style="font-size:8pt">美团/丰翼大型物流无人机，载重30-50kg，用于重物配送</td>
+        </tr>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">丰翼方舟40</td>
+            <td style="text-align:center">任务3、任务8</td>
+            <td style="font-size:8pt">丰翼科技中型物流无人机，载重10kg，航程20km，用于支线配送</td>
+        </tr>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">京东JDX50京燕</td>
+            <td style="text-align:center">任务3、任务5</td>
+            <td style="font-size:8pt">京东物流小型配送无人机，载重5-10kg，用于末端配送</td>
+        </tr>
+
+        <tr>
+            <td>温控设备</td>
+            <td style="font-size:9pt">冷链箱</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:8pt">医药冷链运输温控设备</td>
+        </tr>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">双尾蝎D</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:8pt">大型货运无人机，载重1.5吨级，用于干线运输</td>
+        </tr>
+
+        <tr>
+            <td>调度系统</td>
+            <td style="font-size:9pt">地面站规划系统</td>
+            <td style="text-align:center">任务2</td>
+            <td style="font-size:8pt">无人机任务调度与飞行监控系统，支持多机协同和空域管理</td>
+        </tr>
+
+        <tr>
+            <td>仿真设备</td>
+            <td style="font-size:9pt">数字孪生平台</td>
+            <td style="text-align:center">任务6</td>
+            <td style="font-size:8pt">飞行模拟训练与虚拟仿真设备，用于安全高效的飞行训练</td>
+        </tr>
+
+        <tr>
+            <td>地面设备</td>
+            <td style="font-size:9pt">智能分拣机器人</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:8pt">货物分拣、称重与平衡检测设备</td>
+        </tr>
+
+        <tr>
+            <td>终端设备</td>
+            <td style="font-size:9pt">智能接驳柜</td>
+            <td style="text-align:center">任务3、任务8</td>
+            <td style="font-size:8pt">智能快递接驳柜，支持无人机自动装卸货</td>
+        </tr>
+
+        <tr>
+            <td>辅助设备</td>
+            <td style="font-size:9pt">气象监测设备</td>
+            <td style="text-align:center">任务2</td>
+            <td style="font-size:8pt">航空气象监测设备，提供实时气象数据支持</td>
+        </tr>
+
+        <tr>
+            <td>感知设备</td>
+            <td style="font-size:9pt">激光雷达模块</td>
+            <td style="text-align:center">任务7</td>
+            <td style="font-size:8pt">128线激光雷达+视觉融合避障系统，保障飞行安全</td>
+        </tr>
+
+        <tr>
+            <td>调度系统</td>
+            <td style="font-size:9pt">物流调度信息系统（TBOS）</td>
+            <td style="text-align:center">任务1</td>
+            <td style="font-size:8pt">无人机任务调度与飞行监控系统，支持多机协同和空域管理</td>
+        </tr>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">白鲸航线W5000</td>
+            <td style="text-align:center">任务8</td>
+            <td style="font-size:8pt">白鲸航线大型无人货运机，载重5吨级</td>
+        </tr>
+
+        <tr>
+            <td>地面设备</td>
+            <td style="font-size:9pt">称重平衡设备</td>
+            <td style="text-align:center">任务4</td>
+            <td style="font-size:8pt">货物分拣、称重与平衡检测设备</td>
+        </tr>
+
+        <tr>
+            <td>支援设备</td>
+            <td style="font-size:9pt">系留无人机基站</td>
+            <td style="text-align:center">任务7、任务8</td>
+            <td style="font-size:8pt">系留无人机基站，提供长时间空中驻留和通信中继</td>
+        </tr>
+
+        <tr>
+            <td>无人机平台</td>
+            <td style="font-size:9pt">美团FP400</td>
+            <td style="text-align:center">任务7</td>
+            <td style="font-size:8pt">美团/丰翼大型物流无人机，载重30-50kg，用于重物配送</td>
+        </tr>
+
+        <tr>
+            <td>调试设备</td>
+            <td style="font-size:9pt">调试工具套装</td>
+            <td style="text-align:center">任务5</td>
+            <td style="font-size:8pt">无人机系统装调与测试工具套装</td>
+        </tr>
+
+        <tr>
+            <td>仿真设备</td>
+            <td style="font-size:9pt">飞行模拟器</td>
+            <td style="text-align:center">任务6</td>
+            <td style="font-size:8pt">飞行模拟训练与虚拟仿真设备，用于安全高效的飞行训练</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2 class="sub-title">6.6 五新融合总结</h2>
+
+<table>
+    <caption data-label="表 16">五新要素融合统计</caption>
+    <thead>
+        <tr>
+            <th style="width:12%">类别</th>
+            <th style="width:8%">数量</th>
+            <th style="width:30%">代表性要素</th>
+            <th style="width:20%">主要融入任务</th>
+            <th style="width:30%">融入成效</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>新技术</strong></td>
+            <td style="text-align:center">26项</td>
+            <td>数字孪生、AI路径规划、5G-A通信、北斗+RTK</td>
+            <td style="text-align:center">任务1-8全覆盖</td>
+            <td>提升数字化能力和技术创新意识</td>
+        </tr>
+        <tr>
+            <td><strong>新工艺</strong></td>
+            <td style="text-align:center">17项</td>
+            <td>干-支-末协同配送、冷链温控、精准投放</td>
+            <td style="text-align:center">任务3、4、7、8</td>
+            <td>对接真实岗位作业流程</td>
+        </tr>
+        <tr>
+            <td><strong>新规范</strong></td>
+            <td style="text-align:center">14项</td>
+            <td>SORA风险评估、无人机配送运行规范、空域分类</td>
+            <td style="text-align:center">任务1、2、7、8</td>
+            <td>强化法规意识和合规操作</td>
+        </tr>
+        <tr>
+            <td><strong>新材料</strong></td>
+            <td style="text-align:center">9项</td>
+            <td>T800碳纤维、温控冷链箱、可降解包装</td>
+            <td style="text-align:center">任务4、5、7</td>
+            <td>支撑绿色物流与结构创新</td>
+        </tr>
+        <tr>
+            <td><strong>新装备</strong></td>
+            <td style="text-align:center">21项</td>
+            <td>丰翼方舟40、京东JDX50、双尾蝎D、丰舟90</td>
+            <td style="text-align:center">任务2、3、5、7、8</td>
+            <td>对接产业主流装备平台</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="highlight-box-red">
+    <strong>五新融入成效</strong>：本课程共融入26项新技术、17项新工艺、14项新规范、9项新材料、21项新装备，合计87项前沿要素，覆盖全部8个课程任务。通过"五新"融入，确保课程内容与产业发展同步，学生所学即所用。
+</div>
+
+</div>
+
+</body>
+</html>

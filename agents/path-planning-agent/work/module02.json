@@ -1,0 +1,181 @@
+{
+  "assignments": [
+    {
+      "point_id": "v1",
+      "point_name": "怀渠村",
+      "materials": [
+        {
+          "name": "柴油发电机",
+          "unit_weight": 30,
+          "qty": 2,
+          "subtotal": 60
+        },
+        {
+          "name": "电缆(百米)",
+          "unit_weight": 20,
+          "qty": 2,
+          "subtotal": 40
+        }
+      ],
+      "total_weight": 100,
+      "priority": 2,
+      "delivery_mode": "optional",
+      "special_requirements": "重载、精密"
+    },
+    {
+      "point_id": "v2",
+      "point_name": "塘麻村",
+      "materials": [
+        {
+          "name": "矿泉水(箱)",
+          "unit_weight": 12,
+          "qty": 40,
+          "subtotal": 480
+        },
+        {
+          "name": "棉被",
+          "unit_weight": 3,
+          "qty": 30,
+          "subtotal": 90
+        }
+      ],
+      "total_weight": 570,
+      "priority": 3,
+      "delivery_mode": "optional",
+      "special_requirements": "普通配送"
+    },
+    {
+      "point_id": "v3",
+      "point_name": "坡乐村",
+      "materials": [
+        {
+          "name": "大米(袋)",
+          "unit_weight": 20,
+          "qty": 1,
+          "subtotal": 20
+        },
+        {
+          "name": "折叠床",
+          "unit_weight": 15,
+          "qty": 8,
+          "subtotal": 120
+        }
+      ],
+      "total_weight": 140,
+      "priority": 2,
+      "delivery_mode": "optional",
+      "special_requirements": "普通配送；体量较大"
+    },
+    {
+      "point_id": "v4",
+      "point_name": "东风村",
+      "materials": [
+        {
+          "name": "急救包",
+          "unit_weight": 2,
+          "qty": 50,
+          "subtotal": 100
+        },
+        {
+          "name": "消毒物资(箱)",
+          "unit_weight": 5,
+          "qty": 30,
+          "subtotal": 150
+        }
+      ],
+      "total_weight": 250,
+      "priority": 1,
+      "delivery_mode": "optional",
+      "special_requirements": "医疗优先"
+    },
+    {
+      "point_id": "v5",
+      "point_name": "古桥村",
+      "materials": [
+        {
+          "name": "方便食品(份)",
+          "unit_weight": 0.5,
+          "qty": 50,
+          "subtotal": 25.0
+        },
+        {
+          "name": "矿泉水(箱)",
+          "unit_weight": 12,
+          "qty": 3,
+          "subtotal": 36
+        }
+      ],
+      "total_weight": 61.0,
+      "priority": 3,
+      "delivery_mode": "optional",
+      "special_requirements": "普通配送"
+    },
+    {
+      "point_id": "v6",
+      "point_name": "新和村",
+      "materials": [
+        {
+          "name": "胰岛素(冷藏箱)",
+          "unit_weight": 0.5,
+          "qty": 30,
+          "subtotal": 15.0
+        },
+        {
+          "name": "疫苗(冷藏箱)",
+          "unit_weight": 0.1,
+          "qty": 50,
+          "subtotal": 5.0
+        }
+      ],
+      "total_weight": 20.0,
+      "priority": 1,
+      "delivery_mode": "optional",
+      "special_requirements": "冷链运输"
+    },
+    {
+      "point_id": "v7",
+      "point_name": "怀书村",
+      "materials": [
+        {
+          "name": "帐篷",
+          "unit_weight": 15,
+          "qty": 5,
+          "subtotal": 75
+        },
+        {
+          "name": "御寒衣物(套)",
+          "unit_weight": 2,
+          "qty": 35,
+          "subtotal": 70
+        }
+      ],
+      "total_weight": 145,
+      "priority": 3,
+      "delivery_mode": "optional",
+      "special_requirements": "体量较大"
+    },
+    {
+      "point_id": "v8",
+      "point_name": "雅力村",
+      "materials": [
+        {
+          "name": "抽水泵",
+          "unit_weight": 25,
+          "qty": 2,
+          "subtotal": 50
+        },
+        {
+          "name": "电缆(百米)",
+          "unit_weight": 50,
+          "qty": 3,
+          "subtotal": 150
+        }
+      ],
+      "total_weight": 200,
+      "priority": 2,
+      "delivery_mode": "optional",
+      "special_requirements": "重载、精密"
+    }
+  ],
+  "saved_at": "2026-05-26T19:00:00"
+}

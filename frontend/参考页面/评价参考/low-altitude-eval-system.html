@@ -1,0 +1,5289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>应急物资低空智慧运输 - 多元融合评价系统</title>
+  <!-- ECharts 5.x CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <!-- Font Awesome 6.x CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ============================================================
+       低空应急智慧评价系统 - 全局样式
+       主题：深色科技风（深蓝暗色）
+       ============================================================ */
+
+    /* ===== CSS变量定义 ===== */
+    :root {
+      --bg-primary: #0a1628;
+      --bg-secondary: #0d1f3c;
+      --bg-card: #0d1f3c;
+      --border-color: #1a3a5c;
+      --accent-cyan: #00d4ff;
+      --accent-cyan-dim: rgba(0, 212, 255, 0.15);
+      --text-primary: #e0e8f0;
+      --text-secondary: #8b9dc3;
+      --success: #00e676;
+      --warning: #ffc400;
+      --danger: #ff5252;
+      --shadow-glow: 0 4px 20px rgba(0, 212, 255, 0.1);
+      --radius-card: 8px;
+      --radius-btn: 6px;
+      --font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    /* ===== 全局重置 ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-family);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    /* ===== 滚动条样式 ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+
+    /* ===== 顶部导航栏 ===== */
+    .top-nav {
+      height: 56px;
+      background: linear-gradient(90deg, #0a1628 0%, #0d1f3c 100%);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: relative;
+      z-index: 100;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    }
+
+    .nav-logo i { font-size: 22px; }
+
+    .role-switcher {
+      display: flex;
+      gap: 8px;
+      background: rgba(26, 58, 92, 0.5);
+      border-radius: var(--radius-btn);
+      padding: 4px;
+    }
+
+    .role-btn {
+      padding: 6px 16px;
+      border: none;
+      border-radius: var(--radius-btn);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .role-btn:hover {
+      color: var(--text-primary);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .role-btn.active {
+      background: var(--accent-cyan);
+      color: #0a1628;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .live-time {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent-cyan);
+      font-weight: 500;
+    }
+
+    /* ===== 主体布局 ===== */
+    .main-layout {
+      display: flex;
+      height: calc(100vh - 56px - 36px);
+      overflow: hidden;
+    }
+
+    /* ===== 左侧边栏 ===== */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .group-section {
+      margin-bottom: 8px;
+    }
+
+    .group-title {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 212, 255, 0.05);
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .student-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+
+    .student-item:hover {
+      background: rgba(0, 212, 255, 0.05);
+    }
+
+    .student-item.active {
+      background: var(--accent-cyan-dim);
+      border-left-color: var(--accent-cyan);
+    }
+
+    .student-item.active .student-name {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .student-avatar {
+      font-size: 24px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(26, 58, 92, 0.5);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .student-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .student-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .student-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .role-tag {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .role-tag.leader {
+      background: rgba(0, 212, 255, 0.2);
+      color: var(--accent-cyan);
+    }
+
+    .role-tag.member {
+      background: rgba(139, 157, 195, 0.15);
+      color: var(--text-secondary);
+    }
+
+    .student-score-mini {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--success);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .student-score-mini.warning { color: var(--warning); }
+    .student-score-mini.danger { color: var(--danger); }
+
+    /* ===== 主内容区 ===== */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    /* ===== Tab 切换栏 ===== */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      padding: 12px 20px 0;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-primary);
+    }
+
+    .tab-btn {
+      padding: 10px 24px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-cyan);
+    }
+
+    /* ===== Tab 内容面板 ===== */
+    .tab-panels {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ===== 卡片通用样式 ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(26, 58, 92, 0.5);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i {
+      color: var(--accent-cyan);
+      font-size: 18px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .card-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-success { background: rgba(0, 230, 118, 0.15); color: var(--success); }
+    .badge-warning { background: rgba(255, 196, 0, 0.15); color: var(--warning); }
+    .badge-danger { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
+    .badge-info { background: rgba(0, 212, 255, 0.15); color: var(--accent-cyan); }
+
+    /* ===== 评价面板布局 ===== */
+    .eval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .eval-grid .card:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1200px) {
+      .eval-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===== 表单元素 ===== */
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(26, 58, 92, 0.3);
+    }
+
+    .form-row:last-child { border-bottom: none; }
+
+    .form-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-label .max-mark {
+      font-size: 11px;
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    .form-input {
+      width: 80px;
+      padding: 6px 10px;
+      background: rgba(10, 22, 40, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-btn);
+      color: var(--text-primary);
+      font-size: 13px;
+      text-align: center;
+      transition: all 0.3s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+    }
+
+    .form-input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .form-input.is-warning {
+      border-color: var(--warning);
+      box-shadow: 0 0 8px rgba(255, 196, 0, 0.2);
+    }
+
+    .form-input.is-danger {
+      border-color: var(--danger);
+      box-shadow: 0 0 8px rgba(255, 82, 82, 0.2);
+    }
+
+    .form-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .form-value.score { color: var(--success); }
+    .form-value.warning { color: var(--warning); }
+    .form-value.danger { color: var(--danger); }
+
+    /* ===== 开关样式 ===== */
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch.on {
+      background: var(--danger);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-switch.on::after {
+      transform: translateX(20px);
+    }
+
+    /* ===== 按钮样式 ===== */
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      background: rgba(26, 58, 92, 0.4);
+      color: var(--text-primary);
+      border-radius: var(--radius-btn);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: #0a1628;
+      border-color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: #33ddff;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .btn-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 82, 82, 0.15);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ===== AI 操作按钮特殊样式 ===== */
+    .btn-ai {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 230, 118, 0.1));
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-ai::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(0, 212, 255, 0.1) 50%,
+        transparent 70%
+      );
+      animation: ai-shimmer 3s infinite;
+    }
+
+    @keyframes ai-shimmer {
+      0% { transform: translateX(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) rotate(45deg); }
+    }
+
+    .btn-ai:hover {
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-ai i {
+      animation: ai-pulse 2s infinite;
+    }
+
+    @keyframes ai-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ===== 小计行 ===== */
+    .subtotal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      margin-top: 8px;
+      border-top: 2px solid var(--border-color);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .subtotal-label { color: var(--text-primary); }
+    .subtotal-value { color: var(--accent-cyan); font-size: 18px; }
+
+    /* ===== 总分展示区 ===== */
+    .total-score-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(0, 230, 118, 0.05));
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .score-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--accent-cyan);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    }
+
+    .score-circle .score-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      line-height: 1;
+    }
+
+    .score-circle .score-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .score-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .break-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .break-label { color: var(--text-secondary); width: 80px; }
+    .break-value {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ===== 数据大屏布局 ===== */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 16px;
+    }
+
+    .dashboard-top {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .dashboard-left { grid-column: 1; }
+    .dashboard-center { grid-column: 2; }
+    .dashboard-right { grid-column: 3; }
+
+    .dashboard-row2 {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-card .chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-card .chart-title i {
+      color: var(--accent-cyan);
+    }
+
+    .chart-container {
+      flex: 1;
+      min-height: 220px;
+    }
+
+    /* ===== 事件流样式 ===== */
+    .event-stream {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .event-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(26, 58, 92, 0.3);
+      animation: event-slide-in 0.5s ease;
+    }
+
+    @keyframes event-slide-in {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .event-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .event-dot.success { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .event-dot.warning { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+    .event-dot.danger { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+    .event-dot.info { background: var(--accent-cyan); box-shadow: 0 0 6px var(--accent-cyan); }
+
+    .event-content {
+      flex: 1;
+    }
+
+    .event-text {
+      font-size: 12px;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .event-time {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* ===== 底部状态栏 ===== */
+    .status-bar {
+      height: 36px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ai-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: status-blink 2s infinite;
+    }
+
+    @keyframes status-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== 模态框 ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 22, 40, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-glow);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: rgba(26, 58, 92, 0.5);
+      color: var(--text-secondary);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    /* ===== 复选框组 ===== */
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: var(--radius-btn);
+      transition: background 0.2s ease;
+    }
+
+    .checkbox-item:hover {
+      background: rgba(0, 212, 255, 0.05);
+    }
+
+    .custom-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .custom-checkbox.checked {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .custom-checkbox.checked::after {
+      content: '\2713';
+      color: #0a1628;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .checkbox-label {
+      font-size: 13px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .checkbox-score {
+      font-size: 12px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    /* ===== 滑块样式 ===== */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+    }
+
+    .slider-value {
+      width: 36px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    /* ===== 提示文字 ===== */
+    .hint-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hint-text.warning { color: var(--warning); }
+    .hint-text.danger { color: var(--danger); }
+
+    /* ===== 安全否决警告遮罩 ===== */
+    .safety-warning-banner {
+      background: rgba(255, 82, 82, 0.1);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-btn);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--danger);
+      font-size: 13px;
+      margin-bottom: 16px;
+      animation: safety-pulse 2s infinite;
+    }
+
+    @keyframes safety-pulse {
+      0%, 100% { box-shadow: 0 0 5px rgba(255, 82, 82, 0.2); }
+      50% { box-shadow: 0 0 15px rgba(255, 82, 82, 0.4); }
+    }
+
+    .safety-active .card {
+      border-color: rgba(255, 82, 82, 0.5);
+    }
+
+    /* ===== 链接显示 ===== */
+    .wiki-link {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .wiki-link:hover {
+      text-decoration: underline;
+    }
+
+    .keyword-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .keyword-tag {
+      padding: 2px 8px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--accent-cyan);
+    }
+
+    .keyword-tag.missing {
+      background: rgba(255, 82, 82, 0.1);
+      border-color: rgba(255, 82, 82, 0.3);
+      color: var(--danger);
+      text-decoration: line-through;
+    }
+
+    /* ===== AI追踪数据展示 ===== */
+    .ai-tracking-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .tracking-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(10, 22, 40, 0.5);
+      border-radius: var(--radius-btn);
+      border: 1px solid var(--border-color);
+    }
+
+    .tracking-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tracking-value.warning { color: var(--warning); }
+    .tracking-value.danger { color: var(--danger); }
+
+    .tracking-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ===== 互评展示 ===== */
+    .peer-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .peer-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 4px 8px;
+      background: rgba(10, 22, 40, 0.5);
+      border-radius: 4px;
+    }
+
+    .peer-name { color: var(--text-secondary); }
+    .peer-score { color: var(--text-primary); font-weight: 600; }
+
+    /* ===== 空状态 ===== */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* ===== 企业专家标注 ===== */
+    .enterprise-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(255, 196, 0, 0.15);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--warning);
+      margin-left: 8px;
+    }
+
+    /* ===== 页面顶部统计条 ===== */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      text-align: center;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .stat-item:hover {
+      box-shadow: var(--shadow-glow);
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-value.warning { color: var(--warning); }
+    .stat-value.danger { color: var(--danger); }
+    .stat-value.success { color: var(--success); }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 1400px) {
+      .dashboard-container { grid-template-columns: 1fr 1fr; }
+      .dashboard-row2 { grid-template-columns: 1fr 1fr; }
+      .dashboard-left { grid-column: 1; }
+      .dashboard-center { grid-column: 2; }
+      .dashboard-right { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; min-width: 200px; }
+      .eval-grid { grid-template-columns: 1fr; }
+      .dashboard-container,
+      .dashboard-row2,
+      .dashboard-top { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 顶部导航栏 ===== -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="nav-logo">
+        <i class="fas fa-helicopter"></i>
+        <span>低空应急智慧评价系统</span>
+      </div>
+      <div class="role-switcher">
+        <button class="role-btn active" data-role="teacher" onclick="switchRole('teacher')">
+          <span>👨‍🏫</span> 教师
+        </button>
+        <button class="role-btn" data-role="student" onclick="switchRole('student')">
+          <span>🎓</span> 学生
+        </button>
+        <button class="role-btn" data-role="enterprise" onclick="switchRole('enterprise')">
+          <span>🏭</span> 企业专家
+        </button>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span><i class="fas fa-book"></i> 应急物资低空智慧运输</span>
+      <span class="live-time" id="live-clock">--:--:--</span>
+    </div>
+  </nav>
+
+  <!-- ===== 主体布局 ===== -->
+  <div class="main-layout">
+    <!-- 左侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-users"></i> 小组与学生列表
+      </div>
+      <div id="sidebar-content">
+        <!-- 动态渲染 -->
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="content-area">
+      <!-- Tab 切换栏 -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="eval" onclick="switchTab('eval')">
+          <i class="fas fa-clipboard-check"></i> 评价操作面板
+        </button>
+        <button class="tab-btn" data-tab="dashboard" onclick="switchTab('dashboard')">
+          <i class="fas fa-chart-line"></i> 数据大屏
+        </button>
+      </div>
+
+      <!-- Tab 内容面板 -->
+      <div class="tab-panels">
+        <!-- 评价操作面板 -->
+        <div class="tab-panel active" id="panel-eval">
+          <div id="eval-content">
+            <!-- 动态渲染 -->
+          </div>
+        </div>
+
+        <!-- 数据大屏 -->
+        <div class="tab-panel" id="panel-dashboard">
+          <div class="dashboard-container" id="dashboard-content">
+            <!-- 动态渲染 -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== 底部状态栏 ===== -->
+  <footer class="status-bar">
+    <div class="status-left">
+      <span><i class="fas fa-clock"></i> 最后更新: <span id="last-update">--</span></span>
+    </div>
+    <div class="status-right">
+      <div class="ai-status">
+        <span class="status-dot"></span>
+        <span>AI 服务运行中</span>
+      </div>
+      <span>v2.0.0</span>
+    </div>
+  </footer>
+
+  <!-- ===== 模态框容器 ===== -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">标题</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modal-body">
+        <!-- 动态内容 -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       JavaScript 核心逻辑
+       ============================================================ -->
+  <script>
+    // ============================================================
+    // 第一部分：数据模型与常量定义
+    // ============================================================
+
+    /** 当前用户角色：teacher | student | enterprise */
+    let currentRole = 'teacher';
+    /** 当前登录学生ID（角色为学生时有效） */
+    let currentStudentId = null;
+    /** 当前选中的学生ID */
+    let selectedStudentId = 's1';
+    /** 当前激活的Tab */
+    let currentTab = 'eval';
+    /** 评价数据（从localStorage加载或默认数据） */
+    let evalData = null;
+    /** ECharts 实例缓存 */
+    const chartInstances = {};
+
+    // ===== 模拟初始数据 =====
+    const DEMO_STUDENTS = [
+      { id: 's1', name: '张明', groupId: 'g1', groupName: '雄鹰组', role: '组长', avatar: '👨‍✈️' },
+      { id: 's2', name: '李婷', groupId: 'g1', groupName: '雄鹰组', role: '组员', avatar: '👩‍✈️' },
+      { id: 's3', name: '王浩', groupId: 'g1', groupName: '雄鹰组', role: '组员', avatar: '👨‍🔧' },
+      { id: 's4', name: '陈雪', groupId: 'g2', groupName: '智运组', role: '组长', avatar: '👩‍💼' },
+      { id: 's5', name: '刘洋', groupId: 'g2', groupName: '智运组', role: '组员', avatar: '👨‍💻' },
+      { id: 's6', name: '赵琳', groupId: 'g2', groupName: '智运组', role: '组员', avatar: '👩‍🔬' }
+    ];
+
+    /** 评价数据结构模板 */
+    const DEFAULT_EVAL_DATA = {
+      // 过程性评价（满分100，权重40%）
+      process: {
+        s1: { wikiScore: 25, wikiKeywords: ['应急物流', 'SORA', '航线规划'], wikiLink: 'https://wiki.example.com/s1',
+              presentationScore: 28, peerScores: { s2: 4.5, s3: 4.8 },
+              selfContribution: 18,
+              aiTracking: { loginDays: 12, studyHours: 45, completion: 92 } },
+        s2: { wikiScore: 22, wikiKeywords: ['配平', '集群控制'], wikiLink: 'https://wiki.example.com/s2',
+              presentationScore: 26, peerScores: { s1: 4.2, s3: 4.0 },
+              selfContribution: 12,
+              aiTracking: { loginDays: 10, studyHours: 38, completion: 78 } },
+        s3: { wikiScore: 20, wikiKeywords: ['RTK', '空投精度'], wikiLink: '',
+              presentationScore: 24, peerScores: { s1: 3.8, s2: 4.0 },
+              selfContribution: 12,
+              aiTracking: { loginDays: 8, studyHours: 30, completion: 65 } },
+        s4: { wikiScore: 27, wikiKeywords: ['禁飞区', '特情处置', '数字孪生'], wikiLink: 'https://wiki.example.com/s4',
+              presentationScore: 29, peerScores: { s5: 4.8, s6: 4.6 },
+              selfContribution: 19,
+              aiTracking: { loginDays: 14, studyHours: 52, completion: 96 } },
+        s5: { wikiScore: 23, wikiKeywords: ['空域申请', '风险评估'], wikiLink: 'https://wiki.example.com/s5',
+              presentationScore: 25, peerScores: { s4: 4.0, s6: 4.2 },
+              selfContribution: 18,
+              aiTracking: { loginDays: 11, studyHours: 40, completion: 82 } },
+        s6: { wikiScore: 21, wikiKeywords: ['应急物流'], wikiLink: '',
+              presentationScore: 23, peerScores: { s4: 3.9, s5: 4.1 },
+              selfContribution: 19,
+              aiTracking: { loginDays: 9, studyHours: 33, completion: 70 } }
+      },
+      // 结果性评价（满分100，权重60%）
+      result: {
+        s1: { planDoc: 13, packagePlan: 4.5, dispatchPlan: 8,
+              simulation: 13, realFlight: 22, multiDrone: 9,
+              defensePPT: 8.5, teamShow: 4.5, ideology: 4.5,
+              enterpriseOp: { simulation: 12, realFlight: 21, multiDrone: 8.5 } },
+        s2: { planDoc: 12, packagePlan: 4.0, dispatchPlan: 7,
+              simulation: 12, realFlight: 20, multiDrone: 8,
+              defensePPT: 8.0, teamShow: 4.0, ideology: 4.0,
+              enterpriseOp: { simulation: 11, realFlight: 19, multiDrone: 8 } },
+        s3: { planDoc: 11, packagePlan: 3.5, dispatchPlan: 6.5,
+              simulation: 11, realFlight: 18, multiDrone: 7,
+              defensePPT: 7.5, teamShow: 3.5, ideology: 3.5,
+              enterpriseOp: { simulation: 10, realFlight: 17, multiDrone: 7 } },
+        s4: { planDoc: 14, packagePlan: 4.8, dispatchPlan: 9,
+              simulation: 14, realFlight: 24, multiDrone: 9.5,
+              defensePPT: 9.0, teamShow: 4.8, ideology: 4.8,
+              enterpriseOp: { simulation: 13, realFlight: 23, multiDrone: 9 } },
+        s5: { planDoc: 12, packagePlan: 4.2, dispatchPlan: 7.5,
+              simulation: 12, realFlight: 21, multiDrone: 8.5,
+              defensePPT: 8.2, teamShow: 4.2, ideology: 4.2,
+              enterpriseOp: { simulation: 11, realFlight: 20, multiDrone: 8 } },
+        s6: { planDoc: 11, packagePlan: 3.8, dispatchPlan: 7,
+              simulation: 11, realFlight: 19, multiDrone: 7.5,
+              defensePPT: 7.8, teamShow: 3.8, ideology: 3.8,
+              enterpriseOp: { simulation: 10, realFlight: 18, multiDrone: 7.5 } }
+      },
+      // 发展性评价附加分
+      development: {
+        g1: { realUser: 3, techBreakthrough: 2, management: 1 },
+        g2: { realUser: 2, techBreakthrough: 1, management: 2 }
+      },
+      // 安全否决
+      safetyVeto: { s1: false, s2: false, s3: false, s4: false, s5: false, s6: false },
+      // WIKI日志提交
+      wikiLogs: [
+        { studentId: 's1', week: 1, link: 'https://wiki.example.com/s1/w1', keywords: ['应急物流', 'SORA'], submitTime: '2026-05-20' },
+        { studentId: 's4', week: 1, link: 'https://wiki.example.com/s4/w1', keywords: ['禁飞区', '特情处置'], submitTime: '2026-05-20' }
+      ]
+    };
+
+    /** 关键词词库（AI检查用） */
+    const KEYWORD_DATABASE = ['应急物流', 'SORA', '配平', '集群控制', '航线规划', 'RTK', '空投精度', '禁飞区', '特情处置', '数字孪生', '空域申请', '风险评估'];
+
+    /** 组内自评总分池限制 */
+    const CONTRIBUTION_POOL = { 3: 42, 4: 56 };
+
+    // ===== 预警事件数据 =====
+    const WARNING_EVENTS = [
+      { type: 'warning', text: '王浩(s3) 近7天未提交WIKI日志', time: '10分钟前' },
+      { type: 'danger', text: '王浩(s3) AI过程追踪完成度低于70%', time: '15分钟前' },
+      { type: 'success', text: '陈雪(s4) 真机飞行获得企业专家满分', time: '30分钟前' },
+      { type: 'info', text: '雄鹰组 组内自评贡献分总分池校验通过', time: '1小时前' },
+      { type: 'warning', text: '赵琳(s6) 虚拟仿真得分低于组均', time: '2小时前' },
+      { type: 'success', text: '张明(s1) WIKI关键词覆盖率100%', time: '3小时前' },
+      { type: 'info', text: '系统自动备份评价数据完成', time: '4小时前' }
+    ];
+
+    // ============================================================
+    // 第二部分：数据持久化工具函数
+    // ============================================================
+
+    /**
+     * 保存评价数据到 localStorage
+     */
+    function saveData() {
+      try {
+        localStorage.setItem('evaluation_data', JSON.stringify(evalData));
+        document.getElementById('last-update').textContent = new Date().toLocaleString('zh-CN');
+      } catch (e) {
+        console.error('保存数据失败:', e);
+        showToast('保存失败，请检查浏览器存储权限', 'error');
+      }
+    }
+
+    /**
+     * 从 localStorage 加载评价数据
+     * 有则加载，无则使用默认模拟数据
+     */
+    function loadData() {
+      try {
+        const stored = localStorage.getItem('evaluation_data');
+        if (stored) {
+          evalData = JSON.parse(stored);
+          // 合并可能的新字段
+          if (!evalData.wikiLogs) evalData.wikiLogs = DEFAULT_EVAL_DATA.wikiLogs;
+          if (!evalData.safetyVeto) evalData.safetyVeto = DEFAULT_EVAL_DATA.safetyVeto;
+        } else {
+          evalData = JSON.parse(JSON.stringify(DEFAULT_EVAL_DATA));
+          saveData();
+        }
+      } catch (e) {
+        console.error('加载数据失败:', e);
+        evalData = JSON.parse(JSON.stringify(DEFAULT_EVAL_DATA));
+      }
+    }
+
+    /**
+     * 重置为默认数据（调试用）
+     */
+    function resetData() {
+      if (confirm('确定要重置所有评价数据为初始状态吗？')) {
+        evalData = JSON.parse(JSON.stringify(DEFAULT_EVAL_DATA));
+        saveData();
+        renderSidebar();
+        renderEvalPanel();
+        showToast('数据已重置', 'success');
+      }
+    }
+
+    // ============================================================
+    // 第三部分：核心评分计算函数
+    // ============================================================
+
+    /**
+     * 计算过程性评价得分（满分100）
+     * @param {string} studentId - 学生ID
+     * @returns {number} 过程性评价得分（0-100）
+     */
+    function calcProcessScore(studentId) {
+      const p = evalData.process[studentId];
+      if (!p) return 0;
+
+      // WIKI评分（0-30分）
+      const wikiScore = Math.min(30, p.wikiScore || 0);
+      // 课堂展示（0-30分）= 教师评分 + 同辈互评平均分
+      const peerAvg = calcPeerAverage(studentId);
+      const presentationScore = Math.min(30, (p.presentationScore || 0) + peerAvg);
+      // 组内自评贡献分（0-30分）
+      const contributionScore = Math.min(30, p.selfContribution || 0);
+      // AI过程追踪（0-10分）基于完成度
+      const completion = p.aiTracking?.completion || 0;
+      const aiScore = Math.min(10, Math.round(completion / 10));
+
+      return Math.round((wikiScore + presentationScore + contributionScore + aiScore) * 10) / 10;
+    }
+
+    /**
+     * 计算同辈互评平均分
+     * @param {string} studentId - 学生ID
+     * @returns {number} 同辈互评平均分
+     */
+    function calcPeerAverage(studentId) {
+      const p = evalData.process[studentId];
+      if (!p || !p.peerScores) return 0;
+      const scores = Object.values(p.peerScores);
+      if (scores.length === 0) return 0;
+      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return Math.round(avg * 10) / 10;
+    }
+
+    /**
+     * 计算结果性评价得分（满分100）
+     * @param {string} studentId - 学生ID
+     * @returns {number} 结果性评价得分（0-100）
+     */
+    function calcResultScore(studentId) {
+      const r = evalData.result[studentId];
+      if (!r) return 0;
+
+      // 方案成果（30分）
+      const planScore = Math.min(30,
+        (r.planDoc || 0) + (r.packagePlan || 0) + (r.dispatchPlan || 0)
+      );
+      // 实操验收（50分）- 取教师和企业专家平均分
+      const sim = r.simulation || 0;
+      const real = r.realFlight || 0;
+      const multi = r.multiDrone || 0;
+      const entSim = r.enterpriseOp?.simulation || sim;
+      const entReal = r.enterpriseOp?.realFlight || real;
+      const entMulti = r.enterpriseOp?.multiDrone || multi;
+
+      const avgSim = Math.round(((sim + entSim) / 2) * 10) / 10;
+      const avgReal = Math.round(((real + entReal) / 2) * 10) / 10;
+      const avgMulti = Math.round(((multi + entMulti) / 2) * 10) / 10;
+
+      const practiceScore = Math.min(50, avgSim + avgReal + avgMulti);
+      // 答辩展示（20分）
+      const defenseScore = Math.min(20,
+        (r.defensePPT || 0) + (r.teamShow || 0) + (r.ideology || 0)
+      );
+
+      return Math.round((planScore + practiceScore + defenseScore) * 10) / 10;
+    }
+
+    /**
+     * 计算总评成绩
+     * 总评 = 过程分 × 0.4 + 结果分 × 0.6 + 附加分
+     * 安全否决 → 上限59分
+     * @param {string} studentId - 学生ID
+     * @returns {Object} 包含总分和各部分得分的对象
+     */
+    function calcTotalScore(studentId) {
+      const processScore = calcProcessScore(studentId);
+      const resultScore = calcResultScore(studentId);
+      const student = DEMO_STUDENTS.find(s => s.id === studentId);
+      const devData = student ? evalData.development[student.groupId] : null;
+      const devBonus = devData ? (devData.realUser || 0) + (devData.techBreakthrough || 0) + (devData.management || 0) : 0;
+      const clampedBonus = Math.min(10, devBonus);
+
+      let total = Math.round((processScore * 0.4 + resultScore * 0.6 + clampedBonus) * 10) / 10;
+
+      // 安全否决检查
+      const isVetoed = evalData.safetyVeto[studentId];
+      if (isVetoed) {
+        total = Math.min(total, 59);
+      }
+
+      return {
+        processScore,
+        resultScore,
+        devBonus: clampedBonus,
+        total,
+        isVetoed
+      };
+    }
+
+    /**
+     * 计算小组已用贡献分总和
+     * @param {string} groupId - 小组ID
+     * @returns {number} 已用贡献分总和
+     */
+    function calcGroupContributionUsed(groupId) {
+      const groupMembers = DEMO_STUDENTS.filter(s => s.groupId === groupId);
+      let used = 0;
+      groupMembers.forEach(m => {
+        const p = evalData.process[m.id];
+        if (p && p.selfContribution !== undefined) {
+          used += parseFloat(p.selfContribution) || 0;
+        }
+      });
+      return used;
+    }
+
+    /**
+     * 获取小组贡献分池上限
+     * @param {string} groupId - 小组ID
+     * @returns {number} 贡献分池上限
+     */
+    function getContributionPoolLimit(groupId) {
+      const groupSize = DEMO_STUDENTS.filter(s => s.groupId === groupId).length;
+      return CONTRIBUTION_POOL[groupSize] || 42;
+    }
+
+    // ============================================================
+    // 第四部分：UI 渲染函数 - 侧边栏
+    // ============================================================
+
+    /**
+     * 渲染侧边栏 - 按小组分组显示学生列表
+     */
+    function renderSidebar() {
+      const container = document.getElementById('sidebar-content');
+      const students = getVisibleStudents();
+
+      // 按小组分组
+      const groups = {};
+      students.forEach(s => {
+        if (!groups[s.groupId]) groups[s.groupId] = [];
+        groups[s.groupId].push(s);
+      });
+
+      let html = '';
+      for (const [groupId, members] of Object.entries(groups)) {
+        const groupName = members[0].groupName;
+        const poolLimit = getContributionPoolLimit(groupId);
+        const poolUsed = calcGroupContributionUsed(groupId);
+        const poolWarning = poolUsed > poolLimit;
+
+        html += `
+          <div class="group-section">
+            <div class="group-title">
+              <i class="fas fa-layer-group"></i>
+              ${groupName}
+              <span style="margin-left:auto;font-size:11px;color:${poolWarning ? 'var(--danger)' : 'var(--text-secondary)'};">
+                贡献池: ${poolUsed}/${poolLimit}
+              </span>
+            </div>
+        `;
+
+        members.forEach(student => {
+          const scores = calcTotalScore(student.id);
+          const isActive = student.id === selectedStudentId;
+          const scoreClass = scores.isVetoed ? 'danger' : (scores.total >= 80 ? '' : (scores.total >= 60 ? 'warning' : 'danger'));
+
+          html += `
+            <div class="student-item ${isActive ? 'active' : ''}"
+                 onclick="selectStudent('${student.id}')"
+                 data-student="${student.id}">
+              <div class="student-avatar">${student.avatar}</div>
+              <div class="student-info">
+                <div class="student-name">${student.name}</div>
+                <div class="student-meta">
+                  <span class="role-tag ${student.role === '组长' ? 'leader' : 'member'}">${student.role}</span>
+                  ${scores.isVetoed ? '<span style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> 否决</span>' : ''}
+                </div>
+              </div>
+              <div class="student-score-mini ${scoreClass}">${scores.total}</div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    /**
+     * 获取当前角色可见的学生列表
+     */
+    function getVisibleStudents() {
+      if (currentRole === 'teacher' || currentRole === 'enterprise') {
+        return DEMO_STUDENTS;
+      } else if (currentRole === 'student') {
+        // 学生只能看本组 - 模拟：s1为当前登录学生
+        const me = currentStudentId || 's1';
+        const myGroup = DEMO_STUDENTS.find(s => s.id === me)?.groupId;
+        return DEMO_STUDENTS.filter(s => s.groupId === myGroup);
+      }
+      return DEMO_STUDENTS;
+    }
+
+    /**
+     * 选择学生
+     */
+    function selectStudent(studentId) {
+      selectedStudentId = studentId;
+      renderSidebar(); // 重新渲染以更新高亮
+      renderEvalPanel();
+    }
+
+    // ============================================================
+    // 第五部分：UI 渲染函数 - 评价操作面板
+    // ============================================================
+
+    /**
+     * 渲染评价操作面板
+     */
+    function renderEvalPanel() {
+      const container = document.getElementById('eval-content');
+      const student = DEMO_STUDENTS.find(s => s.id === selectedStudentId);
+      if (!student) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i><p>请从左侧选择一个学生</p></div>';
+        return;
+      }
+
+      const scores = calcTotalScore(student.id);
+      const processData = evalData.process[student.id] || {};
+      const resultData = evalData.result[student.id] || {};
+      const isVetoed = scores.isVetoed;
+      const canEdit = currentRole === 'teacher';
+      const canEditEnterprise = currentRole === 'enterprise' || currentRole === 'teacher';
+      const canSubmitWiki = currentRole === 'student';
+      const isLeader = student.role === '组长';
+
+      // 安全否决警告
+      let vetoBanner = '';
+      if (isVetoed) {
+        vetoBanner = `
+          <div class="safety-warning-banner">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span><strong>安全否决已启用</strong> - 该学生总评成绩上限为 59 分</span>
+          </div>
+        `;
+      }
+
+      // 总分显示
+      const totalDisplay = `
+        <div class="total-score-display ${isVetoed ? 'safety-active' : ''}">
+          <div class="score-circle">
+            <span class="score-num ${isVetoed ? 'danger' : ''}" id="total-score-num">${scores.total}</span>
+            <span class="score-label">总评成绩</span>
+          </div>
+          <div class="score-breakdown">
+            <div class="break-item">
+              <span class="break-label">过程性评价</span>
+              <span class="break-value">${scores.processScore} &times; 40%</span>
+            </div>
+            <div class="break-item">
+              <span class="break-label">结果性评价</span>
+              <span class="break-value">${scores.resultScore} &times; 60%</span>
+            </div>
+            <div class="break-item">
+              <span class="break-label">发展性附加</span>
+              <span class="break-value ${scores.devBonus > 0 ? 'score' : ''}">+${scores.devBonus}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 过程性评价卡片
+      const peerScoresHtml = processData.peerScores ? Object.entries(processData.peerScores).map(([pid, score]) => {
+        const peer = DEMO_STUDENTS.find(s => s.id === pid);
+        return `<div class="peer-item"><span class="peer-name">${peer ? peer.name : pid}</span><span class="peer-score">${score}分</span></div>`;
+      }).join('') : '';
+
+      const aiTracking = processData.aiTracking || { loginDays: 0, studyHours: 0, completion: 0 };
+      const completionClass = aiTracking.completion >= 90 ? '' : (aiTracking.completion >= 70 ? 'warning' : 'danger');
+      const studyHoursClass = aiTracking.studyHours >= 40 ? '' : (aiTracking.studyHours >= 25 ? 'warning' : 'danger');
+
+      // WIKI关键词标签
+      const wikiKeywordsHtml = (processData.wikiKeywords || []).map(kw => {
+        const isValid = KEYWORD_DATABASE.includes(kw);
+        return `<span class="keyword-tag ${isValid ? '' : 'missing'}">${kw} ${isValid ? '✓' : '✗'}</span>`;
+      }).join('');
+
+      const processCard = `
+        <div class="card ${isVetoed ? 'safety-active' : ''}">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="fas fa-tasks"></i> 过程性评价 <span class="badge-info">40%</span></div>
+              <div class="card-subtitle">WIKI日志、课堂展示、组内自评、AI过程追踪</div>
+            </div>
+            <span class="card-badge badge-success">${scores.processScore}分</span>
+          </div>
+
+          <!-- WIKI评分 -->
+          <div class="form-row">
+            <span class="form-label">WIKI日志评分 <span class="max-mark">/30</span></span>
+            <input type="number" class="form-input ${processData.wikiScore < 15 ? 'is-warning' : ''}"
+                   value="${processData.wikiScore || 0}" min="0" max="30" step="1"
+                   ${!canEdit ? 'disabled' : ''}
+                   onchange="updateScore('process', '${student.id}', 'wikiScore', this.value)">
+          </div>
+          ${processData.wikiLink ? `<div style="padding:4px 0 8px;"><a href="${processData.wikiLink}" target="_blank" class="wiki-link"><i class="fas fa-external-link-alt"></i> ${processData.wikiLink}</a></div>` : '<div style="padding:4px 0 8px;color:var(--text-secondary);font-size:12px;"><i class="fas fa-unlink"></i> 未提交WIKI链接</div>'}
+          <div class="keyword-tags">${wikiKeywordsHtml}</div>
+          ${canEdit ? `<div style="margin-top:8px;"><button class="btn btn-ai btn-sm" onclick="aiCheckKeywords('${student.id}')"><i class="fas fa-robot"></i> AI关键词检查</button></div>` : ''}
+
+          <!-- 课堂展示 -->
+          <div class="form-row" style="margin-top:12px;">
+            <span class="form-label">课堂展示评分 <span class="max-mark">/30</span></span>
+            <input type="number" class="form-input"
+                   value="${processData.presentationScore || 0}" min="0" max="30" step="1"
+                   ${!canEdit ? 'disabled' : ''}
+                   onchange="updateScore('process', '${student.id}', 'presentationScore', this.value)">
+          </div>
+          <div class="peer-scores" style="margin:8px 0;">
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;"><i class="fas fa-users"></i> 同辈互评:</div>
+            ${peerScoresHtml || '<span style="font-size:12px;color:var(--text-secondary);">暂无互评数据</span>'}
+          </div>
+          ${canEdit ? `<button class="btn btn-ai btn-sm" onclick="aiSpeechAnalysis('${student.id}')"><i class="fas fa-chart-radar"></i> AI演讲分析</button>` : ''}
+
+          <!-- 组内自评贡献分 -->
+          <div class="form-row" style="margin-top:12px;">
+            <span class="form-label">
+              <i class="fas fa-hand-holding-heart"></i> 组内自评贡献分 <span class="max-mark">/30</span>
+              ${isLeader ? '<span style="color:var(--accent-cyan);font-size:10px;">(组长)</span>' : ''}
+            </span>
+            <input type="number" class="form-input" id="contrib-input-${student.id}"
+                   value="${processData.selfContribution || 0}" min="0" max="30" step="1"
+                   ${!(canEdit || (currentRole === 'student' && isLeader)) ? 'disabled' : ''}
+                   onchange="updateContribution('${student.id}', '${student.groupId}', this.value)">
+          </div>
+          <div class="hint-text" id="contrib-hint-${student.id}">
+            <i class="fas fa-info-circle"></i>
+            小组总分池上限: ${getContributionPoolLimit(student.groupId)}分，已用: ${calcGroupContributionUsed(student.groupId)}分
+          </div>
+
+          <!-- AI过程追踪 -->
+          <div style="margin-top:16px;">
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;"><i class="fas fa-chart-line"></i> AI过程追踪</div>
+            <div class="ai-tracking-grid">
+              <div class="tracking-item">
+                <div class="tracking-value">${aiTracking.loginDays}</div>
+                <div class="tracking-label">登录天数</div>
+              </div>
+              <div class="tracking-item">
+                <div class="tracking-value ${studyHoursClass}">${aiTracking.studyHours}h</div>
+                <div class="tracking-label">学习时长</div>
+              </div>
+              <div class="tracking-item">
+                <div class="tracking-value ${completionClass}">${aiTracking.completion}%</div>
+                <div class="tracking-label">完成度</div>
+              </div>
+            </div>
+            ${aiTracking.completion < 70 ? `<div class="hint-text danger" style="margin-top:8px;"><i class="fas fa-exclamation-circle"></i> 完成度低于70%，已标红警告</div>` : ''}
+          </div>
+        </div>
+      `;
+
+      // 结果性评价卡片
+      const entOp = resultData.enterpriseOp || {};
+      const resultCard = `
+        <div class="card ${isVetoed ? 'safety-active' : ''}">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="fas fa-award"></i> 结果性评价 <span class="badge-info">60%</span></div>
+              <div class="card-subtitle">方案成果、实操验收、答辩展示</div>
+            </div>
+            <span class="card-badge badge-success">${scores.resultScore}分</span>
+          </div>
+
+          <!-- 方案成果 30分 -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--accent-cyan);margin-bottom:8px;">
+              <i class="fas fa-file-alt"></i> 方案成果 <span style="font-size:12px;color:var(--text-secondary);">(30分)</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">飞行计划文档 <span class="max-mark">/15</span></span>
+              <input type="number" class="form-input" value="${resultData.planDoc || 0}" min="0" max="15" step="0.5"
+                     ${!canEdit ? 'disabled' : ''}
+                     onchange="updateScore('result', '${student.id}', 'planDoc', this.value)">
+            </div>
+            <div class="form-row">
+              <span class="form-label">包装装载方案 <span class="max-mark">/5</span></span>
+              <input type="number" class="form-input" value="${resultData.packagePlan || 0}" min="0" max="5" step="0.5"
+                     ${!canEdit ? 'disabled' : ''}
+                     onchange="updateScore('result', '${student.id}', 'packagePlan', this.value)">
+            </div>
+            <div class="form-row">
+              <span class="form-label">协同调度 <span class="max-mark">/10</span></span>
+              <input type="number" class="form-input" value="${resultData.dispatchPlan || 0}" min="0" max="10" step="0.5"
+                     ${!canEdit ? 'disabled' : ''}
+                     onchange="updateScore('result', '${student.id}', 'dispatchPlan', this.value)">
+            </div>
+          </div>
+
+          <!-- 实操验收 50分 -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--accent-cyan);margin-bottom:8px;">
+              <i class="fas fa-plane"></i> 实操验收 <span style="font-size:12px;color:var(--text-secondary);">(50分)</span>
+              <span class="enterprise-badge"><i class="fas fa-industry"></i> 企业专家</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">虚拟仿真 <span class="max-mark">/15</span></span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span style="font-size:11px;color:var(--text-secondary);">教师:</span>
+                <input type="number" class="form-input" style="width:60px;" value="${resultData.simulation || 0}" min="0" max="15" step="0.5"
+                       ${!canEdit ? 'disabled' : ''}
+                       onchange="updateScore('result', '${student.id}', 'simulation', this.value)">
+                <span style="font-size:11px;color:var(--warning);">企业:</span>
+                <input type="number" class="form-input" style="width:60px;" value="${entOp.simulation || resultData.simulation || 0}" min="0" max="15" step="0.5"
+                       ${!canEditEnterprise ? 'disabled' : ''}
+                       onchange="updateEnterpriseScore('${student.id}', 'simulation', this.value)">
+              </div>
+            </div>
+            <div class="form-row">
+              <span class="form-label">真机飞行 <span class="max-mark">/25</span></span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span style="font-size:11px;color:var(--text-secondary);">教师:</span>
+                <input type="number" class="form-input" style="width:60px;" value="${resultData.realFlight || 0}" min="0" max="25" step="0.5"
+                       ${!canEdit ? 'disabled' : ''}
+                       onchange="updateScore('result', '${student.id}', 'realFlight', this.value)">
+                <span style="font-size:11px;color:var(--warning);">企业:</span>
+                <input type="number" class="form-input" style="width:60px;" value="${entOp.realFlight || resultData.realFlight || 0}" min="0" max="25" step="0.5"
+                       ${!canEditEnterprise ? 'disabled' : ''}
+                       onchange="updateEnterpriseScore('${student.id}', 'realFlight', this.value)">
+              </div>
+            </div>
+            <div class="form-row">
+              <span class="form-label">多机协同 <span class="max-mark">/10</span></span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span style="font-size:11px;color:var(--text-secondary);">教师:</span>
+                <input type="number" class="form-input" style="width:60px;" value="${resultData.multiDrone || 0}" min="0" max="10" step="0.5"
+                       ${!canEdit ? 'disabled' : ''}
+                       onchange="updateScore('result', '${student.id}', 'multiDrone', this.value)">
+                <span style="font-size:11px;color:var(--warning);">企业:</span>
+                <input type="number" class="form-input" style="width:60px;" value="${entOp.multiDrone || resultData.multiDrone || 0}" min="0" max="10" step="0.5"
+                       ${!canEditEnterprise ? 'disabled' : ''}
+                       onchange="updateEnterpriseScore('${student.id}', 'multiDrone', this.value)">
+              </div>
+            </div>
+            ${canEdit ? `<button class="btn btn-ai btn-sm" style="margin-top:8px;" onclick="quickSimulateScore('${student.id}')"><i class="fas fa-bolt"></i> 飞行模拟快速评分</button>` : ''}
+          </div>
+
+          <!-- 答辩展示 20分 -->
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-cyan);margin-bottom:8px;">
+              <i class="fas fa-presentation"></i> 答辩展示 <span style="font-size:12px;color:var(--text-secondary);">(20分)</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">方案汇报PPT <span class="max-mark">/10</span></span>
+              <input type="number" class="form-input" value="${resultData.defensePPT || 0}" min="0" max="10" step="0.5"
+                     ${!canEdit ? 'disabled' : ''}
+                     onchange="updateScore('result', '${student.id}', 'defensePPT', this.value)">
+            </div>
+            <div class="form-row">
+              <span class="form-label">团队协作展示 <span class="max-mark">/5</span></span>
+              <input type="number" class="form-input" value="${resultData.teamShow || 0}" min="0" max="5" step="0.5"
+                     ${!canEdit ? 'disabled' : ''}
+                     onchange="updateScore('result', '${student.id}', 'teamShow', this.value)">
+            </div>
+            <div class="form-row">
+              <span class="form-label">思政融入 <span class="max-mark">/5</span></span>
+              <input type="number" class="form-input" value="${resultData.ideology || 0}" min="0" max="5" step="0.5"
+                     ${!canEdit ? 'disabled' : ''}
+                     onchange="updateScore('result', '${student.id}', 'ideology', this.value)">
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 发展性评价 + 安全否决卡片
+      const devData = evalData.development[student.groupId] || { realUser: 0, techBreakthrough: 0, management: 0 };
+      const devTotal = (devData.realUser || 0) + (devData.techBreakthrough || 0) + (devData.management || 0);
+      const devWarning = devTotal > 10;
+
+      const devCard = `
+        <div class="card ${isVetoed ? 'safety-active' : ''}">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="fas fa-star"></i> 发展性评价 <span class="badge-info">附加分</span></div>
+              <div class="card-subtitle">真用户真用、技术突破、优秀管理（每组≤10分）</div>
+            </div>
+            <span class="card-badge ${devWarning ? 'badge-danger' : 'badge-success'}">+${Math.min(10, devTotal)}分</span>
+          </div>
+
+          <div class="form-row">
+            <span class="form-label"><i class="fas fa-users"></i> 真用户真用</span>
+            <div class="slider-container">
+              <input type="range" class="range-slider" min="0" max="5" step="1"
+                     value="${devData.realUser || 0}"
+                     ${!canEdit ? 'disabled' : ''}
+                     oninput="updateDevScore('${student.groupId}', 'realUser', this.value); this.nextElementSibling.textContent=this.value;">
+              <span class="slider-value">${devData.realUser || 0}</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <span class="form-label"><i class="fas fa-lightbulb"></i> 技术突破</span>
+            <div class="slider-container">
+              <input type="range" class="range-slider" min="0" max="3" step="1"
+                     value="${devData.techBreakthrough || 0}"
+                     ${!canEdit ? 'disabled' : ''}
+                     oninput="updateDevScore('${student.groupId}', 'techBreakthrough', this.value); this.nextElementSibling.textContent=this.value;">
+              <span class="slider-value">${devData.techBreakthrough || 0}</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <span class="form-label"><i class="fas fa-crown"></i> 优秀管理</span>
+            <div class="slider-container">
+              <input type="range" class="range-slider" min="0" max="2" step="1"
+                     value="${devData.management || 0}"
+                     ${!canEdit ? 'disabled' : ''}
+                     oninput="updateDevScore('${student.groupId}', 'management', this.value); this.nextElementSibling.textContent=this.value;">
+              <span class="slider-value">${devData.management || 0}</span>
+            </div>
+          </div>
+
+          ${devWarning ? `<div class="hint-text danger"><i class="fas fa-exclamation-circle"></i> 附加分总和 ${devTotal} 超过10分上限！实际计分将截断为10分</div>` : ''}
+
+          <!-- 安全否决 -->
+          <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border-color);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:14px;font-weight:600;color:var(--danger);">
+                  <i class="fas fa-shield-alt"></i> 安全否决
+                </div>
+                <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">启用后该学生总评成绩上限59分</div>
+              </div>
+              <div class="toggle-switch ${isVetoed ? 'on' : ''}" id="veto-switch-${student.id}"
+                   onclick="toggleSafetyVeto('${student.id}')"
+                   style="${currentRole !== 'teacher' ? 'pointer-events:none;opacity:0.5;' : ''}"></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = vetoBanner + totalDisplay + `
+        <div class="eval-grid">
+          ${processCard}
+          ${resultCard}
+          ${devCard}
+        </div>
+      `;
+    }
+
+
+    // ============================================================
+    // 第六部分：UI 渲染函数 - 数据大屏
+    // ============================================================
+
+    /**
+     * 渲染数据大屏
+     */
+    function renderDashboard() {
+      const container = document.getElementById('dashboard-content');
+
+      // 计算统计数据
+      const allScores = DEMO_STUDENTS.map(s => calcTotalScore(s.id));
+      const avgScore = Math.round(allScores.reduce((a, b) => a + b.total, 0) / allScores.length * 10) / 10;
+      const passCount = allScores.filter(s => s.total >= 60 && !s.isVetoed).length;
+      const passRate = Math.round(passCount / allScores.length * 100);
+      const vetoCount = allScores.filter(s => s.isVetoed).length;
+      const excellentCount = allScores.filter(s => s.total >= 85).length;
+
+      container.innerHTML = `
+        <!-- 顶部统计栏 -->
+        <div class="dashboard-top">
+          <div class="stat-item">
+            <div class="stat-value">${avgScore}</div>
+            <div class="stat-label">班级平均分</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value ${passRate >= 80 ? 'success' : (passRate >= 60 ? 'warning' : 'danger')}">${passRate}%</div>
+            <div class="stat-label">达标率</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value ${vetoCount > 0 ? 'danger' : 'success'}">${vetoCount}</div>
+            <div class="stat-label">安全否决</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value success">${excellentCount}</div>
+            <div class="stat-label">优秀人数</div>
+          </div>
+        </div>
+
+        <!-- 第二行图表 -->
+        <div class="dashboard-row2">
+          <div class="chart-card dashboard-left">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i> 成绩分布</div>
+            <div class="chart-container" id="chart-grade-distribution"></div>
+          </div>
+          <div class="chart-card dashboard-center">
+            <div class="chart-title"><i class="fas fa-tachometer-alt"></i> 核心指标达标率</div>
+            <div class="chart-container" id="chart-indicator-gauge"></div>
+          </div>
+          <div class="chart-card dashboard-right">
+            <div class="chart-title"><i class="fas fa-bell"></i> AI预警事件流</div>
+            <div class="event-stream" id="event-stream"></div>
+          </div>
+        </div>
+
+        <!-- 第三行图表 -->
+        <div class="dashboard-row2">
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-th"></i> 个人投入度热力图</div>
+            <div class="chart-container" id="chart-heatmap"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-project-diagram"></i> 团队协作网络图</div>
+            <div class="chart-container" id="chart-collaboration"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-radar"></i> 六维能力雷达图</div>
+            <div class="chart-container" id="chart-radar"></div>
+          </div>
+        </div>
+      `;
+
+      // 初始化所有图表
+      setTimeout(() => {
+        initGradeDistributionChart();
+        initIndicatorGaugeChart();
+        initHeatmapChart();
+        initCollaborationChart();
+        initRadarChart();
+        renderEventStream();
+      }, 100);
+    }
+
+    /**
+     * 渲染事件流
+     */
+    function renderEventStream() {
+      const container = document.getElementById('event-stream');
+      if (!container) return;
+
+      container.innerHTML = WARNING_EVENTS.map(e => `
+        <div class="event-item">
+          <div class="event-dot ${e.type}"></div>
+          <div class="event-content">
+            <div class="event-text">${e.text}</div>
+            <div class="event-time">${e.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ============================================================
+    // 第七部分：ECharts 图表初始化
+    // ============================================================
+
+    /**
+     * 通用图表主题色
+     */
+    const CHART_COLORS = ['#00d4ff', '#00e676', '#ffc400', '#ff5252', '#7c4dff', '#ff6d00'];
+
+    /**
+     * 初始化成绩分布柱状图
+     */
+    function initGradeDistributionChart() {
+      const dom = document.getElementById('chart-grade-distribution');
+      if (!dom) return;
+
+      const chart = echarts.init(dom);
+      chartInstances['grade-distribution'] = chart;
+
+      // 统计各分数段人数
+      const ranges = ['<60', '60-69', '70-79', '80-89', '90-100'];
+      const counts = [0, 0, 0, 0, 0];
+      DEMO_STUDENTS.forEach(s => {
+        const t = calcTotalScore(s.id).total;
+        if (t < 60) counts[0]++;
+        else if (t < 70) counts[1]++;
+        else if (t < 80) counts[2]++;
+        else if (t < 90) counts[3]++;
+        else counts[4]++;
+      });
+
+      const option = {
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: ranges,
+          axisLine: { lineStyle: { color: '#1a3a5c' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        yAxis: {
+          type: 'value',
+          axisLine: { lineStyle: { color: '#1a3a5c' } },
+          splitLine: { lineStyle: { color: 'rgba(26,58,92,0.3)' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        series: [{
+          data: counts.map((c, i) => ({
+            value: c,
+            itemStyle: {
+              color: i === 0 ? '#ff5252' : (i === 1 ? '#ffc400' : '#00d4ff'),
+              borderRadius: [4, 4, 0, 0]
+            }
+          })),
+          type: 'bar',
+          barWidth: '50%',
+          label: { show: true, position: 'top', color: '#e0e8f0', fontSize: 12 }
+        }]
+      };
+
+      chart.setOption(option);
+    }
+
+    /**
+     * 初始化核心指标仪表盘
+     */
+    function initIndicatorGaugeChart() {
+      const dom = document.getElementById('chart-indicator-gauge');
+      if (!dom) return;
+
+      const chart = echarts.init(dom);
+      chartInstances['indicator-gauge'] = chart;
+
+      // 计算三个指标
+      const allScores = DEMO_STUDENTS.map(s => calcTotalScore(s.id));
+      const processAvg = Math.round(allScores.reduce((a, b) => a + b.processScore, 0) / allScores.length);
+      const resultAvg = Math.round(allScores.reduce((a, b) => a + b.resultScore, 0) / allScores.length);
+      const completionAvg = Math.round(DEMO_STUDENTS.reduce((a, s) => {
+        const p = evalData.process[s.id];
+        return a + (p?.aiTracking?.completion || 0);
+      }, 0) / DEMO_STUDENTS.length);
+
+      const option = {
+        backgroundColor: 'transparent',
+        series: [
+          {
+            type: 'gauge',
+            center: ['20%', '55%'],
+            radius: '70%',
+            min: 0, max: 100,
+            progress: { show: true, width: 8 },
+            axisLine: { lineStyle: { width: 8, color: [[1, 'rgba(26,58,92,0.5)']] } },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { show: false },
+            pointer: { show: false },
+            detail: { valueAnimation: true, fontSize: 18, color: '#00d4ff', offsetCenter: [0, '60%'], formatter: '{value}' },
+            title: { offsetCenter: [0, '90%'], fontSize: 10, color: '#8b9dc3' },
+            data: [{ value: processAvg, name: '过程评价', itemStyle: { color: '#00d4ff' } }]
+          },
+          {
+            type: 'gauge',
+            center: ['50%', '55%'],
+            radius: '70%',
+            min: 0, max: 100,
+            progress: { show: true, width: 8 },
+            axisLine: { lineStyle: { width: 8, color: [[1, 'rgba(26,58,92,0.5)']] } },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { show: false },
+            pointer: { show: false },
+            detail: { valueAnimation: true, fontSize: 18, color: '#00e676', offsetCenter: [0, '60%'], formatter: '{value}' },
+            title: { offsetCenter: [0, '90%'], fontSize: 10, color: '#8b9dc3' },
+            data: [{ value: resultAvg, name: '结果评价', itemStyle: { color: '#00e676' } }]
+          },
+          {
+            type: 'gauge',
+            center: ['80%', '55%'],
+            radius: '70%',
+            min: 0, max: 100,
+            progress: { show: true, width: 8 },
+            axisLine: { lineStyle: { width: 8, color: [[1, 'rgba(26,58,92,0.5)']] } },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { show: false },
+            pointer: { show: false },
+            detail: { valueAnimation: true, fontSize: 18, color: '#ffc400', offsetCenter: [0, '60%'], formatter: '{value}' },
+            title: { offsetCenter: [0, '90%'], fontSize: 10, color: '#8b9dc3' },
+            data: [{ value: completionAvg, name: 'AI完成度', itemStyle: { color: '#ffc400' } }]
+          }
+        ]
+      };
+
+      chart.setOption(option);
+    }
+
+    /**
+     * 初始化个人投入度热力图
+     */
+    function initHeatmapChart() {
+      const dom = document.getElementById('chart-heatmap');
+      if (!dom) return;
+
+      const chart = echarts.init(dom);
+      chartInstances['heatmap'] = chart;
+
+      // 学生 x 评价维度 的得分矩阵
+      const dimensions = ['WIKI', '展示', '自评', 'AI追踪', '方案', '实操', '答辩'];
+      const students = DEMO_STUDENTS.map((s, i) => i);
+      const studentNames = DEMO_STUDENTS.map(s => s.name);
+
+      const data = [];
+      DEMO_STUDENTS.forEach((s, i) => {
+        const p = evalData.process[s.id];
+        const r = evalData.result[s.id];
+        const row = [
+          p ? Math.min(100, (p.wikiScore / 30) * 100) : 0,
+          p ? Math.min(100, ((p.presentationScore + calcPeerAverage(s.id)) / 30) * 100) : 0,
+          p ? Math.min(100, (p.selfContribution / 30) * 100) : 0,
+          p ? (p.aiTracking?.completion || 0) : 0,
+          r ? Math.min(100, ((r.planDoc + r.packagePlan + r.dispatchPlan) / 30) * 100) : 0,
+          r ? Math.min(100, ((r.simulation + r.realFlight + r.multiDrone) / 50) * 100) : 0,
+          r ? Math.min(100, ((r.defensePPT + r.teamShow + r.ideology) / 20) * 100) : 0
+        ];
+        row.forEach((val, j) => {
+          data.push([j, i, Math.round(val)]);
+        });
+      });
+
+      const option = {
+        backgroundColor: 'transparent',
+        tooltip: {
+          position: 'top',
+          formatter: p => `${studentNames[p.value[1]]} - ${dimensions[p.value[0]]}: ${p.value[2]}%`
+        },
+        grid: { left: '15%', right: '5%', top: '5%', bottom: '15%' },
+        xAxis: {
+          type: 'category',
+          data: dimensions,
+          splitArea: { show: true, areaStyle: { color: 'rgba(26,58,92,0.1)' } },
+          axisLine: { lineStyle: { color: '#1a3a5c' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 10, rotate: 30 }
+        },
+        yAxis: {
+          type: 'category',
+          data: studentNames,
+          splitArea: { show: true, areaStyle: { color: 'rgba(26,58,92,0.1)' } },
+          axisLine: { lineStyle: { color: '#1a3a5c' } },
+          axisLabel: { color: '#8b9dc3', fontSize: 11 }
+        },
+        visualMap: {
+          min: 0, max: 100,
+          calculable: true,
+          orient: 'horizontal',
+          left: 'center',
+          bottom: '0%',
+          textStyle: { color: '#8b9dc3', fontSize: 10 },
+          inRange: { color: ['#0d1f3c', '#1a3a5c', '#00d4ff', '#00e676'] }
+        },
+        series: [{
+          type: 'heatmap',
+          data: data,
+          label: { show: true, color: '#e0e8f0', fontSize: 10, formatter: p => p.value[2] },
+          itemStyle: {
+            borderColor: '#0a1628',
+            borderWidth: 2
+          },
+          emphasis: {
+            itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,212,255,0.5)' }
+          }
+        }]
+      };
+
+      chart.setOption(option);
+    }
+
+    /**
+     * 初始化团队协作网络图
+     */
+    function initCollaborationChart() {
+      const dom = document.getElementById('chart-collaboration');
+      if (!dom) return;
+
+      const chart = echarts.init(dom);
+      chartInstances['collaboration'] = chart;
+
+      // 构建节点和边
+      const nodes = DEMO_STUDENTS.map((s, i) => ({
+        id: s.id,
+        name: s.name,
+        symbolSize: s.role === '组长' ? 40 : 30,
+        value: calcTotalScore(s.id).total,
+        itemStyle: {
+          color: s.role === '组长' ? '#00d4ff' : '#1a3a5c',
+          borderColor: '#00d4ff',
+          borderWidth: s.role === '组长' ? 2 : 1
+        },
+        label: { show: true, color: '#e0e8f0', fontSize: 11 }
+      }));
+
+      const links = [];
+      // 组内连接 + 互评连接
+      DEMO_STUDENTS.forEach((s, i) => {
+        DEMO_STUDENTS.forEach((t, j) => {
+          if (i >= j) return;
+          // 同组连接
+          if (s.groupId === t.groupId) {
+            const hasPeer = evalData.process[s.id]?.peerScores?.[t.id] || evalData.process[t.id]?.peerScores?.[s.id];
+            links.push({
+              source: s.id,
+              target: t.id,
+              lineStyle: {
+                width: hasPeer ? 3 : 1,
+                color: hasPeer ? '#00e676' : 'rgba(26,58,92,0.5)',
+                curveness: 0.2
+              }
+            });
+          }
+        });
+      });
+
+      const option = {
+        backgroundColor: 'transparent',
+        tooltip: {
+          formatter: p => p.dataType === 'node' ? `${p.data.name}: ${p.data.value}分` : `${p.data.source} ↔ ${p.data.target}`
+        },
+        series: [{
+          type: 'graph',
+          layout: 'force',
+          data: nodes,
+          links: links,
+          roam: true,
+          force: { repulsion: 300, edgeLength: 80 },
+          lineStyle: { curveness: 0.2 },
+          emphasis: {
+            focus: 'adjacency',
+            lineStyle: { width: 4 }
+          }
+        }]
+      };
+
+      chart.setOption(option);
+    }
+
+    /**
+     * 初始化六维能力雷达图
+     */
+    function initRadarChart() {
+      const dom = document.getElementById('chart-radar');
+      if (!dom) return;
+
+      const chart = echarts.init(dom);
+      chartInstances['radar'] = chart;
+
+      // 计算班级平均的六维数据
+      const dimensions = ['理论知识', '实操技能', '团队协作', '创新能力', '思政素养', '自主学习能力'];
+      const groupAvg = dimensions.map(() => 0);
+
+      DEMO_STUDENTS.forEach(s => {
+        const p = evalData.process[s.id];
+        const r = evalData.result[s.id];
+        // 理论知识 = WIKI得分率
+        groupAvg[0] += p ? (p.wikiScore / 30) * 100 : 0;
+        // 实操技能 = 实操得分率
+        groupAvg[1] += r ? ((r.simulation + r.realFlight + r.multiDrone) / 50) * 100 : 0;
+        // 团队协作 = 组内自评 + 团队展示
+        groupAvg[2] += p ? ((p.selfContribution + (r?.teamShow || 0) * 5) / 55) * 100 : 0;
+        // 创新能力 = 技术突破附加分映射
+        const dev = evalData.development[s.groupId];
+        groupAvg[3] += dev ? (dev.techBreakthrough / 3) * 100 : 0;
+        // 思政素养 = 思政融入
+        groupAvg[4] += r ? ((r.ideology || 0) / 5) * 100 : 0;
+        // 自主学习能力 = AI追踪完成度
+        groupAvg[5] += p ? (p.aiTracking?.completion || 0) : 0;
+      });
+
+      for (let i = 0; i < groupAvg.length; i++) {
+        groupAvg[i] = Math.round(groupAvg[i] / DEMO_STUDENTS.length);
+      }
+
+      // 当前选中学生的数据
+      const selStudent = DEMO_STUDENTS.find(s => s.id === selectedStudentId);
+      const selData = selStudent ? (() => {
+        const p = evalData.process[selStudent.id];
+        const r = evalData.result[selStudent.id];
+        const dev = evalData.development[selStudent.groupId];
+        return [
+          Math.round(p ? (p.wikiScore / 30) * 100 : 0),
+          Math.round(r ? ((r.simulation + r.realFlight + r.multiDrone) / 50) * 100 : 0),
+          Math.round(p ? ((p.selfContribution + (r?.teamShow || 0) * 5) / 55) * 100 : 0),
+          Math.round(dev ? (dev.techBreakthrough / 3) * 100 : 0),
+          Math.round(r ? ((r.ideology || 0) / 5) * 100 : 0),
+          Math.round(p ? (p.aiTracking?.completion || 0) : 0)
+        ];
+      })() : groupAvg;
+
+      const option = {
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'item' },
+        legend: {
+          data: ['班级平均', selStudent ? selStudent.name : '选中学生'],
+          textStyle: { color: '#8b9dc3', fontSize: 10 },
+          bottom: 0
+        },
+        radar: {
+          indicator: dimensions.map(d => ({ name: d, max: 100 })),
+          shape: 'polygon',
+          splitNumber: 4,
+          axisName: { color: '#8b9dc3', fontSize: 10 },
+          splitLine: { lineStyle: { color: 'rgba(26,58,92,0.5)' } },
+          splitArea: {
+            show: true,
+            areaStyle: { color: ['rgba(13,31,60,0.5)', 'rgba(10,22,40,0.5)'] }
+          },
+          axisLine: { lineStyle: { color: 'rgba(26,58,92,0.5)' } }
+        },
+        series: [{
+          type: 'radar',
+          data: [
+            {
+              value: groupAvg,
+              name: '班级平均',
+              lineStyle: { color: '#8b9dc3', width: 1 },
+              areaStyle: { color: 'rgba(139,157,195,0.1)' },
+              itemStyle: { color: '#8b9dc3' }
+            },
+            {
+              value: selData,
+              name: selStudent ? selStudent.name : '选中学生',
+              lineStyle: { color: '#00d4ff', width: 2 },
+              areaStyle: { color: 'rgba(0,212,255,0.15)' },
+              itemStyle: { color: '#00d4ff' }
+            }
+          ]
+        }]
+      };
+
+      chart.setOption(option);
+    }
+
+
+    // ============================================================
+    // 第八部分：事件处理与交互逻辑
+    // ============================================================
+
+    /**
+     * 切换角色
+     * @param {string} role - 角色: teacher | student | enterprise
+     */
+    function switchRole(role) {
+      currentRole = role;
+
+      // 更新角色按钮状态
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.role === role);
+      });
+
+      // 学生角色模拟：设定当前登录学生为s1
+      if (role === 'student') {
+        currentStudentId = 's1';
+        // 学生只能看本组，默认选中自己
+        const me = DEMO_STUDENTS.find(s => s.id === currentStudentId);
+        if (me) selectedStudentId = currentStudentId;
+      } else {
+        currentStudentId = null;
+      }
+
+      // 企业专家默认选中第一个
+      if (role === 'enterprise' && !selectedStudentId) {
+        selectedStudentId = 's1';
+      }
+
+      renderSidebar();
+      renderEvalPanel();
+
+      // 如果在大屏tab，刷新大屏
+      if (currentTab === 'dashboard') {
+        renderDashboard();
+      }
+    }
+
+    /**
+     * 切换 Tab
+     * @param {string} tab - tab名称: eval | dashboard
+     */
+    function switchTab(tab) {
+      currentTab = tab;
+
+      // 更新 Tab 按钮状态
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+
+      // 显示/隐藏面板
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById(`panel-${tab}`).classList.add('active');
+
+      // 渲染对应内容
+      if (tab === 'eval') {
+        renderEvalPanel();
+      } else if (tab === 'dashboard') {
+        renderDashboard();
+      }
+    }
+
+    /**
+     * 更新评分字段
+     * @param {string} section - 评价类别: process | result
+     * @param {string} studentId - 学生ID
+     * @param {string} field - 字段名
+     * @param {string} value - 新值
+     */
+    function updateScore(section, studentId, field, value) {
+      const numVal = parseFloat(value);
+      if (isNaN(numVal)) return;
+
+      if (!evalData[section][studentId]) {
+        evalData[section][studentId] = {};
+      }
+      evalData[section][studentId][field] = numVal;
+      saveData();
+      renderEvalPanel();
+      renderSidebar();
+      showToast('评分已更新', 'success');
+    }
+
+    /**
+     * 更新企业专家评分
+     * @param {string} studentId - 学生ID
+     * @param {string} field - 字段名
+     * @param {string} value - 新值
+     */
+    function updateEnterpriseScore(studentId, field, value) {
+      const numVal = parseFloat(value);
+      if (isNaN(numVal)) return;
+
+      if (!evalData.result[studentId]) {
+        evalData.result[studentId] = {};
+      }
+      if (!evalData.result[studentId].enterpriseOp) {
+        evalData.result[studentId].enterpriseOp = {};
+      }
+      evalData.result[studentId].enterpriseOp[field] = numVal;
+      saveData();
+      renderEvalPanel();
+      showToast('企业专家评分已更新', 'success');
+    }
+
+    /**
+     * 更新贡献分（带总分池校验）
+     * @param {string} studentId - 学生ID
+     * @param {string} groupId - 小组ID
+     * @param {string} value - 新值
+     */
+    function updateContribution(studentId, groupId, value) {
+      const numVal = parseFloat(value) || 0;
+      const poolLimit = getContributionPoolLimit(groupId);
+
+      // 计算排除当前学生后的已用分数
+      const groupMembers = DEMO_STUDENTS.filter(s => s.groupId === groupId);
+      let othersUsed = 0;
+      groupMembers.forEach(m => {
+        if (m.id !== studentId) {
+          const p = evalData.process[m.id];
+          othersUsed += p?.selfContribution || 0;
+        }
+      });
+
+      const wouldUse = othersUsed + numVal;
+      const inputEl = document.getElementById(`contrib-input-${studentId}`);
+      const hintEl = document.getElementById(`contrib-hint-${studentId}`);
+
+      if (wouldUse > poolLimit) {
+        // 超出限制，标红提示
+        if (inputEl) inputEl.classList.add('is-danger');
+        if (hintEl) {
+          hintEl.className = 'hint-text danger';
+          hintEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> 超出总分池限制！当前将使用 ${wouldUse}/${poolLimit}分，请调整`;
+        }
+        showToast('超出组内贡献分总分池限制！', 'error');
+        return; // 不保存
+      } else {
+        if (inputEl) inputEl.classList.remove('is-danger');
+        if (hintEl) {
+          hintEl.className = 'hint-text';
+          hintEl.innerHTML = `<i class="fas fa-info-circle"></i> 小组总分池上限: ${poolLimit}分，已用: ${wouldUse}分`;
+        }
+      }
+
+      // 保存
+      if (!evalData.process[studentId]) evalData.process[studentId] = {};
+      evalData.process[studentId].selfContribution = numVal;
+      saveData();
+      renderSidebar();
+      showToast('贡献分已更新', 'success');
+    }
+
+    /**
+     * 更新发展性评分
+     * @param {string} groupId - 小组ID
+     * @param {string} field - 字段名
+     * @param {string} value - 新值
+     */
+    function updateDevScore(groupId, field, value) {
+      const numVal = parseInt(value) || 0;
+      if (!evalData.development[groupId]) {
+        evalData.development[groupId] = { realUser: 0, techBreakthrough: 0, management: 0 };
+      }
+      evalData.development[groupId][field] = numVal;
+      saveData();
+      renderEvalPanel(); // 重新渲染以显示更新后的总和
+      renderSidebar();
+    }
+
+    /**
+     * 切换安全否决状态
+     * @param {string} studentId - 学生ID
+     */
+    function toggleSafetyVeto(studentId) {
+      if (currentRole !== 'teacher') {
+        showToast('只有教师可以操作安全否决', 'error');
+        return;
+      }
+
+      const current = evalData.safetyVeto[studentId] || false;
+      evalData.safetyVeto[studentId] = !current;
+      saveData();
+      renderEvalPanel();
+      renderSidebar();
+      showToast(current ? '安全否决已取消' : '安全否决已启用', current ? 'success' : 'warning');
+    }
+
+    // ============================================================
+    // 第九部分：AI 功能模拟
+    // ============================================================
+
+    /**
+     * AI关键词检查 - 模拟AI分析学生WIKI关键词
+     * @param {string} studentId - 学生ID
+     */
+    function aiCheckKeywords(studentId) {
+      const p = evalData.process[studentId];
+      if (!p) return;
+
+      const student = DEMO_STUDENTS.find(s => s.id === studentId);
+      const keywords = p.wikiKeywords || [];
+      const validCount = keywords.filter(kw => KEYWORD_DATABASE.includes(kw)).length;
+      const coverage = keywords.length > 0 ? Math.round((validCount / keywords.length) * 100) : 0;
+
+      // 模拟AI分析结果
+      const suggestions = KEYWORD_DATABASE.filter(kw => !keywords.includes(kw)).slice(0, 3);
+
+      const html = `
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:48px;margin-bottom:10px;">🤖</div>
+          <div style="font-size:18px;color:var(--accent-cyan);font-weight:600;">AI 关键词分析报告</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-top:8px;">${student ? student.name : studentId} 的WIKI关键词覆盖度</div>
+        </div>
+        <div style="background:var(--bg-primary);border-radius:8px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="color:var(--text-secondary);">关键词覆盖率</span>
+            <span style="font-size:24px;font-weight:700;color:${coverage >= 80 ? 'var(--success)' : (coverage >= 50 ? 'var(--warning)' : 'var(--danger)')};">${coverage}%</span>
+          </div>
+          <div style="height:8px;background:var(--border-color);border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${coverage}%;background:${coverage >= 80 ? 'var(--success)' : (coverage >= 50 ? 'var(--warning)' : 'var(--danger)')};border-radius:4px;transition:width 1s ease;"></div>
+          </div>
+          <div style="margin-top:12px;">
+            <span style="color:var(--text-secondary);font-size:12px;">已有关键词: </span>
+            ${keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join(' ')}
+          </div>
+        </div>
+        ${suggestions.length > 0 ? `
+        <div style="background:rgba(0,212,255,0.05);border-radius:8px;padding:16px;border:1px solid var(--border-color);">
+          <div style="color:var(--accent-cyan);font-size:13px;margin-bottom:8px;"><i class="fas fa-lightbulb"></i> AI 建议补充关键词:</div>
+          ${suggestions.map(s => `<span class="keyword-tag" style="margin:2px;">${s}</span>`).join(' ')}
+        </div>
+        ` : '<div style="color:var(--success);text-align:center;"><i class="fas fa-check-circle"></i> 关键词覆盖优秀！</div>'}
+        <div style="text-align:center;margin-top:20px;">
+          <button class="btn btn-primary" onclick="closeModal()">关闭</button>
+        </div>
+      `;
+
+      openModal('AI 关键词检查报告', html);
+    }
+
+    /**
+     * AI演讲分析 - 模拟AI六维分析
+     * @param {string} studentId - 学生ID
+     */
+    function aiSpeechAnalysis(studentId) {
+      const student = DEMO_STUDENTS.find(s => s.id === studentId);
+      const p = evalData.process[studentId];
+      const presentationScore = p?.presentationScore || 0;
+
+      // 模拟AI六维分析数据
+      const dims = ['语言表达', '逻辑思维', '时间控制', 'PPT设计', '互动能力', '专业深度'];
+      // 基于展示分生成模拟数据
+      const baseScore = presentationScore / 30 * 100;
+      const data = dims.map(() => Math.min(100, Math.max(60, baseScore + (Math.random() * 30 - 15))));
+
+      const html = `
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:18px;color:var(--accent-cyan);font-weight:600;">AI 演讲六维分析</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-top:4px;">${student ? student.name : studentId} 的课堂展示表现</div>
+        </div>
+        <div id="modal-radar-chart" style="width:100%;height:300px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+          ${dims.map((d, i) => `
+            <div style="text-align:center;padding:8px;background:var(--bg-primary);border-radius:6px;">
+              <div style="font-size:16px;font-weight:700;color:${data[i] >= 80 ? 'var(--success)' : (data[i] >= 60 ? 'var(--accent-cyan)' : 'var(--warning)')};">${Math.round(data[i])}</div>
+              <div style="font-size:11px;color:var(--text-secondary);">${d}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="text-align:center;margin-top:16px;">
+          <button class="btn btn-primary" onclick="closeModal()">关闭</button>
+        </div>
+      `;
+
+      openModal('AI 演讲分析报告', html);
+
+      // 在模态框中渲染雷达图
+      setTimeout(() => {
+        const radarDom = document.getElementById('modal-radar-chart');
+        if (radarDom && typeof echarts !== 'undefined') {
+          const radarChart = echarts.init(radarDom);
+          radarChart.setOption({
+            backgroundColor: 'transparent',
+            radar: {
+              indicator: dims.map(d => ({ name: d, max: 100 })),
+              axisName: { color: '#8b9dc3', fontSize: 10 },
+              splitLine: { lineStyle: { color: 'rgba(26,58,92,0.5)' } },
+              splitArea: { areaStyle: { color: ['rgba(13,31,60,0.5)', 'rgba(10,22,40,0.5)'] } },
+              axisLine: { lineStyle: { color: 'rgba(26,58,92,0.5)' } }
+            },
+            series: [{
+              type: 'radar',
+              data: [{
+                value: data.map(v => Math.round(v)),
+                name: '得分',
+                lineStyle: { color: '#00d4ff', width: 2 },
+                areaStyle: { color: 'rgba(0,212,255,0.2)' },
+                itemStyle: { color: '#00d4ff' }
+              }]
+            }]
+          });
+        }
+      }, 100);
+    }
+
+    /**
+     * 飞行模拟快速评分 - 模拟自动评分
+     * @param {string} studentId - 学生ID
+     */
+    function quickSimulateScore(studentId) {
+      const student = DEMO_STUDENTS.find(s => s.id === studentId);
+
+      // 模拟生成随机评分
+      const simScore = Math.round((11 + Math.random() * 4) * 10) / 10; // 11-15
+      const realScore = Math.round((18 + Math.random() * 7) * 10) / 10; // 18-25
+      const multiScore = Math.round((7 + Math.random() * 3) * 10) / 10; // 7-10
+
+      const html = `
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:48px;margin-bottom:10px;">✈️</div>
+          <div style="font-size:18px;color:var(--accent-cyan);font-weight:600;">飞行模拟快速评分</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-top:8px;">${student ? student.name : studentId} 的模拟飞行数据已分析完成</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+          <div style="text-align:center;padding:16px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">虚拟仿真</div>
+            <div style="font-size:24px;font-weight:700;color:var(--accent-cyan);">${simScore}</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">真机飞行</div>
+            <div style="font-size:24px;font-weight:700;color:var(--success);">${realScore}</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">多机协同</div>
+            <div style="font-size:24px;font-weight:700;color:var(--warning);">${multiScore}</div>
+          </div>
+        </div>
+        <div style="background:rgba(0,230,118,0.05);border:1px solid rgba(0,230,118,0.3);border-radius:8px;padding:12px;margin-bottom:16px;">
+          <div style="font-size:12px;color:var(--success);"><i class="fas fa-check-circle"></i> AI评分依据：飞行轨迹稳定性、任务完成时间、误差精度、应急处置表现</div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button class="btn btn-primary" onclick="applySimulateScore('${studentId}', ${simScore}, ${realScore}, ${multiScore})">应用评分</button>
+          <button class="btn" onclick="closeModal()">取消</button>
+        </div>
+      `;
+
+      openModal('飞行模拟评分结果', html);
+    }
+
+    /**
+     * 应用模拟评分到数据
+     */
+    function applySimulateScore(studentId, sim, real, multi) {
+      if (!evalData.result[studentId]) evalData.result[studentId] = {};
+      evalData.result[studentId].simulation = sim;
+      evalData.result[studentId].realFlight = real;
+      evalData.result[studentId].multiDrone = multi;
+      saveData();
+      renderEvalPanel();
+      renderSidebar();
+      closeModal();
+      showToast('模拟评分已应用', 'success');
+    }
+
+    // ============================================================
+    // 第十部分：模态框工具函数
+    // ============================================================
+
+    /**
+     * 打开模态框
+     * @param {string} title - 标题
+     * @param {string} html - 内容HTML
+     */
+    function openModal(title, html) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = html;
+      document.getElementById('modal-overlay').classList.add('show');
+    }
+
+    /**
+     * 关闭模态框
+     * @param {Event} event - 点击事件（可选）
+     */
+    function closeModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('modal-overlay').classList.remove('show');
+    }
+
+    // ============================================================
+    // 第十一部分：Toast 提示
+    // ============================================================
+
+    /**
+     * 显示 Toast 提示
+     * @param {string} message - 提示信息
+     * @param {string} type - 类型: success | error | warning | info
+     */
+    function showToast(message, type = 'info') {
+      // 移除已有的toast
+      const existing = document.querySelector('.toast-notification');
+      if (existing) existing.remove();
+
+      const colors = {
+        success: 'var(--success)',
+        error: 'var(--danger)',
+        warning: 'var(--warning)',
+        info: 'var(--accent-cyan)'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        padding: 12px 20px;
+        background: var(--bg-card);
+        border: 1px solid ${colors[type] || colors.info};
+        border-radius: 8px;
+        color: ${colors[type] || colors.info};
+        font-size: 13px;
+        z-index: 9999;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        animation: toast-slide-in 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      `;
+      toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : (type === 'error' ? 'times-circle' : (type === 'warning' ? 'exclamation-triangle' : 'info-circle'))}"></i> ${message}`;
+
+      // 添加动画样式
+      if (!document.getElementById('toast-style')) {
+        const style = document.createElement('style');
+        style.id = 'toast-style';
+        style.textContent = `
+          @keyframes toast-slide-in {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'toast-slide-in 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // ============================================================
+    // 第十二部分：时钟与初始化
+    // ============================================================
+
+    /**
+     * 更新实时时钟
+     */
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+      document.getElementById('live-clock').textContent = timeStr;
+    }
+
+    /**
+     * 窗口大小改变时重绘图表
+     */
+    function handleResize() {
+      Object.values(chartInstances).forEach(chart => {
+        if (chart && chart.resize) chart.resize();
+      });
+    }
+
+    /**
+     * 系统初始化
+     */
+    function init() {
+      // 加载数据
+      loadData();
+
+      // 渲染侧边栏
+      renderSidebar();
+
+      // 渲染评价面板
+      renderEvalPanel();
+
+      // 启动时钟
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      // 监听窗口大小变化
+      window.addEventListener('resize', handleResize);
+
+      // 设置最后更新时间
+      document.getElementById('last-update').textContent = new Date().toLocaleString('zh-CN');
+
+      console.log('%c🚁 低空应急智慧评价系统已启动', 'color:#00d4ff;font-size:16px;font-weight:bold;');
+      console.log('%c当前角色: ' + currentRole, 'color:#8b9dc3;font-size:12px;');
+    }
+
+    // DOM 加载完成后初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+
+    // ============================================================
+    // 增强模块：AI 模拟函数扩展（来自 ai-simulation.js）
+    // 提供额外的工具函数和AI数据生成能力
+    // ============================================================
+
+/**
+ * ============================================================
+ * 低空应急智慧评价系统 - AI 模拟函数库
+ * ============================================================
+ * 说明：由于真实 AI 接口不可用，本文件提供完整的模拟函数替代方案。
+ * 所有函数均为纯原生 JavaScript，无框架依赖，可直接嵌入单文件使用。
+ * 采用函数式编程风格，数据生成符合业务约束。
+ * ============================================================
+ */
+
+// ==================== 1. 工具函数 ====================
+
+/**
+ * 生成指定范围内的随机整数
+ * @param {number} min - 最小值（包含）
+ * @param {number} max - 最大值（包含）
+ * @returns {number} 随机整数
+ */
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * 生成指定范围内的随机浮点数
+ * @param {number} min - 最小值（包含）
+ * @param {number} max - 最大值（包含）
+ * @param {number} decimals - 小数位数，默认1位
+ * @returns {number} 随机浮点数
+ */
+function randomFloat(min, max, decimals = 1) {
+  const val = Math.random() * (max - min) + min;
+  return Number(val.toFixed(decimals));
+}
+
+/**
+ * 格式化日期为 yyyy-MM-dd 字符串
+ * @param {Date} date - 日期对象，默认当前日期
+ * @returns {string} 格式化后的日期字符串
+ */
+function formatDate(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * 深拷贝对象（通过 JSON 序列化/反序列化）
+ * @param {Object} obj - 待拷贝的对象
+ * @returns {Object} 深拷贝后的新对象
+ */
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * 防抖函数
+ * @param {Function} fn - 需要防抖的函数
+ * @param {number} delay - 延迟时间（毫秒）
+ * @returns {Function} 防抖后的函数
+ */
+function debounce(fn, delay) {
+  let timer = null;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+/**
+ * 从数组中随机选取指定数量的不重复元素
+ * @param {Array} arr - 源数组
+ * @param {number} count - 选取数量
+ * @returns {Array} 随机选取的元素数组
+ */
+function randomPick(arr, count) {
+  if (count >= arr.length) return [...arr];
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+/**
+ * 生成最近 N 天内的随机日期字符串
+ * @param {number} days - 最近天数范围
+ * @returns {string} 随机日期字符串 yyyy-MM-dd
+ */
+function randomRecentDate(days = 30) {
+  const d = new Date();
+  d.setDate(d.getDate() - random(0, days));
+  return formatDate(d);
+}
+
+/**
+ * 生成最近几分钟内的随机时间戳
+ * @param {number} minutes - 最近分钟数
+ * @returns {string} 时间字符串 HH:mm:ss
+ */
+function randomRecentTime(minutes = 10) {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - random(0, minutes));
+  d.setSeconds(random(0, 59));
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+// ==================== 2. 常量定义 ====================
+
+
+    // (KEYWORD_DATABASE 已在上方定义)
+/**
+ * 演讲评语库 - 按分数段分类
+ */
+const SPEECH_COMMENTS = {
+  excellent: [
+    '表现卓越，具备专业演讲水准',
+    '全场最佳，表达流畅且逻辑严密',
+    '堪称标杆，展现了极高的专业素养'
+  ],
+  good: [
+    '表现良好，个别维度可提升',
+    '逻辑清晰，建议增强互动环节',
+    '内容充实，表达技巧有待打磨'
+  ],
+  average: [
+    '基本合格，建议加强练习',
+    '内容尚可，表达不够自信',
+    '结构需优化，重点不够突出'
+  ],
+  poor: [
+    '需要改进，存在明显不足',
+    '准备不够充分，逻辑较为混乱',
+    '时间把控不佳，内容深度不足'
+  ],
+  bad: [
+    '急需提升，建议参加演讲培训',
+    '基础薄弱，需系统学习演讲技巧',
+    '严重超时/不足，内容组织欠佳'
+  ]
+};
+
+/**
+ * 预警类型配置
+ */
+const WARNING_TYPES = {
+  SUCCESS: 'success',
+  INFO: 'info',
+  WARNING: 'warning',
+  DANGER: 'danger'
+};
+
+// ==================== 3. AI 关键词检查 ====================
+
+/**
+ * AI 关键词检查 - 分析学生评价数据中的关键词匹配情况
+ * 将学生提交的 wikiKeywords 与专业关键词数据库对比，给出匹配结果和改进建议
+ * @param {string} studentId - 学生ID
+ * @param {Object} evalData - 评价数据对象，包含所有学生的评价信息
+ * @returns {Object} 关键词检查结果 { matched, missing, score, suggestion }
+ */
+function aiCheckKeywordsCore(studentId, evalData) {
+  // 获取该学生的评价数据
+  const studentData = evalData[studentId];
+  if (!studentData) {
+    return { matched: [], missing: KEYWORD_DATABASE.slice(0, 4), score: 10, suggestion: '未找到学生数据，建议补充核心关键词' };
+  }
+
+  // 获取学生提交的关键词数组
+  const studentKeywords = studentData.wikiKeywords || [];
+
+  // 如果学生没有提交关键词，返回推荐列表
+  if (studentKeywords.length === 0) {
+    const recommended = randomPick(KEYWORD_DATABASE, 4);
+    return {
+      matched: [],
+      missing: recommended,
+      score: 10,
+      suggestion: `建议补充"${recommended.join('"、"')}"相关内容`
+    };
+  }
+
+  // 将学生关键词转为小写进行不区分大小写匹配
+  const studentKwLower = studentKeywords.map(k => k.toLowerCase());
+  const dbLower = KEYWORD_DATABASE.map(k => k.toLowerCase());
+
+  // 计算已匹配和缺失的关键词
+  const matched = [];
+  const missing = [];
+
+  studentKeywords.forEach((kw, idx) => {
+    if (dbLower.includes(studentKwLower[idx])) {
+      matched.push(kw);
+    }
+  });
+
+  KEYWORD_DATABASE.forEach((kw, idx) => {
+    if (!studentKwLower.includes(dbLower[idx])) {
+      missing.push(kw);
+    }
+  });
+
+  // 随机模拟：如果学生关键词较多，随机保留部分匹配结果（模拟AI不确定性）
+  let finalMatched = matched;
+  if (matched.length > 5) {
+    finalMatched = randomPick(matched, random(3, 5));
+  }
+
+  // 从缺失中随机选取2-4个作为推荐补充
+  const finalMissing = missing.length > 0 ? randomPick(missing, Math.min(random(2, 4), missing.length)) : [];
+
+  // 计算建议分数：基础分10分 + 每个匹配词2分，上限30分
+  const score = Math.min(10 + finalMatched.length * 2, 30);
+
+  // 生成建议文本
+  let suggestion = '';
+  if (finalMissing.length > 0) {
+    suggestion = `建议补充"${finalMissing.join('"和"')}"相关内容`;
+  } else if (finalMatched.length > 0) {
+    suggestion = '关键词覆盖良好，继续保持';
+  } else {
+    suggestion = '建议补充低空应急领域专业术语';
+  }
+
+  return {
+    matched: finalMatched,
+    missing: finalMissing,
+    score,
+    suggestion
+  };
+}
+
+// ==================== 4. AI 演讲分析 ====================
+
+/**
+ * AI 演讲分析 - 模拟生成六维雷达图数据
+ * 从逻辑、专业、表达、自信、互动、时间控制六个维度评估学生演讲表现
+ * @param {string} studentId - 学生ID
+ * @returns {Object} 演讲分析结果 { dimensions, scores, overall, comment }
+ */
+function aiSpeechAnalysisCore(studentId) {
+  // 六维评估维度定义
+  const dimensions = ['逻辑', '专业', '表达', '自信', '互动', '时间控制'];
+
+  // 基于 studentId 生成稳定的伪随机种子（保证同一学生多次调用结果相近）
+  let seed = 0;
+  for (let i = 0; i < studentId.length; i++) {
+    seed += studentId.charCodeAt(i);
+  }
+
+  // 生成6个维度的分数（65-98范围），带一定相关性（优秀学生各维度都偏高）
+  const baseLevel = random(70, 95); // 基础水平
+  const scores = dimensions.map((_, idx) => {
+    // 在基础水平上下浮动，模拟各维度差异
+    const variance = random(-10, 10);
+    let score = baseLevel + variance;
+    // 确保每个维度在合理范围内
+    score = Math.max(65, Math.min(98, score));
+    // 个别维度可能有明显高低
+    if (idx === 4) score -= random(0, 8); // 互动普遍稍低
+    if (idx === 5) score -= random(0, 5); // 时间控制容易扣分
+    return Math.max(60, Math.min(98, score));
+  });
+
+  // 计算总分（加权平均，逻辑和专业权重稍高）
+  const weights = [0.2, 0.2, 0.2, 0.15, 0.15, 0.1];
+  const overall = Math.round(
+    scores.reduce((sum, s, i) => sum + s * weights[i], 0)
+  );
+
+  // 根据总分选择评语
+  let commentPool;
+  if (overall >= 90) {
+    commentPool = SPEECH_COMMENTS.excellent;
+  } else if (overall >= 80) {
+    commentPool = SPEECH_COMMENTS.good;
+  } else if (overall >= 70) {
+    commentPool = SPEECH_COMMENTS.average;
+  } else if (overall >= 60) {
+    commentPool = SPEECH_COMMENTS.poor;
+  } else {
+    commentPool = SPEECH_COMMENTS.bad;
+  }
+
+  // 额外生成一条具体建议
+  const minIdx = scores.indexOf(Math.min(...scores));
+  const dimensionSuggestions = [
+    '建议优化演讲结构，增强论证层次',
+    '可补充更多行业前沿技术细节',
+    '注意语速控制和吐字清晰度',
+    '适当增加眼神交流和肢体语言',
+    '多设计听众提问和互动环节',
+    '严格控制各环节时间分配'
+  ];
+
+  const comment = commentPool[random(0, commentPool.length - 1)] + '，' + dimensionSuggestions[minIdx];
+
+  return {
+    dimensions,
+    scores,
+    overall,
+    comment
+  };
+}
+
+// ==================== 5. AI 过程追踪数据生成 ====================
+
+/**
+ * AI 过程追踪数据生成 - 模拟学生的平台学习数据
+ * 生成登录天数、学习时长、完成度等指标，并判断是否触发掉队预警
+ * @param {string} studentId - 学生ID
+ * @returns {Object} 学习追踪数据 { loginDays, studyHours, completion, lastLogin, streakDays, warning }
+ */
+function generateAITrackingData(studentId) {
+  // 基于 studentId 生成稳定的随机特征
+  let seed = 0;
+  for (let i = 0; i < studentId.length; i++) {
+    seed += studentId.charCodeAt(i);
+  }
+
+  // 登录天数：5-16天（16天满勤）
+  const loginDays = random(5, 16);
+
+  // 学习时长：登录天数 * 3-5小时/天
+  const hoursPerDay = randomFloat(3, 5, 1);
+  const studyHours = Number((loginDays * hoursPerDay).toFixed(1));
+
+  // 仿真训练完成度：60-100%
+  // 登录天数多的学生完成度倾向于更高
+  const completionBase = Math.floor((loginDays / 16) * 40) + 60;
+  const completion = Math.min(100, completionBase + random(-5, 5));
+
+  // 最后登录日期：最近16天内
+  const lastLoginOffset = random(0, Math.max(0, 16 - loginDays));
+  const lastLoginDate = new Date();
+  lastLoginDate.setDate(lastLoginDate.getDate() - lastLoginOffset);
+  const lastLogin = formatDate(lastLoginDate);
+
+  // 连续登录天数：0-10天
+  // 与总登录天数相关，总天数越多连续天数倾向于越高
+  const streakDays = Math.min(random(0, 10), loginDays);
+
+  // 掉队预警判断：连续登录<3天 或 完成度<60%
+  const warning = streakDays < 3 || completion < 60;
+
+  return {
+    loginDays,
+    studyHours,
+    completion,
+    lastLogin,
+    streakDays,
+    warning
+  };
+}
+
+// ==================== 6. 飞行模拟快速评分 ====================
+
+/**
+ * 飞行模拟快速评分 - 随机生成飞行实操数据并换算为分数
+ * 根据操作准确率、投放误差和特情处置正确率综合评定飞行成绩
+ * @param {string} studentId - 学生ID
+ * @returns {Object} 飞行评分结果 { accuracy, error, emergency, score, rating }
+ */
+function quickSimulateScoreCore(studentId) {
+  // 基于 studentId 的稳定性因子（0-1之间）
+  let seedSum = 0;
+  for (let i = 0; i < studentId.length; i++) {
+    seedSum += studentId.charCodeAt(i);
+  }
+  const stability = (seedSum % 100) / 100; // 0-1 的稳定性因子
+
+  // 操作准确率：85-100%
+  const accuracy = Math.min(100, Math.floor(85 + stability * 10 + random(-3, 3)));
+
+  // 投放误差：0.5-5.0米（准确率越高误差越小，呈负相关）
+  const errorBase = 5.0 - (accuracy - 85) / 15 * 4.5;
+  const error = Math.max(0.5, (errorBase + randomFloat(-0.5, 0.5)).toFixed(1));
+
+  // 特情处置正确率：80-100%
+  const emergency = Math.min(100, Math.floor(80 + stability * 15 + random(-3, 3)));
+
+  // 根据规则换算为0-15分
+  let score;
+  let rating;
+  if (accuracy >= 95 && parseFloat(error) < 2) {
+    // 优秀：13-15分
+    score = random(13, 15);
+    rating = 'excellent';
+  } else if (accuracy >= 90 && parseFloat(error) < 3) {
+    // 良好：10-12分
+    score = random(10, 12);
+    rating = 'good';
+  } else if (accuracy >= 85 && parseFloat(error) < 5) {
+    // 通过：7-9分
+    score = random(7, 9);
+    rating = 'pass';
+  } else {
+    // 需改进：0-6分
+    score = random(3, 6);
+    rating = 'fail';
+  }
+
+  return {
+    accuracy,
+    error: parseFloat(error),
+    emergency,
+    score,
+    rating
+  };
+}
+
+// ==================== 7. AI 预警消息生成 ====================
+
+/**
+ * AI 预警消息生成 - 扫描所有学生数据，生成预警消息数组
+ * 根据多种业务规则检查学生状态，生成对应的预警/提示消息
+ * @param {Object} evalData - 评价数据对象，格式为 { studentId: { name, ... }, ... }
+ * @returns {Array} 预警消息数组 [{ time, type, message }, ...]
+ */
+function generateAIWarnings(evalData) {
+  const warnings = [];
+
+  // 遍历所有学生数据
+  Object.entries(evalData).forEach(([studentId, data]) => {
+    const name = data.name || studentId;
+
+    // 规则1：连续3天未登录 → warning
+    if (data.streakDays !== undefined && data.streakDays < 3) {
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.WARNING,
+        message: `${name}已连续${Math.max(1, 3 - data.streakDays)}天未登录，建议关注`
+      });
+    }
+
+    // 规则2：仿真训练完成度<60% → warning
+    if (data.completion !== undefined && data.completion < 60) {
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.WARNING,
+        message: `${name}仿真训练完成度仅${data.completion}%，存在掉队风险`
+      });
+    }
+
+    // 规则3：wiki未提交 → info
+    if (data.wikiSubmitted === false || (data.wikiScore !== undefined && data.wikiScore === 0)) {
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.INFO,
+        message: `${name}本周WIKI日志尚未提交`
+      });
+    }
+
+    // 规则4：安全否决启用 → danger
+    if (data.safetyVeto === true || (evalData.safetyVeto && evalData.safetyVeto[studentId])) {
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.DANGER,
+        message: `${name}已被安全否决，总评上限59分`
+      });
+    }
+
+    // 规则5：成绩优秀（总分>=90）→ success
+    if (data.totalScore !== undefined && data.totalScore >= 90) {
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.SUCCESS,
+        message: `${name}总评${data.totalScore}分，表现优异`
+      });
+    }
+
+    // 规则6：投放误差<3m → success
+    if (data.simError !== undefined && parseFloat(data.simError) < 3) {
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.SUCCESS,
+        message: `${name}飞行投放误差仅${data.simError}m，满分时刻！`
+      });
+    }
+
+    // 规则7：缺少关键词 → info
+    if (data.missingKeywords && data.missingKeywords.length > 0) {
+      const keyword = data.missingKeywords[0];
+      warnings.push({
+        time: randomRecentTime(10),
+        type: WARNING_TYPES.INFO,
+        message: `${name}方案中缺失"${keyword}"，已自动标注`
+      });
+    }
+  });
+
+  // 按时间排序，最近的消息在前
+  warnings.sort((a, b) => b.time.localeCompare(a.time));
+
+  return warnings;
+}
+
+
+// ==================== 8. 总评成绩计算 ====================
+
+/**
+ * 总评成绩计算 - 严格按照设计方案公式计算学生总评成绩
+ * 计算公式：总评 = 过程性得分 * 0.4 + 结果性得分 * 0.6 + 附加分（上限10分）
+ * 安全否决时总评上限59分
+ * @param {string} studentId - 学生ID
+ * @param {Object} evalData - 评价数据对象
+ * @returns {Object} 成绩计算结果 { processScore, resultScore, developmentBonus, totalScore, isVetoed, grade }
+ */
+function calculateTotalScoreCore(studentId, evalData) {
+  const data = evalData[studentId];
+  if (!data) {
+    return { processScore: 0, resultScore: 0, developmentBonus: 0, totalScore: 0, isVetoed: false, grade: '预警' };
+  }
+
+  // 1. 过程性得分 = wikiScore(30) + presentationScore(30) + selfContributionScore(40) = 100分满分
+  const wikiScore = data.wikiScore !== undefined ? Math.min(data.wikiScore, 30) : 0;
+  const presentationScore = data.presentationScore !== undefined ? Math.min(data.presentationScore, 30) : 0;
+  const selfContributionScore = data.selfContributionScore !== undefined ? Math.min(data.selfContributionScore, 40) : 0;
+  const processScore = wikiScore + presentationScore + selfContributionScore;
+
+  // 2. 结果性得分 = 各项之和，满分100分
+  // 具体构成：planDoc(15) + packagePlan(30) + dispatchPlan(10) + simulation(15) + realFlight(25) +
+  //            multiDrone(10) + defensePPT(20) + teamShow(10) + ideology(5) = 100分满分
+  const planDoc = data.planDoc || 0;
+  const packagePlan = data.packagePlan || 0;
+  const dispatchPlan = data.dispatchPlan || 0;
+  const simulation = data.simulation || 0;
+  const realFlight = data.realFlight || 0;
+  const multiDrone = data.multiDrone || 0;
+  const defensePPT = data.defensePPT || 0;
+  const teamShow = data.teamShow || 0;
+  const ideology = data.ideology || 0;
+  const resultScore = planDoc + packagePlan + dispatchPlan + simulation + realFlight +
+                     multiDrone + defensePPT + teamShow + ideology;
+
+  // 3. 附加分 = 真实用户加分 + 技术突破加分 + 管理加分（上限10分）
+  const realUser = (data.developmentBonus && data.developmentBonus.realUser) || 0;
+  const techBreakthrough = (data.developmentBonus && data.developmentBonus.techBreakthrough) || 0;
+  const management = (data.developmentBonus && data.developmentBonus.management) || 0;
+  const developmentBonus = Math.min(realUser + techBreakthrough + management, 10);
+
+  // 4. 总评 = process * 0.4 + result * 0.6 + developmentBonus
+  let totalScore = Math.round((processScore * 0.4 + resultScore * 0.6 + developmentBonus) * 10) / 10;
+  // 四舍五入到1位小数
+  totalScore = Math.round(totalScore * 10) / 10;
+
+  // 5. 安全否决检查
+  const isVetoed = (evalData.safetyVeto && evalData.safetyVeto[studentId] === true) || data.safetyVeto === true;
+  if (isVetoed) {
+    totalScore = Math.min(totalScore, 59);
+  }
+
+  // 6. 确定等级
+  let grade;
+  if (totalScore >= 90) {
+    grade = '优秀';
+  } else if (totalScore >= 80) {
+    grade = '良好';
+  } else if (totalScore >= 70) {
+    grade = '中等';
+  } else if (totalScore >= 60) {
+    grade = '及格';
+  } else {
+    grade = '预警';
+  }
+
+  return {
+    processScore,
+    resultScore,
+    developmentBonus,
+    totalScore,
+    isVetoed,
+    grade
+  };
+}
+
+// ==================== 9. 班级统计数据计算 ====================
+
+/**
+ * 班级统计数据计算 - 汇总全班学生的评价数据
+ * 计算平均分、成绩分布、指标达成度和雷达图数据
+ * @param {Object} evalData - 评价数据对象，包含所有学生的完整评价信息
+ * @returns {Object} 班级统计数据 { totalStudents, avgScore, distribution, indicators, warningCount, radarData }
+ */
+function calculateClassStats(evalData) {
+  // 过滤出有效学生数据条目（排除 safetyVeto 等特殊键）
+  const studentEntries = Object.entries(evalData).filter(([key]) => key !== 'safetyVeto');
+  const totalStudents = studentEntries.length;
+
+  if (totalStudents === 0) {
+    return {
+      totalStudents: 0,
+      avgScore: 0,
+      distribution: { excellent: 0, good: 0, medium: 0, pass: 0, warning: 0 },
+      indicators: { planCompliance: 0, deliveryAccuracy: 0, airspacePass: 0 },
+      warningCount: 0,
+      radarData: [0, 0, 0, 0, 0, 0]
+    };
+  }
+
+  // 计算每个学生的总分并收集各项分数
+  const allScores = [];
+  const allPlanDoc = [];
+  const allDispatchPlan = [];
+  const allMultiDrone = [];
+  const allSimulation = [];
+  const allRealFlight = [];
+  const allTeamShow = [];
+  const allSelfContribution = [];
+  const allIdeology = [];
+  let warningCount = 0;
+
+  studentEntries.forEach(([studentId, data]) => {
+    const score = calculateTotalScore(studentId, evalData);
+    allScores.push(score.totalScore);
+
+    // 收集各项原始分数用于雷达图计算
+    allPlanDoc.push(data.planDoc || 0);
+    allDispatchPlan.push(data.dispatchPlan || 0);
+    allMultiDrone.push(data.multiDrone || 0);
+    allSimulation.push(data.simulation || 0);
+    allRealFlight.push(data.realFlight || 0);
+    allTeamShow.push(data.teamShow || 0);
+    allSelfContribution.push(data.selfContributionScore || 0);
+    allIdeology.push(data.ideology || 0);
+
+    // 统计预警人数
+    if (score.grade === '预警') {
+      warningCount++;
+    }
+  });
+
+  // 计算班级平均分
+  const avgScore = Math.round((allScores.reduce((a, b) => a + b, 0) / totalStudents) * 10) / 10;
+
+  // 成绩分布统计
+  const distribution = { excellent: 0, good: 0, medium: 0, pass: 0, warning: 0 };
+  allScores.forEach(score => {
+    if (score >= 90) distribution.excellent++;
+    else if (score >= 80) distribution.good++;
+    else if (score >= 70) distribution.medium++;
+    else if (score >= 60) distribution.pass++;
+    else distribution.warning++;
+  });
+
+  // 指标达成度（随机模拟，体现业务数据波动）
+  const indicators = {
+    planCompliance: random(85, 98),     // 方案合规率 %
+    deliveryAccuracy: random(82, 96),   // 投放精准度 %
+    airspacePass: random(78, 90)        // 空域通过率 %
+  };
+
+  // 雷达图6维度计算
+  const avg = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+  const radarData = [
+    Math.round(avg(allPlanDoc) / 15 * 100),                       // 应急方案制定 = planDoc平均 / 15 * 100
+    Math.round(avg(allDispatchPlan) / 10 * 100),                  // 航线规划 = dispatchPlan平均 / 10 * 100
+    Math.round(avg(allMultiDrone) / 10 * 100),                    // 设备运维 = multiDrone平均 / 10 * 100
+    Math.round(avg([...allSimulation, ...allRealFlight]) / 40 * 100), // 飞行操控 = (simulation+realFlight)平均 / 40 * 100
+    Math.round(avg([...allTeamShow, ...allSelfContribution]) / 25 * 100), // 团队协作 = (teamShow+selfContribution)平均 / 25 * 100
+    Math.round(avg(allIdeology) / 5 * 100)                        // 安全意识 = ideology平均 / 5 * 100
+  ];
+
+  // 雷达图维度标签（与数据对应）
+  const radarDimensions = ['应急方案制定', '航线规划', '设备运维', '飞行操控', '团队协作', '安全意识'];
+
+  return {
+    totalStudents,
+    avgScore,
+    distribution,
+    indicators,
+    warningCount,
+    radarData,
+    radarDimensions
+  };
+}
+
+// ==================== 10. 热力图数据生成 ====================
+
+/**
+ * 热力图数据生成 - 生成学生 x 周数的活跃度热力图数据
+ * 活跃度评分基于登录、学习时长、wiki提交和仿真完成情况
+ * @param {Array} students - 学生列表，每项为 { id, name }
+ * @param {number} weeks - 周数，默认8周
+ * @returns {Object} 热力图数据 { xData, yData, data }
+ *   xData: 周次标签数组
+ *   yData: 学生姓名数组
+ *   data: [[x索引, y索引, 活跃度分数], ...]
+ */
+function generateHeatmapData(students, weeks = 8) {
+  // X轴：周次标签
+  const xData = Array.from({ length: weeks }, (_, i) => `第${i + 1}周`);
+
+  // Y轴：学生姓名
+  const yData = students.map(s => s.name);
+
+  // 生成热力图数据点 [x, y, value]
+  const data = [];
+  students.forEach((student, yIndex) => {
+    // 为每个学生生成一个基础活跃度特征（有的学生整体活跃，有的偏懒散）
+    const studentBaseActivity = random(40, 90);
+
+    for (let week = 0; week < weeks; week++) {
+      let activityScore = studentBaseActivity;
+
+      // 添加周间波动（期中前后活跃度可能变化）
+      if (week === 0 || week === weeks - 1) {
+        // 开学和期末通常活跃度更高
+        activityScore += random(5, 15);
+      } else if (week === Math.floor(weeks / 2)) {
+        // 期中可能略有下降
+        activityScore -= random(0, 10);
+      }
+
+      // 逐周添加小幅随机波动，保持一定连续性
+      activityScore += random(-10, 10);
+
+      // 活跃度评分规则（0-100）：
+      // 登录+20，学习时长>3h +20，wiki已提交 +30，仿真完成 +30
+      // 模拟时按随机规则生成，但受上述activityScore影响
+
+      // 模拟各项子指标的随机贡献
+      const hasLogin = activityScore > 30; // 活跃度高的学生倾向于登录
+      const studyHours = hasLogin ? random(1, 6) : 0;
+      const wikiSubmitted = activityScore > 50; // 活跃度中等以上才提交wiki
+      const simCompleted = activityScore > 60; // 活跃度较高才完成仿真
+
+      // 计算该周的活跃度分数
+      let score = 0;
+      if (hasLogin) score += 20;
+      if (studyHours > 3) score += 20;
+      if (wikiSubmitted) score += 30;
+      if (simCompleted) score += 30;
+
+      // 在基础分数上添加随机扰动，模拟数据不完全理想的情况
+      score = Math.max(0, Math.min(100, score + random(-10, 10)));
+
+      data.push([week, yIndex, score]);
+    }
+  });
+
+  return {
+    xData,
+    yData,
+    data
+  };
+}
+
+// ==================== 11. 协作网络数据生成 ====================
+
+/**
+ * 协作网络数据生成 - 生成小组内学生协作关系数据
+ * 节点大小根据贡献分映射，链接根据互评分数映射协作强度
+ * @param {string} groupId - 小组ID
+ * @param {Object} evalData - 评价数据对象
+ * @returns {Object} 协作网络数据 { nodes, links }
+ *   nodes: [{ id, name, value:贡献分, symbolSize }, ...]
+ *   links: [{ source, target, value:协作频次 }, ...]
+ */
+function generateCollaborationData(groupId, evalData) {
+  // 从 evalData 中筛选出该小组的学生
+  // evalData 格式假设包含 groupId 字段或单独的分组信息
+  // 如果没有分组信息，则取前4-6个学生作为一个模拟小组
+
+  const allEntries = Object.entries(evalData).filter(([key]) => key !== 'safetyVeto');
+
+  // 按 groupId 筛选，如果无法筛选则使用全部学生
+  let groupMembers = allEntries.filter(([_, data]) => data.groupId === groupId);
+
+  // 如果该小组没有成员，取前6个学生作为模拟小组
+  if (groupMembers.length === 0) {
+    groupMembers = allEntries.slice(0, 6);
+  }
+
+  // 生成节点数据
+  const nodes = groupMembers.map(([studentId, data], index) => {
+    // 贡献分：10-20分范围（来自 selfContributionScore 或随机生成）
+    const contributionScore = data.selfContributionScore || random(10, 20);
+
+    // 节点大小映射：贡献分10-20分 → 符号大小30-70像素
+    const symbolSize = Math.round(30 + (contributionScore - 10) / 10 * 40);
+
+    return {
+      id: studentId,
+      name: data.name || `学生${index + 1}`,
+      value: contributionScore,
+      symbolSize: symbolSize
+    };
+  });
+
+  // 生成链接数据（两两之间的协作关系）
+  const links = [];
+  const nodeIds = nodes.map(n => n.id);
+
+  // 为每对学生生成协作链接
+  for (let i = 0; i < nodeIds.length; i++) {
+    for (let j = i + 1; j < nodeIds.length; j++) {
+      const source = nodeIds[i];
+      const target = nodeIds[j];
+
+      // 从 evalData 中获取互评分数，如果没有则随机生成
+      const sourceData = evalData[source] || {};
+      const targetData = evalData[target] || {};
+
+      // 协作频次：基于互评分数映射（1-10次）
+      // 如果有 peerReview 数据则使用，否则随机生成
+      let collaborationFreq;
+      if (sourceData.peerReview && sourceData.peerReview[target] !== undefined) {
+        collaborationFreq = Math.round(sourceData.peerReview[target] / 10);
+      } else {
+        // 随机协作频次，高贡献学生之间倾向于协作更多
+        const sourceContribution = nodes.find(n => n.id === source)?.value || 15;
+        const targetContribution = nodes.find(n => n.id === target)?.value || 15;
+        const avgContribution = (sourceContribution + targetContribution) / 2;
+        collaborationFreq = Math.round(avgContribution / 20 * 8) + random(1, 3);
+      }
+
+      collaborationFreq = Math.max(1, Math.min(10, collaborationFreq));
+
+      links.push({
+        source,
+        target,
+        value: collaborationFreq
+      });
+    }
+  }
+
+  // 筛选出协作频次较高的链接（去除弱连接，使网络更清晰）
+  const strongLinks = links.filter(l => l.value >= 3);
+  // 如果筛选后链接太少，保留原始链接
+  const finalLinks = strongLinks.length >= nodeIds.length ? strongLinks : links;
+
+  return {
+    nodes,
+    links: finalLinks
+  };
+}
+
+// ==================== 12. 批量生成模拟数据 ====================
+
+/**
+ * 生成完整的模拟评价数据集
+ * 用于系统初始化和演示，生成指定数量的学生数据
+ * @param {number} count - 学生数量，默认6人
+ * @returns {Object} 完整的评价数据对象
+ */
+function generateMockEvalData(count = 6) {
+  const studentNames = ['张明', '李婷', '王浩', '刘洋', '陈静', '赵强', '孙丽', '周杰'];
+  const data = {
+    safetyVeto: {}
+  };
+
+  for (let i = 0; i < count; i++) {
+    const studentId = `student_${String(i + 1).padStart(2, '0')}`;
+    const name = studentNames[i] || `学生${i + 1}`;
+
+    // 生成过程性评价数据
+    const wikiScore = random(15, 30);
+    const presentationScore = random(18, 30);
+    const selfContributionScore = random(25, 40);
+
+    // 生成结果性评价数据
+    const planDoc = random(10, 15);
+    const packagePlan = random(20, 30);
+    const dispatchPlan = random(6, 10);
+    const simulation = random(10, 15);
+    const realFlight = random(15, 25);
+    const multiDrone = random(5, 10);
+    const defensePPT = random(12, 20);
+    const teamShow = random(6, 10);
+    const ideology = random(3, 5);
+
+    // 生成附加分数据
+    const developmentBonus = {
+      realUser: random(0, 3),
+      techBreakthrough: random(0, 4),
+      management: random(0, 3)
+    };
+
+    // 生成学习追踪数据
+    const tracking = generateAITrackingData(studentId);
+
+    // 生成飞行模拟数据
+    const flightScore = quickSimulateScore(studentId);
+
+    // 生成关键词（随机选取2-5个）
+    const wikiKeywords = randomPick(KEYWORD_DATABASE, random(2, 5));
+
+    // 安全否决：随机让1-2个学生被否决
+    data.safetyVeto[studentId] = i < 1 ? true : false;
+
+    data[studentId] = {
+      name,
+      groupId: `group_${Math.floor(i / 3) + 1}`, // 每3人一组
+      wikiScore,
+      presentationScore,
+      selfContributionScore,
+      planDoc,
+      packagePlan,
+      dispatchPlan,
+      simulation,
+      realFlight,
+      multiDrone,
+      defensePPT,
+      teamShow,
+      ideology,
+      developmentBonus,
+      wikiKeywords,
+      wikiSubmitted: wikiScore > 10,
+      completion: tracking.completion,
+      streakDays: tracking.streakDays,
+      simError: flightScore.error,
+      totalScore: 0 // 后续 calculateTotalScore 会计算
+    };
+
+    // 计算并填入总评分数
+    const result = calculateTotalScore(studentId, data);
+    data[studentId].totalScore = result.totalScore;
+  }
+
+  return data;
+}
+
+
+
+    // ============================================================
+    // 增强模块：ECharts 图表高级配置（来自 charts-code.js）
+    // 提供图表更新函数和测试数据生成
+    // ============================================================
+
+/**
+ * ============================================================================
+ * 低空应急智慧评价系统 - ECharts 图表配置代码
+ * ============================================================================
+ * 包含以下图表/组件：
+ *   1. 成绩分布柱状图         initGradeDistribution
+ *   2. 核心指标达标率仪表盘     initIndicatorGauges
+ *   3. 个人投入度热力图         initHeatmap
+ *   4. 团队协作网络图           initCollaborationNetwork
+ *   5. 六维能力雷达图           initRadarChart
+ *   6. 低参与度预警指示器       renderWarningCards
+ *   7. AI预警事件流             initEventStream
+ * 全局配置：CHART_THEME
+ * 测试数据：generateMockChartData
+ * ============================================================================
+ */
+
+// ==============================================
+// 全局图表主题配置
+// ==============================================
+const CHART_THEME = {
+  backgroundColor: 'transparent',
+  textStyle: { color: '#e0e8f0', fontFamily: 'system-ui' },
+  title: { textStyle: { color: '#e0e8f0', fontSize: 16 } },
+  legend: { textStyle: { color: '#8b9dc3' }, bottom: 0 },
+  tooltip: {
+    backgroundColor: 'rgba(13,31,60,0.95)',
+    borderColor: '#1a3a5c',
+    textStyle: { color: '#e0e8f0' }
+  },
+  grid: { left: '3%', right: '4%', bottom: '10%', top: '15%', containLabel: true }
+};
+
+// ==============================================
+// 1. 成绩分布柱状图
+// ==============================================
+
+/**
+ * 初始化成绩分布柱状图
+ * @param {string} containerId - 图表容器 div 的 ID
+ * @param {Object} studentData - 学生数据对象，包含 totalScores 数组
+ *   例: { totalScores: [92, 85, 78, 65, 55, 88, 73, 61, 95, 82, ...] }
+ * @returns {Object} ECharts 实例
+ */
+function initGradeDistribution(containerId, studentData) {
+  const chartDom = document.getElementById(containerId);
+  if (!chartDom) return null;
+  const chart = echarts.init(chartDom);
+
+  // 统计各区间人数
+  const stats = computeGradeStats(studentData.totalScores || []);
+
+  const categories = ['优秀(90-100)', '良好(80-89)', '中等(70-79)', '及格(60-69)', '预警(<60)'];
+  const colors = ['#00e676', '#00d4ff', '#ffc400', '#ff9800', '#ff5252'];
+
+  const option = {
+    backgroundColor: CHART_THEME.backgroundColor,
+    textStyle: CHART_THEME.textStyle,
+    title: {
+      text: '成绩分布统计',
+      left: 'center',
+      top: 8,
+      textStyle: { color: '#e0e8f0', fontSize: 16, fontWeight: 'bold' }
+    },
+    tooltip: {
+      ...CHART_THEME.tooltip,
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: function (params) {
+        const p = params[0];
+        return `<strong>${p.name}</strong><br/>人数：${p.value} 人<br/>占比：${p.percent}%`;
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '10%',
+      top: '20%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: categories,
+      axisLabel: { color: '#8b9dc3', fontSize: 11 },
+      axisLine: { lineStyle: { color: '#1a3a5c' } },
+      axisTick: { show: false }
+    },
+    yAxis: {
+      type: 'value',
+      name: '人数',
+      nameTextStyle: { color: '#8b9dc3' },
+      axisLabel: { color: '#8b9dc3' },
+      axisLine: { lineStyle: { color: '#1a3a5c' } },
+      splitLine: { lineStyle: { color: 'rgba(26,58,92,0.5)' } }
+    },
+    series: [{
+      type: 'bar',
+      barWidth: '45%',
+      data: stats.map((val, idx) => ({
+        value: val,
+        percent: ((val / stats.reduce((a, b) => a + b, 0)) * 100).toFixed(1),
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: colors[idx] },
+            { offset: 1, color: colors[idx] + '66' }
+          ]),
+          borderRadius: [6, 6, 0, 0],
+          shadowColor: colors[idx] + '88',
+          shadowBlur: 10,
+          shadowOffsetY: 4
+        }
+      })),
+      animationEasing: 'elasticOut',
+      animationDuration: 1500,
+      animationDelay: function (idx) { return idx * 200; },
+      label: {
+        show: true,
+        position: 'top',
+        color: '#e0e8f0',
+        fontSize: 14,
+        fontWeight: 'bold',
+        formatter: '{c} 人'
+      },
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 20,
+          shadowColor: 'rgba(0,212,255,0.5)'
+        }
+      }
+    }]
+  };
+
+  chart.setOption(option);
+  return chart;
+}
+
+/**
+ * 计算成绩分布统计
+ * @param {number[]} scores - 总评成绩数组
+ * @returns {number[]} 各区间人数 [优秀, 良好, 中等, 及格, 预警]
+ */
+function computeGradeStats(scores) {
+  const stats = [0, 0, 0, 0, 0]; // 优秀, 良好, 中等, 及格, 预警
+  scores.forEach(s => {
+    if (s >= 90) stats[0]++;
+    else if (s >= 80) stats[1]++;
+    else if (s >= 70) stats[2]++;
+    else if (s >= 60) stats[3]++;
+    else stats[4]++;
+  });
+  return stats;
+}
+
+/**
+ * 更新成绩分布柱状图数据
+ * @param {Object} chart - ECharts 实例
+ * @param {Object} newStudentData - 新的学生数据
+ */
+function updateGradeDistribution(chart, newStudentData) {
+  if (!chart) return;
+  const stats = computeGradeStats(newStudentData.totalScores || []);
+  const categories = ['优秀(90-100)', '良好(80-89)', '中等(70-79)', '及格(60-69)', '预警(<60)'];
+  const colors = ['#00e676', '#00d4ff', '#ffc400', '#ff9800', '#ff5252'];
+  const total = stats.reduce((a, b) => a + b, 0) || 1;
+
+  chart.setOption({
+    series: [{
+      data: stats.map((val, idx) => ({
+        value: val,
+        percent: ((val / total) * 100).toFixed(1),
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: colors[idx] },
+            { offset: 1, color: colors[idx] + '66' }
+          ]),
+          borderRadius: [6, 6, 0, 0],
+          shadowColor: colors[idx] + '88',
+          shadowBlur: 10,
+          shadowOffsetY: 4
+        }
+      }))
+    }]
+  });
+}
+
+
+// ==============================================
+// 2. 核心指标达标率仪表盘
+// ==============================================
+
+/**
+ * 初始化核心指标达标率仪表盘（3个仪表盘横向排列）
+ * @param {string} containerId - 图表容器 div 的 ID
+ * @param {Object} indicators - 指标数据对象
+ *   例: { planNormRate: 92, deliveryAccuracy: 88, airspacePassRate: 96 }
+ * @returns {Object} ECharts 实例
+ */
+function initIndicatorGauges(containerId, indicators) {
+  const chartDom = document.getElementById(containerId);
+  if (!chartDom) return null;
+  const chart = echarts.init(chartDom);
+
+  const targets = { planNormRate: 90, deliveryAccuracy: 92, airspacePassRate: 85 };
+  const labels = { planNormRate: '计划规范性', deliveryAccuracy: '投放精度达标率', airspacePassRate: '空域申请通过率' };
+  const keys = ['planNormRate', 'deliveryAccuracy', 'airspacePassRate'];
+
+  const gaugeData = keys.map((key, idx) => {
+    const val = (indicators[key] !== undefined) ? indicators[key] : 0;
+    const target = targets[key];
+    const isPass = val >= target;
+    const color = isPass ? '#00d4ff' : '#ff5252';
+    return {
+      key,
+      value: val,
+      target,
+      label: labels[key],
+      isPass,
+      color,
+      index: idx
+    };
+  });
+
+  const option = {
+    backgroundColor: CHART_THEME.backgroundColor,
+    textStyle: CHART_THEME.textStyle,
+    series: gaugeData.map((d, idx) => ({
+      type: 'gauge',
+      center: [`${17 + idx * 33}%`, '55%'],
+      radius: '68%',
+      startAngle: 210,
+      endAngle: -30,
+      min: 0,
+      max: 100,
+      splitNumber: 10,
+      itemStyle: {
+        color: d.color,
+        shadowColor: d.color + '88',
+        shadowBlur: 12
+      },
+      progress: {
+        show: true,
+        roundCap: true,
+        width: 14
+      },
+      pointer: {
+        icon: 'path://M2090.36389,615.30999 L2090.36389,615.30999 C2091.48372,615.30999 2092.40383,616.194028 2092.44859,617.312956 L2096.90698,728.755929 C2097.05155,732.369577 2094.17907,735.416212 2090.56542,735.56078 C2090.20244,735.575049 2089.8374,735.540612 2089.46898,735.456823 L1456.46898,678.456823 C1452.87253,677.287831 1450.60137,673.683533 1451.77036,670.087085 C1451.85595,669.810303 1451.96585,669.544758 1452.09789,669.290437 L1890.36389,261.29 C1892.66043,258.101683 1897.23067,257.633324 1900.41898,259.929865 C1901.44637,260.680534 1902.2531,261.6905 1902.74834,262.868465 L2090.36389,615.30999 Z',
+        length: '55%',
+        width: 8,
+        offsetCenter: [0, 0],
+        itemStyle: { color: d.color }
+      },
+      axisLine: {
+        roundCap: true,
+        lineStyle: {
+          width: 14,
+          color: [[1, 'rgba(26,58,92,0.4)']]
+        }
+      },
+      axisTick: {
+        show: true,
+        splitNumber: 2,
+        lineStyle: { width: 2, color: '#1a3a5c' }
+      },
+      splitLine: {
+        length: 8,
+        lineStyle: { width: 2, color: '#1a3a5c' }
+      },
+      axisLabel: {
+        distance: 18,
+        color: '#8b9dc3',
+        fontSize: 10,
+        formatter: function (value) {
+          if (value === 0 || value === 50 || value === 100) return value;
+          return '';
+        }
+      },
+      title: {
+        offsetCenter: [0, '30%'],
+        fontSize: 13,
+        color: '#e0e8f0',
+        fontWeight: 'bold'
+      },
+      detail: {
+        valueAnimation: true,
+        offsetCenter: [0, '-10%'],
+        fontSize: 28,
+        fontWeight: 'bold',
+        formatter: function (value) {
+          return value + '%';
+        },
+        color: d.color
+      },
+      data: [{
+        value: d.value,
+        name: d.label
+      }],
+      animationDuration: 2000,
+      animationEasing: 'cubicOut'
+    }))
+  };
+
+  // 添加达标状态标记
+  option.graphic = gaugeData.map((d, idx) => ({
+    type: 'text',
+    left: `${10 + idx * 33}%`,
+    top: '15%',
+    style: {
+      text: d.isPass ? '已达标' : '未达标',
+      fill: d.color,
+      fontSize: 13,
+      fontWeight: 'bold',
+      textAlign: 'center'
+    }
+  }));
+
+  chart.setOption(option);
+  return chart;
+}
+
+/**
+ * 更新仪表盘数据
+ * @param {Object} chart - ECharts 实例
+ * @param {Object} newIndicators - 新的指标数据
+ */
+function updateIndicatorGauges(chart, newIndicators) {
+  if (!chart) return;
+  const targets = { planNormRate: 90, deliveryAccuracy: 92, airspacePassRate: 85 };
+  const labels = { planNormRate: '计划规范性', deliveryAccuracy: '投放精度达标率', airspacePassRate: '空域申请通过率' };
+  const keys = ['planNormRate', 'deliveryAccuracy', 'airspacePassRate'];
+
+  const gaugeData = keys.map((key, idx) => {
+    const val = (newIndicators[key] !== undefined) ? newIndicators[key] : 0;
+    const target = targets[key];
+    const isPass = val >= target;
+    const color = isPass ? '#00d4ff' : '#ff5252';
+    return { value: val, name: labels[key], color, isPass, index: idx };
+  });
+
+  chart.setOption({
+    series: gaugeData.map(d => ({
+      itemStyle: { color: d.color, shadowColor: d.color + '88', shadowBlur: 12 },
+      pointer: { itemStyle: { color: d.color } },
+      detail: { color: d.color },
+      data: [{ value: d.value, name: d.name }]
+    })),
+    graphic: gaugeData.map((d, idx) => ({
+      type: 'text',
+      left: `${10 + idx * 33}%`,
+      top: '15%',
+      style: {
+        text: d.isPass ? '已达标' : '未达标',
+        fill: d.color,
+        fontSize: 13,
+        fontWeight: 'bold',
+        textAlign: 'center'
+      }
+    }))
+  });
+}
+
+
+// ==============================================
+// 3. 个人投入度热力图
+// ==============================================
+
+/**
+ * 初始化个人投入度热力图
+ * @param {string} containerId - 图表容器 div 的 ID
+ * @param {Object} heatmapData - 热力图数据对象
+ *   例: {
+ *     students: ['张三', '李四', '王五', ...],
+ *     data: [[0,0,85], [1,0,92], [0,1,78], ...]  // [weekIndex, studentIndex, score]
+ *   }
+ * @returns {Object} ECharts 实例
+ */
+function initHeatmap(containerId, heatmapData) {
+  const chartDom = document.getElementById(containerId);
+  if (!chartDom) return null;
+  const chart = echarts.init(chartDom);
+
+  const weeks = Array.from({ length: 8 }, (_, i) => `第${i + 1}周`);
+  const students = heatmapData.students || [];
+  const data = heatmapData.data || [];
+
+  const option = {
+    backgroundColor: CHART_THEME.backgroundColor,
+    textStyle: CHART_THEME.textStyle,
+    title: {
+      text: '个人投入度热力图',
+      left: 'center',
+      top: 8,
+      textStyle: { color: '#e0e8f0', fontSize: 16, fontWeight: 'bold' }
+    },
+    tooltip: {
+      ...CHART_THEME.tooltip,
+      position: 'top',
+      formatter: function (params) {
+        const week = weeks[params.value[0]];
+        const student = students[params.value[1]];
+        const score = params.value[2];
+        let level = score >= 80 ? '高' : score >= 60 ? '中' : '低';
+        let levelColor = score >= 80 ? '#00e676' : score >= 60 ? '#ffc400' : '#ff5252';
+        return `<strong>${student}</strong><br/>${week}<br/>投入度：<span style="color:${levelColor};font-weight:bold">${score}</span>（${level}）`;
+      }
+    },
+    grid: {
+      left: '15%',
+      right: '8%',
+      bottom: '12%',
+      top: '18%',
+      containLabel: false
+    },
+    xAxis: {
+      type: 'category',
+      data: weeks,
+      axisLabel: { color: '#8b9dc3', fontSize: 11 },
+      axisLine: { lineStyle: { color: '#1a3a5c' } },
+      axisTick: { show: false },
+      splitArea: { show: false }
+    },
+    yAxis: {
+      type: 'category',
+      data: students,
+      axisLabel: { color: '#8b9dc3', fontSize: 11 },
+      axisLine: { lineStyle: { color: '#1a3a5c' } },
+      axisTick: { show: false },
+      splitArea: { show: false }
+    },
+    visualMap: {
+      min: 0,
+      max: 100,
+      calculable: true,
+      orient: 'horizontal',
+      left: 'center',
+      bottom: '2%',
+      textStyle: { color: '#8b9dc3' },
+      inRange: {
+        color: ['#0d1f3c', '#1a3a5c', '#0066aa', '#00aabb', '#00d4ff', '#00e676']
+      },
+      text: ['高', '低']
+    },
+    series: [{
+      type: 'heatmap',
+      data: data,
+      label: {
+        show: true,
+        color: '#e0e8f0',
+        fontSize: 11,
+        formatter: function (p) { return p.value[2]; }
+      },
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 15,
+          shadowColor: 'rgba(0,212,255,0.6)',
+          borderColor: '#00d4ff',
+          borderWidth: 2
+        }
+      },
+      itemStyle: {
+        borderColor: '#0a1628',
+        borderWidth: 2,
+        borderRadius: 4
+      },
+      animationDuration: 1200,
+      animationEasing: 'cubicOut',
+      animationDelay: function (idx) { return idx * 30; }
+    }]
+  };
+
+  chart.setOption(option);
+  return chart;
+}
+
+/**
+ * 更新热力图数据
+ * @param {Object} chart - ECharts 实例
+ * @param {Object} newHeatmapData - 新的热力图数据
+ */
+function updateHeatmap(chart, newHeatmapData) {
+  if (!chart) return;
+  chart.setOption({
+    yAxis: {
+      data: newHeatmapData.students || []
+    },
+    series: [{
+      data: newHeatmapData.data || []
+    }]
+  });
+}
+
+
+// ==============================================
+// 4. 团队协作网络图
+// ==============================================
+
+/**
+ * 初始化团队协作网络图（力引导布局）
+ * @param {string} containerId - 图表容器 div 的 ID
+ * @param {Object} groupData - 团队数据对象
+ *   例: {
+ *     groups: [
+ *       {
+ *         name: '第一组',
+ *         color: '#00d4ff',
+ *         members: [
+ *           { name: '张三', contribution: 85 },
+ *           { name: '李四', contribution: 72 },
+ *           { name: '王五', contribution: 90 }
+ *         ]
+ *       },
+ *       {
+ *         name: '第二组',
+ *         color: '#00e676',
+ *         members: [
+ *           { name: '赵六', contribution: 68 },
+ *           { name: '孙七', contribution: 78 }
+ *         ]
+ *       }
+ *     ],
+ *     links: [
+ *       { source: '张三', target: '李四', value: 12 },  // 互动频次
+ *       { source: '张三', target: '王五', value: 8 }
+ *     ]
+ *   }
+ * @returns {Object} ECharts 实例
+ */
+function initCollaborationNetwork(containerId, groupData) {
+  const chartDom = document.getElementById(containerId);
+  if (!chartDom) return null;
+  const chart = echarts.init(chartDom);
+
+  const groups = groupData.groups || [];
+  const linksData = groupData.links || [];
+
+  // 构建节点
+  const nodes = [];
+  const nodeSet = new Set();
+  groups.forEach(g => {
+    g.members.forEach(m => {
+      if (!nodeSet.has(m.name)) {
+        nodeSet.add(m.name);
+        nodes.push({
+          name: m.name,
+          value: m.contribution,
+          symbolSize: 20 + m.contribution * 0.5,
+          itemStyle: {
+            color: g.color,
+            borderColor: '#0a1628',
+            borderWidth: 2,
+            shadowColor: g.color + '88',
+            shadowBlur: 12
+          },
+          label: {
+            show: true,
+            formatter: '{b}\n{c}分',
+            color: '#e0e8f0',
+            fontSize: 11,
+            fontWeight: 'bold'
+          },
+          group: g.name
+        });
+      }
+    });
+  });
+
+  // 构建边
+  const edges = linksData.map(l => ({
+    source: l.source,
+    target: l.target,
+    value: l.value,
+    lineStyle: {
+      width: Math.max(1, Math.min(l.value * 0.5, 8)),
+      curveness: 0.2,
+      color: 'rgba(0,212,255,0.4)',
+      shadowColor: 'rgba(0,212,255,0.3)',
+      shadowBlur: 5
+    },
+    label: {
+      show: true,
+      formatter: '{c}次',
+      color: '#8b9dc3',
+      fontSize: 10
+    }
+  }));
+
+  const option = {
+    backgroundColor: CHART_THEME.backgroundColor,
+    textStyle: CHART_THEME.textStyle,
+    title: {
+      text: '团队协作网络',
+      left: 'center',
+      top: 8,
+      textStyle: { color: '#e0e8f0', fontSize: 16, fontWeight: 'bold' }
+    },
+    tooltip: {
+      ...CHART_THEME.tooltip,
+      formatter: function (params) {
+        if (params.dataType === 'node') {
+          const n = params.data;
+          return `<strong>${n.name}</strong><br/>贡献分：${n.value}<br/>所属组：${n.group || '无'}`;
+        }
+        if (params.dataType === 'edge') {
+          return `<strong>协作关系</strong><br/>${params.data.source} ↔ ${params.data.target}<br/>互动频次：${params.data.value} 次`;
+        }
+        return '';
+      }
+    },
+    legend: {
+      data: groups.map(g => g.name),
+      textStyle: { color: '#8b9dc3' },
+      bottom: 5,
+      itemWidth: 14,
+      itemHeight: 14
+    },
+    series: [{
+      type: 'graph',
+      layout: 'force',
+      roam: true,
+      draggable: true,
+      focusNodeAdjacency: true,
+      data: nodes,
+      links: edges,
+      categories: groups.map(g => ({ name: g.name, itemStyle: { color: g.color } })),
+      force: {
+        repulsion: 300,
+        gravity: 0.1,
+        edgeLength: [60, 180],
+        layoutAnimation: true
+      },
+      emphasis: {
+        focus: 'adjacency',
+        lineStyle: {
+          width: 6,
+          color: '#00d4ff'
+        },
+        itemStyle: {
+          shadowBlur: 25,
+          shadowColor: 'rgba(0,212,255,0.6)'
+        }
+      },
+      lineStyle: {
+        curveness: 0.2,
+        opacity: 0.6
+      },
+      animationDuration: 2000,
+      animationEasing: 'cubicOut'
+    }]
+  };
+
+  chart.setOption(option);
+  return chart;
+}
+
+/**
+ * 更新团队协作网络图数据
+ * @param {Object} chart - ECharts 实例
+ * @param {Object} newGroupData - 新的团队数据
+ */
+function updateCollaborationNetwork(chart, newGroupData) {
+  if (!chart) return;
+  const groups = newGroupData.groups || [];
+  const linksData = newGroupData.links || [];
+
+  const nodes = [];
+  const nodeSet = new Set();
+  groups.forEach(g => {
+    g.members.forEach(m => {
+      if (!nodeSet.has(m.name)) {
+        nodeSet.add(m.name);
+        nodes.push({
+          name: m.name,
+          value: m.contribution,
+          symbolSize: 20 + m.contribution * 0.5,
+          itemStyle: {
+            color: g.color,
+            borderColor: '#0a1628',
+            borderWidth: 2,
+            shadowColor: g.color + '88',
+            shadowBlur: 12
+          },
+          label: {
+            show: true,
+            formatter: '{b}\n{c}分',
+            color: '#e0e8f0',
+            fontSize: 11,
+            fontWeight: 'bold'
+          },
+          group: g.name
+        });
+      }
+    });
+  });
+
+  const edges = linksData.map(l => ({
+    source: l.source,
+    target: l.target,
+    value: l.value,
+    lineStyle: {
+      width: Math.max(1, Math.min(l.value * 0.5, 8)),
+      curveness: 0.2,
+      color: 'rgba(0,212,255,0.4)'
+    },
+    label: {
+      show: true,
+      formatter: '{c}次',
+      color: '#8b9dc3',
+      fontSize: 10
+    }
+  }));
+
+  chart.setOption({
+    series: [{
+      data: nodes,
+      links: edges,
+      categories: groups.map(g => ({ name: g.name, itemStyle: { color: g.color } }))
+    }]
+  });
+}
+
+
+// ==============================================
+// 5. 六维能力雷达图
+// ==============================================
+
+/**
+ * 初始化六维能力雷达图
+ * @param {string} containerId - 图表容器 div 的 ID
+ * @param {number[]} classAvg - 班级平均能力值（6个维度）
+ *   例: [78, 82, 70, 88, 75, 90]
+ * @param {number[]} targetProfile - 目标岗位能力模型值（6个维度）
+ *   例: [85, 85, 80, 90, 85, 95]
+ * @returns {Object} ECharts 实例
+ */
+function initRadarChartEnhanced(containerId, classAvg, targetProfile) {
+  const chartDom = document.getElementById(containerId);
+  if (!chartDom) return null;
+  const chart = echarts.init(chartDom);
+
+  const dimensions = ['应急方案制定', '航线规划', '设备运维', '飞行操控', '团队协作', '安全意识'];
+
+  const option = {
+    backgroundColor: CHART_THEME.backgroundColor,
+    textStyle: CHART_THEME.textStyle,
+    title: {
+      text: '六维能力评估',
+      left: 'center',
+      top: 8,
+      textStyle: { color: '#e0e8f0', fontSize: 16, fontWeight: 'bold' }
+    },
+    tooltip: {
+      ...CHART_THEME.tooltip,
+      trigger: 'item',
+      formatter: function (params) {
+        const values = params.value;
+        let html = `<strong>${params.name}</strong><br/>`;
+        dimensions.forEach((dim, i) => {
+          html += `${dim}：${values[i]}<br/>`;
+        });
+        return html;
+      }
+    },
+    legend: {
+      data: ['班级平均值', '目标岗位能力模型'],
+      textStyle: { color: '#8b9dc3', fontSize: 12 },
+      bottom: 5,
+      itemWidth: 20,
+      itemHeight: 10
+    },
+    radar: {
+      indicator: dimensions.map(name => ({
+        name,
+        max: 100
+      })),
+      center: ['50%', '52%'],
+      radius: '58%',
+      shape: 'polygon',
+      splitNumber: 5,
+      axisName: {
+        color: '#e0e8f0',
+        fontSize: 12,
+        fontWeight: 'bold'
+      },
+      splitLine: {
+        lineStyle: { color: 'rgba(26,58,92,0.6)' }
+      },
+      splitArea: {
+        show: true,
+        areaStyle: {
+          color: ['rgba(0,212,255,0.02)', 'rgba(0,212,255,0.05)', 'rgba(0,212,255,0.08)', 'rgba(0,212,255,0.11)', 'rgba(0,212,255,0.14)']
+        }
+      },
+      axisLine: {
+        lineStyle: { color: 'rgba(26,58,92,0.8)' }
+      }
+    },
+    series: [{
+      type: 'radar',
+      data: [
+        {
+          value: classAvg || [0, 0, 0, 0, 0, 0],
+          name: '班级平均值',
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 2,
+            color: '#00d4ff',
+            shadowColor: '#00d4ff88',
+            shadowBlur: 8
+          },
+          itemStyle: {
+            color: '#00d4ff',
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          areaStyle: {
+            color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
+              { offset: 0, color: 'rgba(0,212,255,0.3)' },
+              { offset: 1, color: 'rgba(0,212,255,0.05)' }
+            ])
+          }
+        },
+        {
+          value: targetProfile || [0, 0, 0, 0, 0, 0],
+          name: '目标岗位能力模型',
+          symbol: 'diamond',
+          symbolSize: 8,
+          lineStyle: {
+            width: 2,
+            type: 'dashed',
+            color: '#ffc400',
+            shadowColor: '#ffc40088',
+            shadowBlur: 8
+          },
+          itemStyle: {
+            color: '#ffc400',
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          areaStyle: {
+            color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
+              { offset: 0, color: 'rgba(255,196,0,0.2)' },
+              { offset: 1, color: 'rgba(255,196,0,0.02)' }
+            ])
+          }
+        }
+      ],
+      animationDuration: 2000,
+      animationEasing: 'cubicOut'
+    }]
+  };
+
+  chart.setOption(option);
+  return chart;
+}
+
+/**
+ * 更新雷达图数据
+ * @param {Object} chart - ECharts 实例
+ * @param {number[]} newClassAvg - 新的班级平均值
+ * @param {number[]} newTargetProfile - 新的目标岗位能力模型
+ */
+function updateRadarChartEnhanced(chart, newClassAvg, newTargetProfile) {
+  if (!chart) return;
+  chart.setOption({
+    series: [{
+      data: [
+        { value: newClassAvg || [0, 0, 0, 0, 0, 0], name: '班级平均值' },
+        { value: newTargetProfile || [0, 0, 0, 0, 0, 0], name: '目标岗位能力模型' }
+      ]
+    }]
+  });
+}
+
+
+// ==============================================
+// 6. 低参与度预警指示器（DOM 操作）
+// ==============================================
+
+/**
+ * 渲染低参与度预警卡片
+ * @param {string} containerId - 容器 div 的 ID
+ * @param {Object[]} warningStudents - 预警学生数组
+ *   例: [
+ *     { name: '张三', absentDays: 7, suggestion: '建议联系辅导员' },
+ *     { name: '李四', absentDays: 5, suggestion: '建议电话沟通' }
+ *   ]
+ */
+function renderWarningCards(containerId, warningStudents) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // 清空容器
+  container.innerHTML = '';
+
+  if (!warningStudents || warningStudents.length === 0) {
+    container.innerHTML = '<div style="color:#8b9dc3;text-align:center;padding:20px;">暂无预警学生</div>';
+    return;
+  }
+
+  // 添加标题
+  const titleEl = document.createElement('div');
+  titleEl.style.cssText = 'color:#ff5252;font-size:14px;font-weight:bold;margin-bottom:12px;display:flex;align-items:center;gap:6px;';
+  titleEl.innerHTML = '<span style="font-size:18px;">&#9888;</span> 低参与度预警学生 (' + warningStudents.length + '人)';
+  container.appendChild(titleEl);
+
+  warningStudents.forEach((student, index) => {
+    const card = document.createElement('div');
+    card.className = 'warning-card';
+    card.style.cssText = `
+      background: rgba(255,82,82,0.08);
+      border: 1px solid rgba(255,82,82,0.4);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      animation: warningPulse 2s infinite;
+      animation-delay: ${index * 0.3}s;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    `;
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="color:#e0e8f0;font-weight:bold;font-size:14px;">${student.name}</span>
+        <span style="color:#ff5252;font-size:12px;font-weight:bold;">${student.absentDays}天未登录</span>
+      </div>
+      <div style="color:#8b9dc3;font-size:12px;">${student.suggestion}</div>
+    `;
+
+    // 悬停效果
+    card.addEventListener('mouseenter', () => {
+      card.style.background = 'rgba(255,82,82,0.15)';
+      card.style.borderColor = 'rgba(255,82,82,0.7)';
+      card.style.transform = 'translateX(4px)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.background = 'rgba(255,82,82,0.08)';
+      card.style.borderColor = 'rgba(255,82,82,0.4)';
+      card.style.transform = 'translateX(0)';
+    });
+
+    container.appendChild(card);
+  });
+
+  // 添加闪烁动画（如果未添加过）
+  if (!document.getElementById('warning-card-styles')) {
+    const style = document.createElement('style');
+    style.id = 'warning-card-styles';
+    style.textContent = `
+      @keyframes warningPulse {
+        0%, 100% { box-shadow: 0 0 4px rgba(255,82,82,0.2); border-color: rgba(255,82,82,0.4); }
+        50% { box-shadow: 0 0 12px rgba(255,82,82,0.4); border-color: rgba(255,82,82,0.7); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+/**
+ * 更新预警卡片（重新渲染）
+ * @param {string} containerId - 容器 div 的 ID
+ * @param {Object[]} newWarningStudents - 新的预警学生数组
+ */
+function updateWarningCards(containerId, newWarningStudents) {
+  renderWarningCards(containerId, newWarningStudents);
+}
+
+
+// ==============================================
+// 7. AI预警事件流
+// ==============================================
+
+/**
+ * 初始化 AI 预警事件流
+ * @param {string} containerId - 容器 div 的 ID
+ * @param {Object[]} events - 事件数组
+ *   例: [
+ *     { time: '10:23', type: 'warning', message: '张三连续7天未登录系统' },
+ *     { time: '10:15', type: 'info', message: '李四完成了航线规划作业' },
+ *     { time: '09:48', type: 'success', message: '第一组全员提交阶段性报告' }
+ *   ]
+ *   type 可选值: 'warning' | 'info' | 'success'
+ * @returns {Object} 事件流控制器对象，包含 addEvent 方法
+ */
+function initEventStream(containerId, events) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+
+  // 清空容器
+  container.innerHTML = '';
+
+  // 创建事件流容器
+  const streamContainer = document.createElement('div');
+  streamContainer.id = containerId + '-stream';
+  streamContainer.style.cssText = `
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  `;
+  container.appendChild(streamContainer);
+
+  // 类型颜色配置
+  const typeColors = {
+    warning: { border: '#ff5252', bg: 'rgba(255,82,82,0.08)', icon: '&#9888;' },
+    info:    { border: '#00d4ff', bg: 'rgba(0,212,255,0.08)', icon: '&#9432;' },
+    success: { border: '#00e676', bg: 'rgba(0,230,118,0.08)', icon: '&#10004;' }
+  };
+
+  // 渲染单个事件
+  function renderEventItem(event, animate) {
+    const cfg = typeColors[event.type] || typeColors.info;
+    const item = document.createElement('div');
+    item.style.cssText = `
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-left: 3px solid ${cfg.border};
+      background: ${cfg.bg};
+      border-radius: 0 6px 6px 0;
+      transition: all 0.3s ease;
+      animation: ${animate ? 'slideInUp 0.5s ease-out' : 'none'};
+      flex-shrink: 0;
+    `;
+    item.innerHTML = `
+      <span style="color:${cfg.border};font-size:14px;margin-top:2px;">${cfg.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+          <span style="color:#8b9dc3;font-size:11px;">${event.time}</span>
+          <span style="color:${cfg.border};font-size:10px;text-transform:uppercase;font-weight:bold;">${event.type}</span>
+        </div>
+        <div style="color:#e0e8f0;font-size:12px;word-break:break-word;">${event.message}</div>
+      </div>
+    `;
+
+    // 悬停效果
+    item.addEventListener('mouseenter', () => {
+      item.style.background = cfg.bg.replace(/0\.08/, '0.2');
+    });
+    item.addEventListener('mouseleave', () => {
+      item.style.background = cfg.bg;
+    });
+
+    return item;
+  }
+
+  // 添加滑动动画样式
+  if (!document.getElementById('event-stream-styles')) {
+    const style = document.createElement('style');
+    style.id = 'event-stream-styles';
+    style.textContent = `
+      @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes slideOutUp {
+        from { opacity: 1; transform: translateY(0); max-height: 100px; margin-bottom: 6px; }
+        to { opacity: 0; transform: translateY(-20px); max-height: 0; margin-bottom: 0; padding: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // 初始渲染（倒序，最新消息在底部）
+  const eventsToRender = (events || []).slice(0, 20);
+  eventsToRender.forEach(ev => {
+    streamContainer.appendChild(renderEventItem(ev, false));
+  });
+
+  // 自动滚动到最新
+  setTimeout(() => {
+    streamContainer.scrollTop = streamContainer.scrollHeight;
+  }, 100);
+
+  // 返回控制器对象
+  return {
+    container: streamContainer,
+    typeColors,
+    maxItems: 20,
+
+    /**
+     * 添加新事件
+     * @param {Object} event - 新事件 { time, type, message }
+     */
+    addEvent: function (event) {
+      const stream = document.getElementById(containerId + '-stream');
+      if (!stream) return;
+
+      const item = renderEventItem(event, true);
+      stream.appendChild(item);
+
+      // 超出限制时移除旧的
+      const items = stream.children;
+      while (items.length > this.maxItems) {
+        const first = items[0];
+        first.style.animation = 'slideOutUp 0.4s ease-in forwards';
+        setTimeout(() => {
+          if (first.parentNode) first.parentNode.removeChild(first);
+        }, 400);
+      }
+
+      // 平滑滚动到最新
+      stream.scrollTo({ top: stream.scrollHeight, behavior: 'smooth' });
+    },
+
+    /**
+     * 批量更新事件
+     * @param {Object[]} newEvents - 新事件数组
+     */
+    update: function (newEvents) {
+      const stream = document.getElementById(containerId + '-stream');
+      if (!stream) return;
+      stream.innerHTML = '';
+      const eventsToRender = (newEvents || []).slice(0, 20);
+      eventsToRender.forEach(ev => {
+        stream.appendChild(renderEventItem(ev, false));
+      });
+      stream.scrollTop = stream.scrollHeight;
+    }
+  };
+}
+
+/**
+ * 更新 AI 预警事件流
+ * @param {Object} streamController - initEventStream 返回的控制器对象
+ * @param {Object[]} newEvents - 新事件数组
+ */
+function updateEventStream(streamController, newEvents) {
+  if (streamController && streamController.update) {
+    streamController.update(newEvents);
+  }
+}
+
+
+// ==============================================
+// 测试数据生成函数
+// ==============================================
+
+/**
+ * 生成完整的测试数据，用于演示所有图表
+ * @returns {Object} 包含所有图表所需的数据对象
+ */
+function generateMockChartData() {
+  const studentNames = [
+    '张三', '李四', '王五', '赵六', '孙七',
+    '周八', '吴九', '郑十', '钱十一', '冯十二',
+    '陈十三', '褚十四', '卫十五', '蒋十六'
+  ];
+
+  // 1. 成绩分布数据
+  const totalScores = studentNames.map(() => Math.floor(Math.random() * 50) + 50);
+  // 确保每个区间都有人
+  totalScores[0] = 95; totalScores[1] = 92;  // 优秀
+  totalScores[2] = 85; totalScores[3] = 82;  // 良好
+  totalScores[4] = 75; totalScores[5] = 72;  // 中等
+  totalScores[6] = 65; totalScores[7] = 62;  // 及格
+  totalScores[8] = 45; totalScores[9] = 55;  // 预警
+
+  // 2. 仪表盘数据
+  const indicators = {
+    planNormRate: 92,
+    deliveryAccuracy: 88,
+    airspacePassRate: 96
+  };
+
+  // 3. 热力图数据
+  const heatmapData = {
+    students: studentNames,
+    data: []
+  };
+  for (let w = 0; w < 8; w++) {
+    for (let s = 0; s < studentNames.length; s++) {
+      // 模拟一些学生某些周缺数据
+      if (Math.random() > 0.1) {
+        const score = Math.floor(Math.random() * 60) + 40;
+        heatmapData.data.push([w, s, score]);
+      }
+    }
+  }
+
+  // 4. 团队协作网络数据
+  const groupData = {
+    groups: [
+      {
+        name: '第一组',
+        color: '#00d4ff',
+        members: [
+          { name: '张三', contribution: 85 },
+          { name: '李四', contribution: 72 },
+          { name: '王五', contribution: 90 },
+          { name: '赵六', contribution: 68 }
+        ]
+      },
+      {
+        name: '第二组',
+        color: '#00e676',
+        members: [
+          { name: '孙七', contribution: 78 },
+          { name: '周八', contribution: 88 },
+          { name: '吴九', contribution: 65 }
+        ]
+      },
+      {
+        name: '第三组',
+        color: '#ffc400',
+        members: [
+          { name: '郑十', contribution: 92 },
+          { name: '钱十一', contribution: 70 },
+          { name: '冯十二', contribution: 82 },
+          { name: '陈十三', contribution: 75 }
+        ]
+      },
+      {
+        name: '第四组',
+        color: '#ff9800',
+        members: [
+          { name: '褚十四', contribution: 60 },
+          { name: '卫十五', contribution: 80 },
+          { name: '蒋十六', contribution: 73 }
+        ]
+      }
+    ],
+    links: [
+      { source: '张三', target: '李四', value: 15 },
+      { source: '张三', target: '王五', value: 10 },
+      { source: '李四', target: '赵六', value: 8 },
+      { source: '王五', target: '赵六', value: 6 },
+      { source: '孙七', target: '周八', value: 12 },
+      { source: '周八', target: '吴九', value: 9 },
+      { source: '孙七', target: '吴九', value: 5 },
+      { source: '郑十', target: '钱十一', value: 14 },
+      { source: '郑十', target: '冯十二', value: 11 },
+      { source: '冯十二', target: '陈十三', value: 7 },
+      { source: '钱十一', target: '陈十三', value: 6 },
+      { source: '褚十四', target: '卫十五', value: 10 },
+      { source: '卫十五', target: '蒋十六', value: 8 },
+      { source: '张三', target: '孙七', value: 4 },
+      { source: '周八', target: '郑十', value: 5 }
+    ]
+  };
+
+  // 5. 雷达图数据
+  const classAvg = [78, 82, 70, 88, 75, 90];
+  const targetProfile = [85, 85, 80, 90, 85, 95];
+
+  // 6. 预警学生数据
+  const warningStudents = [
+    { name: '赵六', absentDays: 7, suggestion: '建议联系辅导员了解原因' },
+    { name: '吴九', absentDays: 5, suggestion: '建议电话沟通了解困难' },
+    { name: '褚十四', absentDays: 4, suggestion: '建议发送提醒通知' }
+  ];
+
+  // 7. 事件流数据
+  const events = [
+    { time: '10:23', type: 'warning', message: '赵六连续7天未登录系统' },
+    { time: '10:15', type: 'info', message: '李四完成了航线规划作业提交' },
+    { time: '10:08', type: 'success', message: '第一组全员完成阶段性考核' },
+    { time: '09:56', type: 'info', message: '王五上传了设备运维报告' },
+    { time: '09:42', type: 'warning', message: '吴空域申请通过率低于85%，需关注' },
+    { time: '09:35', type: 'success', message: '第三组协作评分达到优秀等级' },
+    { time: '09:20', type: 'info', message: '郑十更新了应急预案文档' },
+    { time: '09:08', type: 'warning', message: '褚十四作业提交延迟3天' },
+    { time: '08:55', type: 'success', message: '飞行操控模拟测试全部通过' },
+    { time: '08:42', type: 'info', message: '系统完成每日数据同步' }
+  ];
+
+  return {
+    gradeData: { totalScores },
+    indicators,
+    heatmapData,
+    groupData,
+    radarData: { classAvg, targetProfile },
+    warningStudents,
+    events
+  };
+}
+
+
+// ==============================================
+// 便捷初始化函数：一键初始化所有图表
+// ==============================================
+
+/**
+ * 一键初始化所有图表（用于快速演示）
+ * @param {Object} containerIds - 各图表容器 ID 映射
+ *   例: {
+ *     grade: 'grade-chart',
+ *     gauges: 'gauges-chart',
+ *     heatmap: 'heatmap-chart',
+ *     network: 'network-chart',
+ *     radar: 'radar-chart',
+ *     warning: 'warning-container',
+ *     events: 'events-container'
+ *   }
+ * @returns {Object} 所有图表实例和控制器的引用
+ */
+function initAllCharts(containerIds) {
+  const mock = generateMockChartData();
+
+  const charts = {};
+
+  if (containerIds.grade) {
+    charts.grade = initGradeDistribution(containerIds.grade, mock.gradeData);
+  }
+  if (containerIds.gauges) {
+    charts.gauges = initIndicatorGauges(containerIds.gauges, mock.indicators);
+  }
+  if (containerIds.heatmap) {
+    charts.heatmap = initHeatmap(containerIds.heatmap, mock.heatmapData);
+  }
+  if (containerIds.network) {
+    charts.network = initCollaborationNetwork(containerIds.network, mock.groupData);
+  }
+  if (containerIds.radar) {
+    charts.radar = initRadarChart(containerIds.radar, mock.radarData.classAvg, mock.radarData.targetProfile);
+  }
+  if (containerIds.warning) {
+    renderWarningCards(containerIds.warning, mock.warningStudents);
+    charts.warning = { update: (data) => updateWarningCards(containerIds.warning, data) };
+  }
+  if (containerIds.events) {
+    charts.events = initEventStream(containerIds.events, mock.events);
+  }
+
+  // 窗口大小改变时自动重绘
+  window.addEventListener('resize', () => {
+    Object.values(charts).forEach(c => {
+      if (c && typeof c.resize === 'function') {
+        c.resize();
+      }
+    });
+  });
+
+  // 将 update 函数绑定到 charts 对象上
+  charts.updateGrade = (d) => updateGradeDistribution(charts.grade, d);
+  charts.updateGauges = (d) => updateIndicatorGauges(charts.gauges, d);
+  charts.updateHeatmap = (d) => updateHeatmap(charts.heatmap, d);
+  charts.updateNetwork = (d) => updateCollaborationNetwork(charts.network, d);
+  charts.updateRadar = (c, t) => updateRadarChart(charts.radar, c, t);
+  charts.updateEvents = (e) => { if (charts.events) charts.events.update(e); };
+
+  return charts;
+}
+
+
+
+
+  </script>
+</body>
+</html>

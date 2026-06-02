@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《智慧运输运营》课程——项目五 能力图谱与教学设计</title>
+    <style>
+        /* ========== 基础重置与变量 ========== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2c5282;
+            --primary-lighter: #ebf4ff;
+            --accent: #ed8936;
+            --accent-light: #fef3e2;
+            --tech-blue: #3182ce;
+            --tech-blue-light: #e6f2ff;
+            --green: #38a169;
+            --green-light: #e6f5ec;
+            --red: #e53e3e;
+            --red-light: #fde8e8;
+            --purple: #805ad5;
+            --purple-light: #f0e6ff;
+            --gray-50: #f7fafc;
+            --gray-100: #edf2f7;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e0;
+            --gray-400: #a0aec0;
+            --gray-500: #718096;
+            --gray-600: #4a5568;
+            --gray-700: #2d3748;
+            --gray-800: #1a202c;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            --font-mono: "SF Mono", Monaco, "Cascadia Code", monospace;
+        }
+        html { scroll-behavior: smooth; font-size: 14px; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--gray-700);
+            background: var(--gray-50);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: var(--tech-blue); }
+        ul, ol { list-style: none; }
+
+        /* ========== 动画工具 ========== */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%,100% { transform: scale(1); }
+            50%      { transform: scale(1.03); }
+        }
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ========== 页面容器 ========== */
+        .page-wrapper { max-width: 1400px; margin: 0 auto; background: var(--white); box-shadow: var(--shadow-lg); min-height: 100vh; }
+
+        /* ========== 板块通用 ========== */
+        .section { padding: 40px 48px; border-bottom: 1px solid var(--gray-200); }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .section-num {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--tech-blue));
+            color: var(--white); font-weight: 700; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;
+        }
+        .section-subtitle {
+            font-size: 0.85rem; color: var(--gray-500); margin-left: auto;
+        }
+
+        /* ========== 表格通用 ========== */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .data-table thead th {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white); padding: 10px 12px; text-align: left;
+            font-weight: 600; position: sticky; top: 0;
+            border-right: 1px solid rgba(255,255,255,0.15);
+        }
+        .data-table thead th:last-child { border-right: none; }
+        .data-table tbody td {
+            padding: 8px 12px; border-bottom: 1px solid var(--gray-200);
+            border-right: 1px solid var(--gray-100); vertical-align: top;
+        }
+        .data-table tbody td:last-child { border-right: none; }
+        .data-table tbody tr:nth-child(even) { background: var(--gray-50); }
+        .data-table tbody tr:hover { background: var(--primary-lighter); }
+
+        /* ========== 标签 ========== */
+        .tag {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 0.7rem; font-weight: 600; white-space: nowrap;
+        }
+        .tag-blue   { background: var(--tech-blue-light); color: var(--tech-blue); }
+        .tag-green  { background: var(--green-light); color: var(--green); }
+        .tag-red    { background: var(--red-light); color: var(--red); }
+        .tag-purple { background: var(--purple-light); color: var(--purple); }
+        .tag-orange { background: var(--accent-light); color: var(--accent); }
+        .tag-gray   { background: var(--gray-100); color: var(--gray-600); }
+        .tag-dark   { background: var(--primary); color: var(--white); }
+
+        /* ========== 响应式网格 ========== */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+
+        /* ========== 卡片通用 ========== */
+        .card {
+            background: var(--white); border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200); padding: 16px;
+            box-shadow: var(--shadow-sm); transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .card-header { font-weight: 600; margin-bottom: 8px; color: var(--primary); }
+
+        /* ========== 打印按钮 ========== */
+        .print-btn {
+            position: fixed; bottom: 30px; right: 30px; z-index: 999;
+            background: linear-gradient(135deg, var(--primary), var(--tech-blue));
+            color: var(--white); border: none; padding: 12px 24px;
+            border-radius: 50px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; box-shadow: var(--shadow-lg);
+            display: flex; align-items: center; gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .print-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.2); }
+
+        /* ============================================
+           板块0：封面头部
+           ============================================ */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--tech-blue) 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 10s ease infinite;
+            color: var(--white); padding: 60px 48px 48px;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; right: -20%;
+            width: 600px; height: 600px; border-radius: 50%;
+            background: rgba(255,255,255,0.03); pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-block; background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25); border-radius: 20px;
+            padding: 5px 16px; font-size: 0.8rem; margin-bottom: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px;
+            margin-bottom: 10px; line-height: 1.3;
+        }
+        .hero h2 {
+            font-size: 1.3rem; font-weight: 400; opacity: 0.9;
+            margin-bottom: 24px;
+        }
+        .hero-meta {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px;
+        }
+        .hero-meta span {
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+            padding: 4px 14px; border-radius: 6px; font-size: 0.8rem;
+        }
+
+        /* 子项目任务分布卡片 */
+        .subproject-cards {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+        }
+        .sp-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            backdrop-filter: blur(4px);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .sp-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-3px); }
+        .sp-card-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 12px;
+        }
+        .sp-card-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: var(--accent); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+        .sp-card-title { font-weight: 600; font-size: 0.95rem; }
+        .sp-card-hours {
+            margin-left: auto; font-size: 0.75rem;
+            background: rgba(255,255,255,0.15);
+            padding: 2px 8px; border-radius: 4px;
+        }
+        .sp-task-list { font-size: 0.82rem; opacity: 0.9; }
+        .sp-task-list li {
+            padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; justify-content: space-between;
+        }
+        .sp-task-list li:last-child { border-bottom: none; }
+        .sp-task-tag { font-size: 0.7rem; opacity: 0.75; }
+
+        /* ============================================
+           板块1：标准规范
+           ============================================ */
+        .standards-tabs {
+            display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .std-tab {
+            padding: 6px 16px; border-radius: 20px;
+            background: var(--gray-100); color: var(--gray-600);
+            font-size: 0.8rem; font-weight: 500; cursor: pointer;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s;
+        }
+        .std-tab.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .std-tab:hover:not(.active) { background: var(--gray-200); }
+
+        /* ============================================
+           板块2：知识图谱
+           ============================================ */
+        .knowledge-legend {
+            display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px; margin-bottom: 32px;
+        }
+        .knode {
+            border-radius: var(--radius-md); padding: 14px 16px;
+            border-left: 4px solid; position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .knode:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .knode-KC { background: var(--tech-blue-light); border-color: var(--tech-blue); }
+        .knode-KP { background: var(--green-light); border-color: var(--green); }
+        .knode-KE { background: var(--red-light); border-color: var(--red); }
+        .knode-KF { background: var(--purple-light); border-color: var(--purple); }
+        .knode-id {
+            font-size: 0.7rem; font-weight: 700; opacity: 0.7;
+            margin-bottom: 2px;
+        }
+        .knode-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px; }
+        .knode-desc { font-size: 0.78rem; opacity: 0.8; line-height: 1.5; }
+
+        /* 知识-任务映射表 */
+        .mapping-table { margin-top: 24px; }
+        .mapping-table .data-table { font-size: 0.78rem; }
+        .mapping-table .data-table th,
+        .mapping-table .data-table td { padding: 6px 10px; }
+        .k-list { display: flex; flex-wrap: wrap; gap: 4px; }
+        .k-tag {
+            display: inline-block; padding: 1px 6px; border-radius: 3px;
+            font-size: 0.68rem; font-weight: 600;
+        }
+
+        /* ============================================
+           板块3：能力图谱
+           ============================================ */
+        /* 3A: 能力矩阵表 */
+        .capability-matrix .data-table { font-size: 0.8rem; }
+        .capability-matrix .data-table th { text-align: center; vertical-align: middle; }
+        .capability-matrix .data-table td { vertical-align: top; }
+        .cap-cell-prof { font-weight: 600; color: var(--primary); white-space: pre-line; }
+        .cap-cell-group { color: var(--tech-blue); }
+        .skill-item {
+            padding: 2px 0; border-bottom: 1px dashed var(--gray-200);
+            font-size: 0.78rem;
+        }
+        .skill-item:last-child { border-bottom: none; }
+        .matrix-row-cap1 { border-left: 4px solid var(--tech-blue); }
+        .matrix-row-cap2 { border-left: 4px solid var(--green); }
+        .matrix-row-cap3 { border-left: 4px solid var(--accent); }
+
+        /* 3B: 技能分解表 */
+        .decomp-table .data-table { font-size: 0.78rem; }
+        .decomp-table .data-table th { white-space: nowrap; }
+        .workflow-steps {
+            font-size: 0.75rem; color: var(--gray-600);
+            line-height: 1.8; white-space: nowrap;
+        }
+        .bullet-list { font-size: 0.75rem; line-height: 1.8; }
+        .bullet-list li { position: relative; padding-left: 10px; }
+        .bullet-list li::before { content: '·'; position: absolute; left: 0; }
+        .eval-criteria { font-size: 0.75rem; color: var(--gray-600); line-height: 1.6; }
+
+        /* 3C: 能力描述卡片 */
+        .cap-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .cap-card {
+            border-radius: var(--radius-md); padding: 16px;
+            border: 1px solid var(--gray-200);
+            background: var(--white); position: relative;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .cap-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .cap-card-top {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+        }
+        .cap-card-id {
+            background: linear-gradient(135deg, var(--primary), var(--tech-blue));
+            color: var(--white); font-size: 0.7rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+        }
+        .cap-card-name { font-weight: 600; font-size: 0.85rem; color: var(--primary); }
+        .cap-card-desc {
+            font-size: 0.78rem; color: var(--gray-700); line-height: 1.6;
+            margin-bottom: 10px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .cap-card-desc strong { color: var(--primary); }
+        .cap-card-meta { font-size: 0.72rem; color: var(--gray-600); line-height: 1.7; }
+        .cap-card-meta-label { font-weight: 600; color: var(--gray-700); }
+        .level-check, .eval-check { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+        .check-item {
+            display: flex; align-items: center; gap: 3px;
+            font-size: 0.7rem; color: var(--gray-600);
+        }
+        .check-box {
+            width: 12px; height: 12px; border: 1.5px solid var(--gray-400);
+            border-radius: 2px; display: flex; align-items: center;
+            justify-content: center; font-size: 0.6rem;
+        }
+        .check-box.checked { background: var(--green); border-color: var(--green); color: var(--white); }
+
+        /* ============================================
+           板块4：问题图谱
+           ============================================ */
+        .problem-chain { margin-bottom: 24px; }
+        .problem-level-title {
+            font-size: 1.1rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 14px; padding: 8px 16px;
+            background: var(--primary-lighter); border-radius: var(--radius-sm);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .problem-level-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--primary); color: var(--white);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
+        }
+        .problem-cards {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+            margin-bottom: 20px;
+        }
+        .prob-card {
+            border-radius: var(--radius-md); padding: 14px;
+            border: 1px solid var(--gray-200); background: var(--white);
+            position: relative; transition: all 0.2s;
+        }
+        .prob-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .prob-card-arrow::after {
+            content: '\2193'; position: absolute; bottom: -22px; left: 50%;
+            transform: translateX(-50%); color: var(--accent);
+            font-size: 1.2rem; font-weight: 700;
+        }
+        .prob-id {
+            background: var(--accent); color: var(--white);
+            font-size: 0.7rem; font-weight: 700; padding: 1px 8px;
+            border-radius: 4px; display: inline-block; margin-bottom: 6px;
+        }
+        .prob-question { font-weight: 600; font-size: 0.82rem; color: var(--primary); margin-bottom: 6px; }
+        .prob-scenario { font-size: 0.75rem; color: var(--gray-600); line-height: 1.5; }
+        .prob-challenge { font-size: 0.72rem; color: var(--red); margin-top: 6px; font-weight: 500; }
+
+        .analysis-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+            margin-bottom: 20px;
+        }
+        .analysis-card {
+            border-radius: var(--radius-md); padding: 14px;
+            border: 1px solid var(--gray-200); background: var(--white);
+        }
+        .analysis-for-task {
+            background: var(--tech-blue); color: var(--white);
+            font-size: 0.7rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 4px; display: inline-block; margin-bottom: 8px;
+        }
+        .analysis-factors { font-size: 0.78rem; line-height: 1.8; }
+        .analysis-factors li { position: relative; padding-left: 12px; }
+        .analysis-factors li::before { content: '\25B8'; position: absolute; left: 0; color: var(--accent); }
+        .analysis-method {
+            font-size: 0.75rem; color: var(--tech-blue); font-weight: 600;
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-100);
+        }
+
+        .solution-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+        }
+        .solution-card {
+            border-radius: var(--radius-md); padding: 14px;
+            border: 1px solid var(--gray-200); background: var(--white);
+        }
+        .solution-for-task {
+            background: var(--green); color: var(--white);
+            font-size: 0.7rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 4px; display: inline-block; margin-bottom: 8px;
+        }
+        .solution-steps { font-size: 0.78rem; line-height: 1.8; color: var(--gray-700); }
+        .solution-outcome {
+            font-size: 0.75rem; color: var(--green); font-weight: 600;
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-100);
+        }
+
+        /* 层级连接指示 */
+        .level-connector {
+            display: flex; justify-content: center; margin: 16px 0;
+            position: relative;
+        }
+        .level-connector::before {
+            content: ''; position: absolute; top: 50%; left: 10%; right: 10%;
+            height: 2px; background: linear-gradient(90deg, var(--accent), var(--tech-blue));
+            z-index: 0;
+        }
+        .level-connector-text {
+            background: var(--white); padding: 4px 20px; border-radius: 20px;
+            border: 2px solid var(--accent); color: var(--accent);
+            font-size: 0.8rem; font-weight: 600; position: relative; z-index: 1;
+        }
+
+        /* ============================================
+           板块5：思政图谱
+           ============================================ */
+        .ideology-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+        .ideo-col { display: flex; flex-direction: column; gap: 10px; }
+        .ideo-header {
+            padding: 10px; border-radius: var(--radius-sm);
+            text-align: center; font-weight: 700; font-size: 0.82rem;
+            color: var(--white); margin-bottom: 4px;
+        }
+        .ideo-h1 { background: linear-gradient(135deg, #c53030, #e53e3e); }
+        .ideo-h2 { background: linear-gradient(135deg, #975a16, #d69e2e); }
+        .ideo-h3 { background: linear-gradient(135deg, #2b6cb0, #3182ce); }
+        .ideo-h4 { background: linear-gradient(135deg, #6b46c1, #805ad5); }
+        .ideo-h5 { background: linear-gradient(135deg, #276749, #38a169); }
+        .ideo-h6 { background: linear-gradient(135deg, #2c7a7b, #38b2ac); }
+
+        .ideo-card {
+            border-radius: var(--radius-sm); padding: 10px;
+            border: 1px solid; font-size: 0.76rem; line-height: 1.6;
+            flex: 1;
+        }
+        .ideo-card-c1 { background: #fff5f5; border-color: #feb2b2; }
+        .ideo-card-c2 { background: #fffaf0; border-color: #fbd38d; }
+        .ideo-card-c3 { background: #ebf4ff; border-color: #90cdf4; }
+        .ideo-card-c4 { background: #f0e6ff; border-color: #d6bcfa; }
+        .ideo-card-c5 { background: #e6f5ec; border-color: #9ae6b4; }
+        .ideo-card-c6 { background: #e6f7f7; border-color: #81e6d9; }
+        .ideo-id { font-weight: 700; font-size: 0.7rem; margin-bottom: 2px; }
+        .ideo-task { font-size: 0.7rem; color: var(--gray-500); margin-bottom: 4px; }
+        .ideo-content { font-weight: 600; margin-bottom: 4px; font-size: 0.78rem; }
+        .ideo-method { font-size: 0.72rem; color: var(--gray-600); margin-bottom: 4px; }
+        .ideo-outcome { font-size: 0.72rem; color: var(--gray-500); font-style: italic; }
+
+        /* ============================================
+           板块6：四个要求汇总
+           ============================================ */
+        .req-section { margin-bottom: 28px; }
+        .req-title {
+            font-size: 1.05rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 12px; padding: 6px 12px;
+            background: var(--primary-lighter); border-left: 4px solid var(--accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        /* 要求B：证书/竞赛标签 */
+        .cert-tag {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 0.72rem; font-weight: 600; margin: 2px;
+        }
+        .cert-primary { background: var(--accent-light); color: var(--accent); border: 1px solid #fbd38d; }
+        .cert-secondary { background: var(--tech-blue-light); color: var(--tech-blue); border: 1px solid #90cdf4; }
+
+        /* 五新网格 */
+        .five-new-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+        .fn-col { border-radius: var(--radius-md); border: 1px solid var(--gray-200); overflow: hidden; }
+        .fn-header {
+            padding: 8px; text-align: center; font-weight: 700; font-size: 0.82rem;
+            color: var(--white);
+        }
+        .fn-h1 { background: linear-gradient(135deg, var(--tech-blue), #4299e1); }
+        .fn-h2 { background: linear-gradient(135deg, var(--green), #48bb78); }
+        .fn-h3 { background: linear-gradient(135deg, var(--accent), #ed8936); }
+        .fn-h4 { background: linear-gradient(135deg, var(--purple), #9f7aea); }
+        .fn-h5 { background: linear-gradient(135deg, var(--primary), #4a5568); }
+        .fn-items { padding: 10px; font-size: 0.75rem; }
+        .fn-item { padding: 6px 0; border-bottom: 1px solid var(--gray-100); }
+        .fn-item:last-child { border-bottom: none; }
+        .fn-item-name { font-weight: 600; color: var(--gray-800); }
+        .fn-item-desc { color: var(--gray-600); font-size: 0.7rem; }
+        .fn-item-tasks { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px; }
+
+        /* ============================================
+           板块7：底部信息
+           ============================================ */
+        .footer {
+            padding: 24px 48px; text-align: center;
+            background: var(--gray-800); color: var(--gray-400);
+            font-size: 0.8rem;
+        }
+        .footer a { color: var(--gray-300); }
+
+        /* ============================================
+           打印样式
+           ============================================ */
+        @media print {
+            @page { size: A4 landscape; margin: 10mm; }
+            body { background: white; font-size: 10pt; color: black; }
+            .page-wrapper { box-shadow: none; max-width: none; }
+            .section { padding: 16px 20px; break-inside: auto; }
+            .print-btn { display: none !important; }
+            .hero { padding: 20px; background: var(--primary) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .section-header { break-after: avoid; }
+            .data-table { font-size: 8pt; }
+            .data-table thead th { background: var(--primary) !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .grid-2, .grid-3, .grid-4, .grid-6 { break-inside: auto; }
+            .card, .knode, .cap-card, .prob-card, .analysis-card, .solution-card, .ideo-card, .sp-card {
+                break-inside: avoid; box-shadow: none !important; border: 1px solid var(--gray-300) !important;
+            }
+            .cap-cards-grid { grid-template-columns: repeat(4, 1fr) !important; }
+            .knowledge-grid { grid-template-columns: repeat(4, 1fr) !important; }
+            .problem-cards, .analysis-grid, .solution-grid { grid-template-columns: repeat(4, 1fr) !important; }
+            .ideology-grid { grid-template-columns: repeat(6, 1fr) !important; }
+            .five-new-grid { grid-template-columns: repeat(5, 1fr) !important; }
+            .subproject-cards { grid-template-columns: repeat(3, 1fr) !important; }
+            .fade-in { opacity: 1 !important; transform: none !important; }
+            .level-connector::before { background: var(--gray-400) !important; }
+        }
+
+        /* ============================================
+           响应式
+           ============================================ */
+        @media (max-width: 1200px) {
+            .cap-cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .ideology-grid { grid-template-columns: repeat(3, 1fr); }
+            .five-new-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .section { padding: 20px; }
+            .hero { padding: 30px 20px; }
+            .hero h1 { font-size: 1.5rem; }
+            .grid-2, .grid-3, .grid-4, .grid-6 { grid-template-columns: 1fr; }
+            .cap-cards-grid { grid-template-columns: 1fr; }
+            .knowledge-grid { grid-template-columns: 1fr; }
+            .problem-cards, .analysis-grid, .solution-grid { grid-template-columns: 1fr; }
+            .ideology-grid { grid-template-columns: 1fr; }
+            .five-new-grid { grid-template-columns: 1fr; }
+            .subproject-cards { grid-template-columns: 1fr; }
+        }
+
+        /* 返回顶部 */
+        .back-top {
+            position: fixed; bottom: 30px; right: 100px; z-index: 998;
+            background: var(--white); color: var(--primary); border: 2px solid var(--primary);
+            padding: 10px 18px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; box-shadow: var(--shadow-md); display: none;
+            transition: all 0.2s;
+        }
+        .back-top.visible { display: block; }
+        .back-top:hover { background: var(--primary); color: var(--white); }
+
+        /* 子模板标题 */
+        .sub-template-title {
+            font-size: 1.1rem; font-weight: 700; color: var(--primary);
+            margin: 24px 0 14px; padding: 8px 0;
+            border-bottom: 2px solid var(--gray-200);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sub-template-num {
+            width: 28px; height: 28px; border-radius: 6px;
+            background: var(--accent); color: var(--white);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700;
+        }
+
+        /* 强调文字 */
+        .highlight { color: var(--accent); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<!-- 打印按钮 -->
+<button class="print-btn" onclick="window.print()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+    </svg>
+    打印 / 保存PDF
+</button>
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    返回顶部
+</button>
+
+<div class="page-wrapper">
+
+<!-- ============================================================
+     板块0：封面头部
+     ============================================================ -->
+<section class="hero">
+    <div class="hero-badge">🚀 国家职业教育教学成果展示</div>
+    <h1>《智慧运输运营》课程——项目五 能力图谱与教学设计</h1>
+    <h2>应急物资低空智慧运输（16学时）</h2>
+    <div class="hero-meta">
+        <span>现代物流管理</span>
+        <span>财经商贸大类</span>
+        <span>高职高专专业课程一组</span>
+        <span>16学时</span>
+        <span>8个任务</span>
+    </div>
+
+    <div class="subproject-cards">
+        <div class="sp-card">
+            <div class="sp-card-header">
+                <div class="sp-card-icon">🗺️</div>
+                <div class="sp-card-title">子项目一：飞行任务规划</div>
+                <div class="sp-card-hours">6学时</div>
+            </div>
+            <ul class="sp-task-list">
+                <li>任务1：需求分析与飞行计划制定 <span class="sp-task-tag">2学时</span></li>
+                <li>任务2：单点航线规划与空域申请 <span class="sp-task-tag">2学时</span></li>
+                <li>任务3：网络航线规划与协同调度 <span class="sp-task-tag">2学时</span></li>
+            </ul>
+        </div>
+        <div class="sp-card">
+            <div class="sp-card-header">
+                <div class="sp-card-icon">🚁</div>
+                <div class="sp-card-title">子项目二：飞行设备准备</div>
+                <div class="sp-card-hours">4学时</div>
+            </div>
+            <ul class="sp-task-list">
+                <li>任务4：物资包装装载与行前准备 <span class="sp-task-tag">2学时</span></li>
+                <li>任务5：多机协同装调与系统调试 <span class="sp-task-tag">2学时</span></li>
+            </ul>
+        </div>
+        <div class="sp-card">
+            <div class="sp-card-header">
+                <div class="sp-card-icon">🎯</div>
+                <div class="sp-card-title">子项目三：飞行运输实操</div>
+                <div class="sp-card-hours">6学时</div>
+            </div>
+            <ul class="sp-task-list">
+                <li>任务6：飞行模拟与虚拟仿真演练 <span class="sp-task-tag">2学时</span></li>
+                <li>任务7：飞行实操与物资精准投放 <span class="sp-task-tag">2学时</span></li>
+                <li>任务8：方案汇报与应急模拟演练 <span class="sp-task-tag">2学时</span></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     板块1：相关标准规范
+     ============================================================ -->
+<section class="section fade-in" id="standards">
+    <div class="section-header">
+        <div class="section-num">1</div>
+        <div class="section-title">相关标准规范</div>
+        <div class="section-subtitle">应急物资无人机智慧运输相关法规与标准</div>
+    </div>
+
+    <div class="standards-tabs">
+        <span class="std-tab active">全部</span>
+        <span class="std-tab">国家法律法规</span>
+        <span class="std-tab">国家标准</span>
+        <span class="std-tab">行业标准</span>
+        <span class="std-tab">技能标准</span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:5%">序号</th>
+                <th style="width:30%">标准/法规名称</th>
+                <th style="width:18%">编号</th>
+                <th style="width:12%">实施时间</th>
+                <th style="width:15%">类别</th>
+                <th style="width:20%">核心内容</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td><strong>《无人驾驶航空器飞行管理暂行条例》</strong></td>
+                <td>国务院令第761号</td>
+                <td>2024.1.1</td>
+                <td><span class="tag tag-dark">法律法规</span></td>
+                <td>无人机全生命周期管理基础法规</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><strong>《民用无人驾驶航空器运行安全管理规则》</strong></td>
+                <td>CCAR-92</td>
+                <td>2024.1.3</td>
+                <td><span class="tag tag-dark">法律法规</span></td>
+                <td>运行安全分级分类管理</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><strong>《民用航空法》修订草案</strong></td>
+                <td>-</td>
+                <td>2025年审议</td>
+                <td><span class="tag tag-dark">法律法规</span></td>
+                <td>从法律层面兼顾低空经济发展</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><strong>《国家空域基础分类方法》</strong></td>
+                <td>-</td>
+                <td>已发布</td>
+                <td><span class="tag tag-dark">法律法规</span></td>
+                <td>划分管制/监视/报告三类空域</td>
+            </tr>
+            <tr style="background:var(--primary-lighter)">
+                <td>5</td>
+                <td><strong>大型货运无人机系统通用要求</strong></td>
+                <td>GB/T 44167-2024</td>
+                <td>2025.1.1</td>
+                <td><span class="tag tag-blue">国家标准</span></td>
+                <td>大型货运无人机系统通用技术要求</td>
+            </tr>
+            <tr style="background:var(--primary-lighter)">
+                <td>6</td>
+                <td><strong>民用大中型固定翼无人机系统自主能力飞行试验要求</strong></td>
+                <td>GB/T 44166-2024</td>
+                <td>2025.1.1</td>
+                <td><span class="tag tag-blue">国家标准</span></td>
+                <td>自主能力飞行试验规范</td>
+            </tr>
+            <tr style="background:var(--primary-lighter)">
+                <td>7</td>
+                <td><strong>物流无人机货物吊挂控制通用要求</strong></td>
+                <td>GB/T 43668-2024</td>
+                <td>2024.10.1</td>
+                <td><span class="tag tag-blue">国家标准</span></td>
+                <td>吊挂控制、抗扰控制、投放要求</td>
+            </tr>
+            <tr style="background:var(--primary-lighter)">
+                <td>8</td>
+                <td><strong>民用无人驾驶航空器系统安全要求</strong></td>
+                <td>GB 42590-2023</td>
+                <td>2024.6.1</td>
+                <td><span class="tag tag-blue">国家标准</span> <span class="tag tag-red">强制</span></td>
+                <td>强制性国标，17项安全技术要求</td>
+            </tr>
+            <tr style="background:var(--green-light)">
+                <td>9</td>
+                <td><strong>无人机物流配送运行要求</strong></td>
+                <td>JT/T 1440-2022</td>
+                <td>2022.12.13</td>
+                <td><span class="tag tag-green">行业标准</span></td>
+                <td>支线/末端无人机物流运行要求</td>
+            </tr>
+            <tr style="background:var(--green-light)">
+                <td>10</td>
+                <td><strong>城市场景物流电动多旋翼无人驾驶航空器系统技术要求</strong></td>
+                <td>MH/T 6126-2022</td>
+                <td>已发布</td>
+                <td><span class="tag tag-green">行业标准</span></td>
+                <td>最大起飞全重&le;25kg等技术限制</td>
+            </tr>
+            <tr style="background:var(--green-light)">
+                <td>11</td>
+                <td><strong>城市场景轻小型无人驾驶航空器物流航线划设规范</strong></td>
+                <td>MH/T 4054-2022</td>
+                <td>已发布</td>
+                <td><span class="tag tag-green">行业标准</span></td>
+                <td>航线安全度、运行可靠性评估</td>
+            </tr>
+            <tr style="background:var(--green-light)">
+                <td>12</td>
+                <td><strong>民用轻小型无人驾驶航空器物流配送试运行审定指南</strong></td>
+                <td>民航局信息通告</td>
+                <td>2022.9</td>
+                <td><span class="tag tag-green">行业标准</span></td>
+                <td>BVLOS试运行审定7章28条</td>
+            </tr>
+            <tr style="background:var(--accent-light)">
+                <td>13</td>
+                <td><strong>无人机物流运输职业技能等级证书</strong></td>
+                <td>1+X证书</td>
+                <td>-</td>
+                <td><span class="tag tag-orange">技能标准</span></td>
+                <td>合规操作+精准运输+设备运维</td>
+            </tr>
+            <tr style="background:var(--accent-light)">
+                <td>14</td>
+                <td><strong>物流无人机操作与运维职业技能等级证书</strong></td>
+                <td>1+X证书</td>
+                <td>-</td>
+                <td><span class="tag tag-orange">技能标准</span></td>
+                <td>操作与运维能力</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ============================================================
+     板块2：知识图谱
+     ============================================================ -->
+<section class="section fade-in" id="knowledge">
+    <div class="section-header">
+        <div class="section-num">2</div>
+        <div class="section-title">知识图谱</div>
+        <div class="section-subtitle">应急物资无人机智慧运输项目知识点网络关系图</div>
+    </div>
+
+    <div class="knowledge-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3498db"></div>基础知识模块（KC）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2ecc71"></div>专业知识模块（KP）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div>拓展知识模块（KE）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>前沿技术模块（KF）</div>
+    </div>
+
+    <div class="knowledge-grid">
+        <div class="knode knode-KC">
+            <div class="knode-id">K01</div>
+            <div class="knode-name">应急物流管理理论</div>
+            <div class="knode-desc">应急物流概念、特点、分类、管理流程</div>
+        </div>
+        <div class="knode knode-KC">
+            <div class="knode-id">K02</div>
+            <div class="knode-name">需求预测方法</div>
+            <div class="knode-desc">定性预测、定量预测、时间序列分析</div>
+        </div>
+        <div class="knode knode-KC">
+            <div class="knode-id">K03</div>
+            <div class="knode-name">风险管理基础</div>
+            <div class="knode-desc">风险识别、评估、控制基本方法</div>
+        </div>
+        <div class="knode knode-KC">
+            <div class="knode-id">K19</div>
+            <div class="knode-name">项目管理方法</div>
+            <div class="knode-desc">WBS、甘特图、关键路径法</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K04</div>
+            <div class="knode-name">无人机系统组成</div>
+            <div class="knode-desc">机体、动力、飞控、通信、载荷五大系统</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K05</div>
+            <div class="knode-name">飞行原理与空气动力学</div>
+            <div class="knode-desc">升力、推力、阻力、重力平衡，旋翼理论</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K06</div>
+            <div class="knode-name">航空气象学</div>
+            <div class="knode-desc">风、云、能见度、温度对飞行影响</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K07</div>
+            <div class="knode-name">空域管理法规</div>
+            <div class="knode-desc">空域分类、申请流程、禁限飞区规定</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K08</div>
+            <div class="knode-name">地理信息系统(GIS)</div>
+            <div class="knode-desc">地图投影、坐标系统、空间分析</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K09</div>
+            <div class="knode-name">包装工程基础</div>
+            <div class="knode-desc">包装材料、包装结构、防护包装设计</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K10</div>
+            <div class="knode-name">重心与稳定性</div>
+            <div class="knode-desc">重心计算、稳定性分析、配平方法</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K11</div>
+            <div class="knode-name">集群控制理论</div>
+            <div class="knode-desc">多智能体系统、一致性协议、协同算法</div>
+        </div>
+        <div class="knode knode-KP">
+            <div class="knode-id">K20</div>
+            <div class="knode-name">SORA风险评估</div>
+            <div class="knode-desc">特定运行风险评估方法论</div>
+        </div>
+        <div class="knode knode-KE">
+            <div class="knode-id">K12</div>
+            <div class="knode-name">虚拟仿真技术</div>
+            <div class="knode-desc">仿真建模、场景渲染、物理引擎</div>
+        </div>
+        <div class="knode knode-KE">
+            <div class="knode-id">K13</div>
+            <div class="knode-name">数字孪生技术</div>
+            <div class="knode-desc">虚实映射、实时监控、预测分析</div>
+        </div>
+        <div class="knode knode-KE">
+            <div class="knode-id">K14</div>
+            <div class="knode-name">北斗+RTK定位</div>
+            <div class="knode-desc">厘米级高精度定位、组合导航</div>
+        </div>
+        <div class="knode knode-KF">
+            <div class="knode-id">K15</div>
+            <div class="knode-name">AI路径规划</div>
+            <div class="knode-desc">深度学习、强化学习在航线优化中的应用</div>
+        </div>
+        <div class="knode knode-KF">
+            <div class="knode-id">K16</div>
+            <div class="knode-name">5G-A+边缘计算</div>
+            <div class="knode-desc">低时延通信、边缘智能处理</div>
+        </div>
+        <div class="knode knode-KF">
+            <div class="knode-id">K17</div>
+            <div class="knode-name">群体智能协同</div>
+            <div class="knode-desc">蜂群算法、分布式决策、自主协同</div>
+        </div>
+        <div class="knode knode-KF">
+            <div class="knode-id">K18</div>
+            <div class="knode-name">激光雷达+视觉融合避障</div>
+            <div class="knode-desc">多传感器融合、SLAM、动态避障</div>
+        </div>
+    </div>
+
+    <div class="mapping-table">
+        <h3 style="font-size:1rem;color:var(--primary);margin-bottom:10px">🔗 知识点-任务映射表</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:10%">任务</th>
+                    <th style="width:45%">核心知识点</th>
+                    <th style="width:45%">拓展知识点</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>任务1</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-blue">K01</span><span class="k-tag tag-blue">K02</span><span class="k-tag tag-blue">K03</span><span class="k-tag tag-blue">K19</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K06</span><span class="k-tag tag-green">K07</span><span class="k-tag tag-red">K13</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务2</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K06</span><span class="k-tag tag-green">K07</span><span class="k-tag tag-green">K08</span><span class="k-tag tag-red">K14</span><span class="k-tag tag-green">K20</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K04</span><span class="k-tag tag-purple">K15</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务3</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K11</span><span class="k-tag tag-red">K14</span><span class="k-tag tag-purple">K15</span><span class="k-tag tag-purple">K16</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-purple">K17</span><span class="k-tag tag-green">K08</span><span class="k-tag tag-red">K13</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务4</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K09</span><span class="k-tag tag-green">K10</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-blue">K03</span><span class="k-tag tag-green">K04</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务5</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K04</span><span class="k-tag tag-green">K11</span><span class="k-tag tag-purple">K16</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-purple">K17</span><span class="k-tag tag-red">K12</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务6</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-red">K12</span><span class="k-tag tag-blue">K03</span><span class="k-tag tag-green">K05</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-red">K13</span><span class="k-tag tag-purple">K18</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务7</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-green">K04</span><span class="k-tag tag-green">K05</span><span class="k-tag tag-green">K06</span><span class="k-tag tag-purple">K18</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-red">K14</span><span class="k-tag tag-blue">K03</span></div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务8</strong></td>
+                    <td><div class="k-list"><span class="k-tag tag-blue">K01</span><span class="k-tag tag-blue">K03</span><span class="k-tag tag-blue">K19</span></div></td>
+                    <td><div class="k-list"><span class="k-tag tag-red">K13</span><span class="k-tag tag-green">K11</span><span class="k-tag tag-purple">K16</span></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ============================================================
+     板块3：能力图谱（核心板块）
+     ============================================================ -->
+<section class="section fade-in" id="capability">
+    <div class="section-header">
+        <div class="section-num">3</div>
+        <div class="section-title">能力图谱</div>
+        <div class="section-subtitle">课程能力图谱矩阵 + 技能点分解表 + 能力描述卡片</div>
+    </div>
+
+    <!-- 3A: 模板1——课程能力图谱矩阵表 -->
+    <div class="sub-template-title">
+        <div class="sub-template-num">3A</div>
+        模板1：课程能力图谱矩阵表
+    </div>
+    <div class="capability-matrix" style="overflow-x:auto">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:22%">专业能力</th>
+                    <th style="width:13%">课程群能力</th>
+                    <th style="width:12%">课程名称</th>
+                    <th style="width:22%">课程单元（任务）</th>
+                    <th style="width:31%">技能点</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="matrix-row-cap1">
+                    <td class="cap-cell-prof">1.应急物流方案制定能力<br><span style="font-size:0.78rem;font-weight:400;color:var(--gray-600)">能根据应急场景需求，制定科学合理的无人机物流配送方案</span></td>
+                    <td class="cap-cell-group">智慧物流规划课程群</td>
+                    <td>智慧运输运营</td>
+                    <td><strong>任务1：</strong>需求分析与飞行计划制定</td>
+                    <td>
+                        <div class="skill-item">1.1 能运用需求分析工具快速研判应急运输需求</div>
+                        <div class="skill-item">1.2 能编制符合规范的飞行计划书</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap1">
+                    <td class="cap-cell-prof">（同上）</td>
+                    <td class="cap-cell-group">（同上）</td>
+                    <td>（同上）</td>
+                    <td><strong>任务2：</strong>单点航线规划与空域申请</td>
+                    <td>
+                        <div class="skill-item">2.1 能使用航线规划软件完成点对点航线设计</div>
+                        <div class="skill-item">2.2 能按流程完成空域申请与审批</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap1">
+                    <td class="cap-cell-prof">（同上）</td>
+                    <td class="cap-cell-group">（同上）</td>
+                    <td>（同上）</td>
+                    <td><strong>任务3：</strong>网络航线规划与协同调度</td>
+                    <td>
+                        <div class="skill-item">3.1 能进行多航空站网络优化分析</div>
+                        <div class="skill-item">3.2 能运用智能调度系统实现多机协同</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap2">
+                    <td class="cap-cell-prof">2.无人机设备运维能力<br><span style="font-size:0.78rem;font-weight:400;color:var(--gray-600)">能完成无人机系统的组装调试、载荷配置与飞行前检查</span></td>
+                    <td class="cap-cell-group">智能设备操作课程群</td>
+                    <td>智慧运输运营</td>
+                    <td><strong>任务4：</strong>物资包装装载与行前准备</td>
+                    <td>
+                        <div class="skill-item">4.1 能根据物资特性选择合适的包装方案</div>
+                        <div class="skill-item">4.2 能完成重量配平与飞行前检查单执行</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap2">
+                    <td class="cap-cell-prof">（同上）</td>
+                    <td class="cap-cell-group">（同上）</td>
+                    <td>（同上）</td>
+                    <td><strong>任务5：</strong>多机协同装调与系统调试</td>
+                    <td>
+                        <div class="skill-item">5.1 能完成多机集群系统的安装配置</div>
+                        <div class="skill-item">5.2 能进行协同通信调试与系统联调</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap3">
+                    <td class="cap-cell-prof">3.无人机飞行操控能力<br><span style="font-size:0.78rem;font-weight:400;color:var(--gray-600)">能在模拟和实际环境中完成无人机安全飞行与精准投送</span></td>
+                    <td class="cap-cell-group">飞行实操课程群</td>
+                    <td>智慧运输运营</td>
+                    <td><strong>任务6：</strong>飞行模拟与虚拟仿真演练</td>
+                    <td>
+                        <div class="skill-item">6.1 能操作飞行模拟器完成标准飞行训练</div>
+                        <div class="skill-item">6.2 能在虚拟环境中处置各类特情</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap3">
+                    <td class="cap-cell-prof">（同上）</td>
+                    <td class="cap-cell-group">（同上）</td>
+                    <td>（同上）</td>
+                    <td><strong>任务7：</strong>飞行实操与物资精准投放</td>
+                    <td>
+                        <div class="skill-item">7.1 能操控无人机完成视距内/超视距飞行</div>
+                        <div class="skill-item">7.2 能实现应急物资的精准投放（误差&lt;5m）</div>
+                    </td>
+                </tr>
+                <tr class="matrix-row-cap3">
+                    <td class="cap-cell-prof">（同上）</td>
+                    <td class="cap-cell-group">（同上）</td>
+                    <td>（同上）</td>
+                    <td><strong>任务8：</strong>方案汇报与应急模拟演练</td>
+                    <td>
+                        <div class="skill-item">8.1 能组织综合演练并评估效能</div>
+                        <div class="skill-item">8.2 能撰写方案报告并进行汇报答辩</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 3B: 模板2——技能点分解表 -->
+    <div class="sub-template-title">
+        <div class="sub-template-num">3B</div>
+        模板2：技能点分解表
+    </div>
+    <div class="decomp-table" style="overflow-x:auto">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:8%">项目</th>
+                    <th style="width:14%">任务</th>
+                    <th style="width:22%">工作流程</th>
+                    <th style="width:20%">技能点</th>
+                    <th style="width:18%">知识点</th>
+                    <th style="width:4%">课时</th>
+                    <th style="width:14%">评价标准</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="8" style="text-align:center;font-weight:600;background:var(--primary-lighter);color:var(--primary);vertical-align:middle;border-right:2px solid var(--primary)">
+                        项目五<br>应急物资<br>低空智慧<br>运输
+                    </td>
+                    <td><strong>任务1</strong><br>需求分析与飞行计划制定</td>
+                    <td><div class="workflow-steps">1.需求接收&rarr;2.应急评估&rarr;3.任务分解&rarr;4.资源匹配&rarr;5.飞行计划编制&rarr;6.风险预案制定</div></td>
+                    <td><ul class="bullet-list"><li>能运用需求分析工具快速研判应急运输需求</li><li>能编制符合规范的飞行计划书</li><li>能进行风险评估与预案制定</li></ul></td>
+                    <td><ul class="bullet-list"><li>应急物流管理理论</li><li>需求预测方法</li><li>飞行计划要素</li><li>风险管理基础</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">飞行计划书规范性&ge;90%<br>需求研判准确率&ge;85%<br>风险预案完整性&ge;95%</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务2</strong><br>单点航线规划与空域申请</td>
+                    <td><div class="workflow-steps">1.任务分析&rarr;2.航点设定&rarr;3.航线设计&rarr;4.安全评估&rarr;5.SORA风险评估&rarr;6.空域申请&rarr;7.计划审批</div></td>
+                    <td><ul class="bullet-list"><li>能使用航线规划软件完成点对点航线设计</li><li>能进行航线安全评估与优化</li><li>能按流程完成空域申请</li></ul></td>
+                    <td><ul class="bullet-list"><li>航空气象学</li><li>空域管理法规</li><li>SORA方法论</li><li>GIS应用</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">航线设计合规率100%<br>安全评估完整性&ge;95%<br>空域申请一次通过率&ge;80%</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务3</strong><br>网络航线规划与协同调度</td>
+                    <td><div class="workflow-steps">1.网络分析&rarr;2.站点布局&rarr;3.协同规划&rarr;4.运力配置&rarr;5.动态调度&rarr;6.效能评估</div></td>
+                    <td><ul class="bullet-list"><li>能进行多航空站网络优化分析</li><li>能运用智能调度系统实现多机协同</li><li>能编制运营调度方案</li></ul></td>
+                    <td><ul class="bullet-list"><li>网络优化理论</li><li>群体智能</li><li>分布式系统</li><li>供应链管理</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">网络优化效率提升&ge;20%<br>协同调度成功率&ge;90%<br>方案报告评分&ge;85分</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务4</strong><br>物资包装装载与行前准备</td>
+                    <td><div class="workflow-steps">1.物资分类&rarr;2.包装设计&rarr;3.重量配平&rarr;4.装载固定&rarr;5.重心检查&rarr;6.飞行前检查&rarr;7.安全检查单确认</div></td>
+                    <td><ul class="bullet-list"><li>能根据物资特性选择合适的包装方案</li><li>能完成重量配平计算</li><li>能规范执行飞行前检查单</li></ul></td>
+                    <td><ul class="bullet-list"><li>包装工程基础</li><li>重心与稳定性</li><li>危险品运输规定</li><li>安全检查标准</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">包装合规率100%<br>配平误差&le;2%<br>检查单执行零遗漏</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务5</strong><br>多机协同装调与系统调试</td>
+                    <td><div class="workflow-steps">1.系统架构&rarr;2.单机装调&rarr;3.网络配置&rarr;4.集群通信测试&rarr;5.协同飞行调试&rarr;6.调度系统部署&rarr;7.系统联调联试</div></td>
+                    <td><ul class="bullet-list"><li>能完成多机集群系统的安装配置</li><li>能进行协同通信调试</li><li>能诊断排除系统故障</li></ul></td>
+                    <td><ul class="bullet-list"><li>集群控制理论</li><li>网络通信技术</li><li>系统工程方法</li><li>飞控原理</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">集群配置成功率&ge;95%<br>通信测试通过率100%<br>故障排除时间&le;30min</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务6</strong><br>飞行模拟与虚拟仿真演练</td>
+                    <td><div class="workflow-steps">1.仿真环境搭建&rarr;2.飞行参数设置&rarr;3.模拟飞行训练&rarr;4.特情场景设置&rarr;5.应急处置演练&rarr;6.数据采集分析&rarr;7.评估反馈优化</div></td>
+                    <td><ul class="bullet-list"><li>能操作飞行模拟器完成标准飞行训练</li><li>能在虚拟环境中处置各类特情</li><li>能进行仿真数据分析与评估</li></ul></td>
+                    <td><ul class="bullet-list"><li>虚拟仿真技术</li><li>飞行操控原理</li><li>应急处置程序</li><li>数字孪生技术</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">模拟飞行操作准确率&ge;90%<br>特情处置正确率&ge;85%<br>仿真报告评分&ge;80分</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务7</strong><br>飞行实操与物资精准投放</td>
+                    <td><div class="workflow-steps">1.任务确认&rarr;2.设备检查&rarr;3.起飞准备&rarr;4.航线飞行&rarr;5.动态避障&rarr;6.应急判断&rarr;7.精准投放&rarr;8.返航降落&rarr;9.数据记录</div></td>
+                    <td><ul class="bullet-list"><li>能操控无人机完成视距内/超视距飞行</li><li>能实现应急物资精准投放（误差&lt;5m）</li><li>能正确处置飞行特情</li></ul></td>
+                    <td><ul class="bullet-list"><li>飞行操控原理</li><li>投放力学</li><li>自主避障技术</li><li>应急处置程序</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">飞行操控评分&ge;90分<br>投放精度误差&lt;5m<br>特情处置正确率100%</div></td>
+                </tr>
+                <tr>
+                    <td><strong>任务8</strong><br>方案汇报与应急模拟演练</td>
+                    <td><div class="workflow-steps">1.综合方案编制&rarr;2.团队分工&rarr;3.综合演练&rarr;4.数据采集&rarr;5.效能评估&rarr;6.问题分析&rarr;7.方案优化&rarr;8.成果汇报</div></td>
+                    <td><ul class="bullet-list"><li>能组织综合演练并评估效能</li><li>能撰写方案报告并进行汇报答辩</li><li>能运用PDCA循环持续优化方案</li></ul></td>
+                    <td><ul class="bullet-list"><li>项目管理方法</li><li>演练设计理论</li><li>绩效评估体系</li><li>低空经济政策法规</li></ul></td>
+                    <td style="text-align:center;font-weight:700;color:var(--accent)">2</td>
+                    <td><div class="eval-criteria">演练组织评分&ge;85分<br>方案报告评分&ge;90分<br>汇报答辩评分&ge;85分</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 3C: 模板3——能力描述卡片 -->
+    <div class="sub-template-title">
+        <div class="sub-template-num">3C</div>
+        模板3：能力描述卡片（12项核心能力）
+    </div>
+    <div class="cap-cards-grid">
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C1-1</span>
+                <span class="cap-card-name">应急需求研判</span>
+            </div>
+            <div class="cap-card-desc">能<strong>使用需求分析工具</strong>，<strong>在应急场景下</strong>，对运输需求进行<strong>快速研判，准确率&ge;85%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：应急物流管理理论<br>程序性：需求分析工具操作</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box"></span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C1-2</span>
+                <span class="cap-card-name">飞行计划编制</span>
+            </div>
+            <div class="cap-card-desc">能<strong>依据任务需求和法规标准</strong>，<strong>在规定时限内</strong>，编制<strong>符合规范的飞行计划书，规范性&ge;90%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：飞行计划要素<br>程序性：飞行计划编制流程</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>理论</span>
+                        <span class="check-item"><span class="check-box"></span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box"></span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C2-1</span>
+                <span class="cap-card-name">航线规划设计</span>
+            </div>
+            <div class="cap-card-desc">能<strong>使用航线规划软件</strong>，<strong>根据任务需求和气象条件</strong>，完成<strong>点对点航线设计，合规率100%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：航空气象学、空域管理法规<br>程序性：航线规划软件操作</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box"></span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C2-2</span>
+                <span class="cap-card-name">空域申请办理</span>
+            </div>
+            <div class="cap-card-desc">能<strong>按照审批流程</strong>，<strong>准备完整申请材料</strong>，完成<strong>空域申请，一次通过率&ge;80%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：空域管理法规<br>程序性：空域申报系统操作</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box"></span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C3-1</span>
+                <span class="cap-card-name">网络协同调度</span>
+            </div>
+            <div class="cap-card-desc">能<strong>运用智能调度系统</strong>，<strong>对多航空站网络</strong>进行<strong>协同规划与动态调度，效率提升&ge;20%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：网络优化理论、群体智能<br>程序性：智能调度系统操作</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box"></span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C4-1</span>
+                <span class="cap-card-name">物资包装装载</span>
+            </div>
+            <div class="cap-card-desc">能<strong>根据物资特性</strong>，选择<strong>合适的包装方案</strong>并完成<strong>安全装载，包装合规率100%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：包装工程基础<br>程序性：包装操作技能</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box"></span>项目</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C4-2</span>
+                <span class="cap-card-name">飞行前检查</span>
+            </div>
+            <div class="cap-card-desc">能<strong>按照飞行前检查单</strong>，<strong>完成所有检查项目</strong>，<strong>确保飞行安全，检查零遗漏</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：安全检查标准<br>程序性：检查单执行流程</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box"></span>项目</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C5-1</span>
+                <span class="cap-card-name">多机协同装调</span>
+            </div>
+            <div class="cap-card-desc">能<strong>完成多机集群系统</strong>的<strong>安装、配置和通信调试</strong>，<strong>系统配置成功率&ge;95%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：集群控制理论<br>程序性：集群系统配置</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box"></span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C6-1</span>
+                <span class="cap-card-name">飞行模拟训练</span>
+            </div>
+            <div class="cap-card-desc">能<strong>操作飞行模拟器</strong>，<strong>完成标准飞行训练任务</strong>，<strong>操作准确率&ge;90%</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：飞行操控原理<br>程序性：模拟器操作技能</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box"></span>项目</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C7-1</span>
+                <span class="cap-card-name">无人机飞行操控</span>
+            </div>
+            <div class="cap-card-desc">能<strong>在实际环境中</strong>，<strong>操控无人机</strong>完成<strong>视距内/超视距飞行任务，操控评分&ge;90分</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：飞行操控原理<br>程序性：真机操控技能</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box"></span>项目</span>
+                        <span class="check-item"><span class="check-box"></span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C7-2</span>
+                <span class="cap-card-name">物资精准投放</span>
+            </div>
+            <div class="cap-card-desc">能<strong>在指定条件下</strong>，<strong>使用无人机</strong>完成<strong>应急物资精准投放，投放误差&lt;5m</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>中级</span>
+                        <span class="check-item"><span class="check-box"></span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：投放力学<br>程序性：精准投放操作</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box"></span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-card">
+            <div class="cap-card-top">
+                <span class="cap-card-id">C8-1</span>
+                <span class="cap-card-name">综合演练组织</span>
+            </div>
+            <div class="cap-card-desc">能<strong>组织综合运输演练</strong>，<strong>完成效能评估与方案优化</strong>，<strong>演练评分&ge;85分</strong></div>
+            <div class="cap-card-meta">
+                <div><span class="cap-card-meta-label">适用层级：</span>
+                    <div class="level-check">
+                        <span class="check-item"><span class="check-box"></span>初级</span>
+                        <span class="check-item"><span class="check-box"></span>中级</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>高级</span>
+                    </div>
+                </div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">支撑知识：</span><br>陈述性：项目管理方法<br>程序性：演练组织流程</div>
+                <div style="margin-top:6px"><span class="cap-card-meta-label">评价方式：</span>
+                    <div class="eval-check">
+                        <span class="check-item"><span class="check-box"></span>理论</span>
+                        <span class="check-item"><span class="check-box"></span>实操</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>项目</span>
+                        <span class="check-item"><span class="check-box checked">&#10003;</span>过程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     板块4：问题图谱
+     ============================================================ -->
+<section class="section fade-in" id="problem">
+    <div class="section-header">
+        <div class="section-num">4</div>
+        <div class="section-title">问题图谱</div>
+        <div class="section-subtitle">应急物资无人机智慧运输项目——三层递进式问题链设计</div>
+    </div>
+
+    <!-- 第一层：问题导向层 -->
+    <div class="problem-level-title">
+        <div class="problem-level-num">1</div>
+        问题导向层 —— 真实企业工单驱动
+    </div>
+    <div class="problem-cards">
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P01</span>
+            <div class="prob-question">接到顺丰/京东应急物资配送工单，如何快速研判需求并制定飞行计划？</div>
+            <div class="prob-scenario">📋 企业工单：某山区发生地质灾害，需紧急投送医疗物资</div>
+            <div class="prob-challenge">⚠️ 挑战：时间紧迫、信息不全、风险未知</div>
+        </div>
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P02</span>
+            <div class="prob-question">如何在复杂地形和气象条件下规划安全航线并完成空域申请？</div>
+            <div class="prob-scenario">📋 企业工单：城市高楼间医疗样本配送，需穿越多个限飞区</div>
+            <div class="prob-challenge">⚠️ 挑战：地形复杂、空域受限、气象多变</div>
+        </div>
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P03</span>
+            <div class="prob-question">如何实现多站点协同调度以应对大规模应急物资投送需求？</div>
+            <div class="prob-scenario">📋 企业工单：洪灾区域多点同时救援物资投送</div>
+            <div class="prob-challenge">⚠️ 挑战：多点多任务、资源有限、协同复杂</div>
+        </div>
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P04</span>
+            <div class="prob-question">如何确保特殊物资（冷链、危险品）的包装装载符合安全标准？</div>
+            <div class="prob-scenario">📋 企业工单：疫苗冷链运输+急救药品同步配送</div>
+            <div class="prob-challenge">⚠️ 挑战：温控要求、配平精准、安全检查</div>
+        </div>
+    </div>
+    <div class="problem-cards">
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P05</span>
+            <div class="prob-question">多机协同飞行中出现通信故障时如何快速恢复协同？</div>
+            <div class="prob-scenario">📋 企业工单：5架无人机编队飞行中1架失联</div>
+            <div class="prob-challenge">⚠️ 挑战：通信中断、编队保持、应急处置</div>
+        </div>
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P06</span>
+            <div class="prob-question">如何在仿真环境中验证飞行方案的可行性和安全性？</div>
+            <div class="prob-scenario">📋 企业工单：新航线开通前的仿真验证</div>
+            <div class="prob-challenge">⚠️ 挑战：场景逼真、特情覆盖、数据有效</div>
+        </div>
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P07</span>
+            <div class="prob-question">飞行中遇突发情况（强风、鸟群、设备故障）如何保证物资精准投放？</div>
+            <div class="prob-scenario">📋 企业工单：投放过程中突遇侧风切变</div>
+            <div class="prob-challenge">⚠️ 挑战：动态调整、精准控制、安全优先</div>
+        </div>
+        <div class="prob-card prob-card-arrow">
+            <span class="prob-id">P08</span>
+            <div class="prob-question">如何评估整体方案效能并提出优化建议？</div>
+            <div class="prob-scenario">📋 企业工单：月度运营方案评估与优化</div>
+            <div class="prob-challenge">⚠️ 挑战：指标全面、数据准确、建议可行</div>
+        </div>
+    </div>
+
+    <!-- 连接指示 -->
+    <div class="level-connector">
+        <span class="level-connector-text">🔽 问题分解 &rarr; 关键要素提取 &rarr; 分析方法</span>
+    </div>
+
+    <!-- 第二层：问题分析层 -->
+    <div class="problem-level-title">
+        <div class="problem-level-num">2</div>
+        问题分析层 —— 分解问题的关键要素与分析方法
+    </div>
+    <div class="analysis-grid">
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务1</span>
+            <ul class="analysis-factors">
+                <li>需求类型识别</li>
+                <li>时效要求分析</li>
+                <li>资源可用性评估</li>
+                <li>风险等级判定</li>
+            </ul>
+            <div class="analysis-method">💡 5W2H分析法 + SWOT分析</div>
+        </div>
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务2</span>
+            <ul class="analysis-factors">
+                <li>地形地貌影响</li>
+                <li>气象条件约束</li>
+                <li>空域法规限制</li>
+                <li>飞行器性能</li>
+            </ul>
+            <div class="analysis-method">💡 SORA风险评估 + GIS空间分析</div>
+        </div>
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务3</span>
+            <ul class="analysis-factors">
+                <li>站点布局优化</li>
+                <li>运力配置均衡</li>
+                <li>通信链路保障</li>
+                <li>动态调整机制</li>
+            </ul>
+            <div class="analysis-method">💡 网络优化算法 + 群体智能</div>
+        </div>
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务4</span>
+            <ul class="analysis-factors">
+                <li>物资属性分类</li>
+                <li>包装材料选择</li>
+                <li>重量配平计算</li>
+                <li>安全标准合规</li>
+            </ul>
+            <div class="analysis-method">💡 FMEA失效分析 + 检查清单</div>
+        </div>
+    </div>
+    <div class="analysis-grid">
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务5</span>
+            <ul class="analysis-factors">
+                <li>通信拓扑设计</li>
+                <li>故障检测机制</li>
+                <li>冗余备份方案</li>
+                <li>应急预案触发</li>
+            </ul>
+            <div class="analysis-method">💡 故障树分析(FTA)</div>
+        </div>
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务6</span>
+            <ul class="analysis-factors">
+                <li>仿真参数设置</li>
+                <li>场景库覆盖度</li>
+                <li>物理模型精度</li>
+                <li>数据采集方法</li>
+            </ul>
+            <div class="analysis-method">💡 DOE实验设计 + 统计分析</div>
+        </div>
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务7</span>
+            <ul class="analysis-factors">
+                <li>环境感知能力</li>
+                <li>决策响应时间</li>
+                <li>控制精度保持</li>
+                <li>安全冗余设计</li>
+            </ul>
+            <div class="analysis-method">💡 HAZOP危险可操作性分析</div>
+        </div>
+        <div class="analysis-card">
+            <span class="analysis-for-task">任务8</span>
+            <ul class="analysis-factors">
+                <li>KPI指标体系</li>
+                <li>数据采集完整性</li>
+                <li>对比分析方法</li>
+                <li>改进措施可行性</li>
+            </ul>
+            <div class="analysis-method">💡 PDCA循环 + KPI分析</div>
+        </div>
+    </div>
+
+    <!-- 连接指示 -->
+    <div class="level-connector">
+        <span class="level-connector-text">🔽 方案设计 &rarr; 步骤执行 &rarr; 成果输出</span>
+    </div>
+
+    <!-- 第三层：问题解决层 -->
+    <div class="problem-level-title">
+        <div class="problem-level-num">3</div>
+        问题解决层 —— 解决方案步骤与预期成果
+    </div>
+    <div class="solution-grid">
+        <div class="solution-card">
+            <span class="solution-for-task">任务1</span>
+            <div class="solution-steps">建立需求分级响应机制 &rarr; 使用需求分析模板 &rarr; 编制标准飞行计划 &rarr; 制定风险预案</div>
+            <div class="solution-outcome">✅ 完成标准化飞行计划书</div>
+        </div>
+        <div class="solution-card">
+            <span class="solution-for-task">任务2</span>
+            <div class="solution-steps">地形与气象数据采集 &rarr; 航点自动/手动设定 &rarr; 安全评估与优化 &rarr; 空域材料准备与提交</div>
+            <div class="solution-outcome">✅ 获得批准的安全航线方案</div>
+        </div>
+        <div class="solution-card">
+            <span class="solution-for-task">任务3</span>
+            <div class="solution-steps">网络拓扑建模 &rarr; 站点覆盖分析 &rarr; 协同调度算法 &rarr; 动态调整策略</div>
+            <div class="solution-outcome">✅ 完成多站点协同调度方案</div>
+        </div>
+        <div class="solution-card">
+            <span class="solution-for-task">任务4</span>
+            <div class="solution-steps">物资分类编码 &rarr; 包装方案匹配 &rarr; 配平计算验证 &rarr; 检查单逐项确认</div>
+            <div class="solution-outcome">✅ 完成安全合规的装载配置</div>
+        </div>
+    </div>
+    <div class="solution-grid" style="margin-top:14px">
+        <div class="solution-card">
+            <span class="solution-for-task">任务5</span>
+            <div class="solution-steps">集群架构设计 &rarr; 冗余通信配置 &rarr; 故障检测测试 &rarr; 应急切换验证</div>
+            <div class="solution-outcome">✅ 完成可靠的集群系统配置</div>
+        </div>
+        <div class="solution-card">
+            <span class="solution-for-task">任务6</span>
+            <div class="solution-steps">仿真环境搭建 &rarr; 标准飞行训练 &rarr; 特情场景演练 &rarr; 数据记录分析</div>
+            <div class="solution-outcome">✅ 完成飞行能力仿真验证</div>
+        </div>
+        <div class="solution-card">
+            <span class="solution-for-task">任务7</span>
+            <div class="solution-steps">飞行前检查确认 &rarr; 标准航线飞行 &rarr; 环境感知决策 &rarr; 精准投放执行</div>
+            <div class="solution-outcome">✅ 完成物资精准投放任务</div>
+        </div>
+        <div class="solution-card">
+            <span class="solution-for-task">任务8</span>
+            <div class="solution-steps">方案效能评估 &rarr; 问题根因分析 &rarr; 优化方案设计 &rarr; 汇报展示</div>
+            <div class="solution-outcome">✅ 完成方案优化与汇报</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     板块5：思政图谱
+     ============================================================ -->
+<section class="section fade-in" id="ideology">
+    <div class="section-header">
+        <div class="section-num">5</div>
+        <div class="section-title">思政图谱</div>
+        <div class="section-subtitle">项目五思政元素融入设计——课程思政与专业教育有机融合（6大维度 &times; 3元素 = 18个思政点）</div>
+    </div>
+
+    <div class="ideology-grid">
+        <!-- 维度1：家国情怀 -->
+        <div class="ideo-col">
+            <div class="ideo-header ideo-h1">🇨🇳 家国情怀</div>
+            <div class="ideo-card ideo-card-c1">
+                <div class="ideo-id">S01</div>
+                <div class="ideo-task">所属：任务1</div>
+                <div class="ideo-content">应急物资运输中的"人民至上、生命至上"理念</div>
+                <div class="ideo-method">📚 融入：引入汶川地震、甘肃积石山地震等真实应急案例</div>
+                <div class="ideo-outcome">🎯 培养学生的社会责任感和使命感</div>
+            </div>
+            <div class="ideo-card ideo-card-c1">
+                <div class="ideo-id">S02</div>
+                <div class="ideo-task">所属：任务7</div>
+                <div class="ideo-content">应急救援中的奉献精神和职业担当</div>
+                <div class="ideo-method">📚 融入：讲述一线救援飞手不畏艰险投送物资的真实故事</div>
+                <div class="ideo-outcome">🎯 培养学生的敬业精神和奉献意识</div>
+            </div>
+            <div class="ideo-card ideo-card-c1">
+                <div class="ideo-id">S03</div>
+                <div class="ideo-task">所属：任务8</div>
+                <div class="ideo-content">中国低空经济产业发展的民族自豪</div>
+                <div class="ideo-method">📚 融入：展示中国无人机物流世界领先的数据（顺丰523条航线等）</div>
+                <div class="ideo-outcome">🎯 增强学生的民族自信心和产业报国志向</div>
+            </div>
+        </div>
+
+        <!-- 维度2：工匠精神 -->
+        <div class="ideo-col">
+            <div class="ideo-header ideo-h2">🔨 工匠精神</div>
+            <div class="ideo-card ideo-card-c2">
+                <div class="ideo-id">S04</div>
+                <div class="ideo-task">所属：任务4</div>
+                <div class="ideo-content">精准配平中的精益求精</div>
+                <div class="ideo-method">📚 融入：对比&plusmn;2%配平误差导致的飞行事故案例</div>
+                <div class="ideo-outcome">🎯 培养学生严谨细致的工作态度</div>
+            </div>
+            <div class="ideo-card ideo-card-c2">
+                <div class="ideo-id">S05</div>
+                <div class="ideo-task">所属：任务5</div>
+                <div class="ideo-content">装调调试中的专注执着</div>
+                <div class="ideo-method">📚 融入：引入大国工匠精神，强调每个螺丝的重要性</div>
+                <div class="ideo-outcome">🎯 培养学生追求卓越的工匠精神</div>
+            </div>
+            <div class="ideo-card ideo-card-c2">
+                <div class="ideo-id">S06</div>
+                <div class="ideo-task">所属：任务7</div>
+                <div class="ideo-content">精准投放中的技艺传承</div>
+                <div class="ideo-method">📚 融入：邀请企业导师分享飞行操控的"手感"修炼</div>
+                <div class="ideo-outcome">🎯 培养学生精益求精的操控技能</div>
+            </div>
+        </div>
+
+        <!-- 维度3：法治意识 -->
+        <div class="ideo-col">
+            <div class="ideo-header ideo-h3">⚖️ 法治意识</div>
+            <div class="ideo-card ideo-card-c3">
+                <div class="ideo-id">S07</div>
+                <div class="ideo-task">所属：任务2</div>
+                <div class="ideo-content">空域管理中的法规意识</div>
+                <div class="ideo-method">📚 融入：结合《无人驾驶航空器飞行管理暂行条例》教学</div>
+                <div class="ideo-outcome">🎯 培养学生的法律意识和合规意识</div>
+            </div>
+            <div class="ideo-card ideo-card-c3">
+                <div class="ideo-id">S08</div>
+                <div class="ideo-task">所属：任务3</div>
+                <div class="ideo-content">飞行安全中的责任担当</div>
+                <div class="ideo-method">📚 融入：分析违规飞行案例的法律责任和社会影响</div>
+                <div class="ideo-outcome">🎯 培养学生的安全责任意识和法治观念</div>
+            </div>
+            <div class="ideo-card ideo-card-c3">
+                <div class="ideo-id">S09</div>
+                <div class="ideo-task">所属：任务4</div>
+                <div class="ideo-content">危险品运输中的规范执行</div>
+                <div class="ideo-method">📚 融入：结合GB 42590-2023等标准强调安全底线</div>
+                <div class="ideo-outcome">🎯 培养学生遵规守纪的职业素养</div>
+            </div>
+        </div>
+
+        <!-- 维度4：创新意识 -->
+        <div class="ideo-col">
+            <div class="ideo-header ideo-h4">🚀 创新意识</div>
+            <div class="ideo-card ideo-card-c4">
+                <div class="ideo-id">S10</div>
+                <div class="ideo-task">所属：任务3</div>
+                <div class="ideo-content">低空经济中的创新思维</div>
+                <div class="ideo-method">📚 融入：介绍中国企业在无人机物流领域的创新突破</div>
+                <div class="ideo-outcome">🎯 激发学生的创新热情</div>
+            </div>
+            <div class="ideo-card ideo-card-c4">
+                <div class="ideo-id">S11</div>
+                <div class="ideo-task">所属：任务6</div>
+                <div class="ideo-content">数字孪生中的技术创新</div>
+                <div class="ideo-method">📚 融入：展示数字孪生技术在飞行训练中的创新应用</div>
+                <div class="ideo-outcome">🎯 培养学生拥抱新技术的开放心态</div>
+            </div>
+            <div class="ideo-card ideo-card-c4">
+                <div class="ideo-id">S12</div>
+                <div class="ideo-task">所属：任务8</div>
+                <div class="ideo-content">方案优化中的持续改进</div>
+                <div class="ideo-method">📚 融入：结合PDCA循环，强调创新创业能力</div>
+                <div class="ideo-outcome">🎯 培养学生的持续改进和创新思维</div>
+            </div>
+        </div>
+
+        <!-- 维度5：团队协作 -->
+        <div class="ideo-col">
+            <div class="ideo-header ideo-h5">🤝 团队协作</div>
+            <div class="ideo-card ideo-card-c5">
+                <div class="ideo-id">S13</div>
+                <div class="ideo-task">所属：任务1</div>
+                <div class="ideo-content">应急运输中的协同配合</div>
+                <div class="ideo-method">📚 融入：模拟多部门协调场景（交通、气象、军方）</div>
+                <div class="ideo-outcome">🎯 培养学生的沟通协调能力</div>
+            </div>
+            <div class="ideo-card ideo-card-c5">
+                <div class="ideo-id">S14</div>
+                <div class="ideo-task">所属：任务5</div>
+                <div class="ideo-content">多机协同中的团队精神</div>
+                <div class="ideo-method">📚 融入：引入编队飞行中协同配合的案例</div>
+                <div class="ideo-outcome">🎯 培养学生的团队协作意识</div>
+            </div>
+            <div class="ideo-card ideo-card-c5">
+                <div class="ideo-id">S15</div>
+                <div class="ideo-task">所属：任务8</div>
+                <div class="ideo-content">综合演练中的分工合作</div>
+                <div class="ideo-method">📚 融入：分组演练，强调角色分工与团队配合</div>
+                <div class="ideo-outcome">🎯 培养学生的组织协作能力</div>
+            </div>
+        </div>
+
+        <!-- 维度6：生态文明 -->
+        <div class="ideo-col">
+            <div class="ideo-header ideo-h6">🌱 生态文明</div>
+            <div class="ideo-card ideo-card-c6">
+                <div class="ideo-id">S16</div>
+                <div class="ideo-task">所属：任务4</div>
+                <div class="ideo-content">绿色包装与可持续发展</div>
+                <div class="ideo-method">📚 融入：介绍可降解包装材料、温控冷链节能减排技术</div>
+                <div class="ideo-outcome">🎯 培养学生的绿色物流意识和环保理念</div>
+            </div>
+            <div class="ideo-card ideo-card-c6">
+                <div class="ideo-id">S17</div>
+                <div class="ideo-task">所属：任务7</div>
+                <div class="ideo-content">绿色飞行与低碳配送</div>
+                <div class="ideo-method">📚 融入：对比无人机配送与传统配送的碳排放数据</div>
+                <div class="ideo-outcome">🎯 培养学生的双碳意识和绿色理念</div>
+            </div>
+            <div class="ideo-card ideo-card-c6">
+                <div class="ideo-id">S18</div>
+                <div class="ideo-task">所属：任务3</div>
+                <div class="ideo-content">低空经济中的绿色发展</div>
+                <div class="ideo-method">📚 融入：介绍氢燃料电池无人机等新能源装备</div>
+                <div class="ideo-outcome">🎯 培养学生的绿色技术创新意识</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     板块6：四个要求汇总
+     ============================================================ -->
+<section class="section fade-in" id="requirements">
+    <div class="section-header">
+        <div class="section-num">6</div>
+        <div class="section-title">四个要求汇总</div>
+        <div class="section-subtitle">反向设计逻辑 &middot; 岗课赛证融合 &middot; 课程类型判定 &middot; 五新融入</div>
+    </div>
+
+    <!-- 要求a：反向设计逻辑对应表 -->
+    <div class="req-section">
+        <div class="req-title">🔰 要求a：反向设计逻辑对应表（岗位任务 &rarr; 核心能力 &rarr; 技能点 &rarr; 知识点 &rarr; 课程模块）</div>
+        <div style="overflow-x:auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:15%">岗位任务</th>
+                        <th style="width:18%">核心能力</th>
+                        <th style="width:22%">技能点</th>
+                        <th style="width:22%">知识点</th>
+                        <th style="width:13%">课程模块</th>
+                        <th style="width:10%">能力层级</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>应急运输需求分析</strong></td>
+                        <td>应急需求研判与方案设计</td>
+                        <td>需求分析工具使用、飞行计划编制</td>
+                        <td>应急物流管理、需求预测、风险管理</td>
+                        <td><span class="tag tag-blue">任务1</span></td>
+                        <td><span class="tag tag-green">初级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>单点航线规划</strong></td>
+                        <td>航线设计与安全评估</td>
+                        <td>航线规划软件操作、空域申报</td>
+                        <td>航空气象、空域法规、SORA、GIS</td>
+                        <td><span class="tag tag-blue">任务2</span></td>
+                        <td><span class="tag tag-orange">中级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>网络协同调度</strong></td>
+                        <td>网络优化与智能协同调度</td>
+                        <td>智能调度系统操作、多机协同指挥</td>
+                        <td>网络优化、群体智能、供应链管理</td>
+                        <td><span class="tag tag-blue">任务3</span></td>
+                        <td><span class="tag tag-purple">高级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>物资包装装载</strong></td>
+                        <td>载荷配置与安全检查</td>
+                        <td>包装操作、配平计算、检查单执行</td>
+                        <td>包装工程、重心稳定性、危险品规定</td>
+                        <td><span class="tag tag-blue">任务4</span></td>
+                        <td><span class="tag tag-green">初级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>多机协同装调</strong></td>
+                        <td>集群系统部署与联调</td>
+                        <td>集群配置、通信调试、故障诊断</td>
+                        <td>集群控制、通信技术、系统工程</td>
+                        <td><span class="tag tag-blue">任务5</span></td>
+                        <td><span class="tag tag-purple">高级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>飞行模拟演练</strong></td>
+                        <td>虚拟仿真操作与特情处置</td>
+                        <td>模拟器操作、场景搭建、数据分析</td>
+                        <td>仿真技术、飞行原理、应急处置</td>
+                        <td><span class="tag tag-blue">任务6</span></td>
+                        <td><span class="tag tag-orange">中级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>飞行实操投放</strong></td>
+                        <td>飞行操控与精准投放</td>
+                        <td>飞行操控、精准投放、特情处置</td>
+                        <td>操控原理、投放力学、避障技术</td>
+                        <td><span class="tag tag-blue">任务7</span></td>
+                        <td><span class="tag tag-orange">中级</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>方案汇报演练</strong></td>
+                        <td>项目运营与综合演练</td>
+                        <td>演练组织、方案优化、汇报展示</td>
+                        <td>项目管理、绩效评估、低空经济法规</td>
+                        <td><span class="tag tag-blue">任务8</span></td>
+                        <td><span class="tag tag-purple">高级</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 要求b：岗课赛证融合表 -->
+    <div class="req-section">
+        <div class="req-title">🏆 要求b：岗课赛证融合表（证书对接 + 竞赛对接）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div class="card">
+                <div class="card-header">📋 1+X职业技能等级证书对接</div>
+                <table class="data-table" style="font-size:0.78rem">
+                    <thead>
+                        <tr><th>证书名称</th><th>发证机构</th><th>等级</th><th>对接任务</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="3"><strong>无人机物流运输<br>职业技能等级证书</strong></td>
+                            <td rowspan="3">人社部</td>
+                            <td><span class="tag tag-green">初级</span></td>
+                            <td>任务1、任务4</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tag tag-orange">中级</span></td>
+                            <td>任务2、任务4、任务6、任务7</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tag tag-purple">高级</span></td>
+                            <td>任务3、任务5、任务8</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3"><strong>物流无人机操作与运维<br>职业技能等级证书</strong></td>
+                            <td rowspan="3">北京京东乾石</td>
+                            <td><span class="tag tag-green">初级</span></td>
+                            <td>任务1、任务4</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tag tag-orange">中级</span></td>
+                            <td>任务4、任务6</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tag tag-purple">高级</span></td>
+                            <td>任务5、任务7</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2"><strong>CAAC无人机<br>驾驶员执照</strong></td>
+                            <td rowspan="2">民航局</td>
+                            <td><span class="tag tag-blue">VLOS视距内</span></td>
+                            <td>任务2、任务6、任务7</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tag tag-purple">BVLOS超视距</span></td>
+                            <td>任务3、任务7、任务8</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-header">🏆 职业技能竞赛对接</div>
+                <table class="data-table" style="font-size:0.78rem">
+                    <thead>
+                        <tr><th>竞赛名称</th><th>级别</th><th>对接任务</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>全国职业院校技能大赛<br>- 智慧物流赛项</strong></td>
+                            <td><span class="cert-primary">国赛</span></td>
+                            <td>
+                                <span class="cert-tag cert-secondary">任务1</span>
+                                <span class="cert-tag cert-secondary">任务2</span>
+                                <span class="cert-tag cert-secondary">任务4</span>
+                                <span class="cert-tag cert-secondary">任务6</span>
+                                <span class="cert-tag cert-secondary">任务8</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>全国职业院校技能大赛<br>- 无人机操控与维护赛项</strong></td>
+                            <td><span class="cert-primary">国赛</span></td>
+                            <td>
+                                <span class="cert-tag cert-secondary">任务5</span>
+                                <span class="cert-tag cert-secondary">任务6</span>
+                                <span class="cert-tag cert-secondary">任务7</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>无人系统空地协同赛</strong></td>
+                            <td><span class="cert-tag" style="background:#e6f7f7;color:#2c7a7b;border:1px solid #81e6d9">行业赛</span></td>
+                            <td>
+                                <span class="cert-tag cert-secondary">任务3</span>
+                                <span class="cert-tag cert-secondary">任务5</span>
+                                <span class="cert-tag cert-secondary">任务7</span>
+                                <span class="cert-tag cert-secondary">任务8</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 要求c：课程类型与能力支撑判定表 -->
+    <div class="req-section">
+        <div class="req-title">📋 要求c：课程类型与能力支撑判定表</div>
+        <div style="overflow-x:auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>任务</th>
+                        <th>课时</th>
+                        <th>课程性质</th>
+                        <th>实践类型</th>
+                        <th>对接证书</th>
+                        <th>对接竞赛</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>任务1</strong> 需求分析与飞行计划制定</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-gray">理论</span></td>
+                        <td><span class="cert-tag cert-secondary">无人机物流运输（初级）</span></td>
+                        <td><span class="cert-primary">智慧物流国赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务2</strong> 单点航线规划与空域申请</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-gray">理论</span></td>
+                        <td><span class="cert-tag cert-secondary">无人机物流运输（中级）</span> <span class="cert-tag cert-secondary">CAAC视距内</span></td>
+                        <td><span class="cert-primary">智慧物流国赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务3</strong> 网络航线规划与协同调度</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-gray">理论</span></td>
+                        <td><span class="cert-tag cert-secondary">无人机物流运输（高级）</span> <span class="cert-tag cert-secondary">CAAC超视距</span></td>
+                        <td><span class="cert-tag" style="background:#e6f7f7;color:#2c7a7b;border:1px solid #81e6d9">空地协同行业赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务4</strong> 物资包装装载与行前准备</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-green">集中实践</span></td>
+                        <td><span class="cert-tag cert-secondary">无人机物流运输（初/中级）</span></td>
+                        <td><span class="cert-primary">智慧物流国赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务5</strong> 多机协同装调与系统调试</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-purple">选修</span></td>
+                        <td><span class="tag tag-green">集中实践</span></td>
+                        <td><span class="cert-tag cert-secondary">物流无人机操作与运维（高级）</span></td>
+                        <td><span class="cert-primary">无人机操控国赛</span> <span class="cert-tag" style="background:#e6f7f7;color:#2c7a7b;border:1px solid #81e6d9">空地协同赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务6</strong> 飞行模拟与虚拟仿真演练</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-green">集中实践</span></td>
+                        <td><span class="cert-tag cert-secondary">CAAC视距内</span></td>
+                        <td><span class="cert-primary">智慧物流国赛</span> <span class="cert-primary">无人机操控国赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务7</strong> 飞行实操与物资精准投放</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-green">集中实践</span></td>
+                        <td><span class="cert-tag cert-secondary">CAAC视距内/超视距</span></td>
+                        <td><span class="cert-primary">无人机操控国赛</span> <span class="cert-tag" style="background:#e6f7f7;color:#2c7a7b;border:1px solid #81e6d9">空地协同赛</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>任务8</strong> 方案汇报与应急模拟演练</td>
+                        <td style="text-align:center">2</td>
+                        <td><span class="tag tag-blue">必修</span></td>
+                        <td><span class="tag tag-green">集中实践</span></td>
+                        <td><span class="cert-tag cert-secondary">无人机物流运输（高级）</span></td>
+                        <td><span class="cert-primary">智慧物流国赛</span> <span class="cert-tag" style="background:#e6f7f7;color:#2c7a7b;border:1px solid #81e6d9">空地协同赛</span> <span class="cert-tag" style="background:#e6f2ff;color:#3182ce;border:1px solid #90cdf4">互联网+</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 要求d：五新融入表 -->
+    <div class="req-section">
+        <div class="req-title">🚀 要求d：五新融入表（新技术 / 新工艺 / 新规范 / 新材料 / 新装备）</div>
+        <div class="five-new-grid">
+            <!-- 新技术 -->
+            <div class="fn-col">
+                <div class="fn-header fn-h1">💻 新技术</div>
+                <div class="fn-items">
+                    <div class="fn-item">
+                        <div class="fn-item-name">数字孪生仿真</div>
+                        <div class="fn-item-desc">虚实映射、全要素实时监控</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T1</span><span class="tag tag-blue">T3</span><span class="tag tag-blue">T6</span><span class="tag tag-blue">T8</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">AI路径规划算法</div>
+                        <div class="fn-item-desc">深度学习优化航线，效率提升50%+</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T2</span><span class="tag tag-blue">T3</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">北斗+RTK定位</div>
+                        <div class="fn-item-desc">厘米级高精度定位</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T2</span><span class="tag tag-blue">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">5G-A+边缘计算</div>
+                        <div class="fn-item-desc">毫秒级响应、空地融合通信</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T3</span><span class="tag tag-blue">T5</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">群体智能协同</div>
+                        <div class="fn-item-desc">蜂群算法、分布式控制</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T3</span><span class="tag tag-blue">T5</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">激光雷达+视觉避障</div>
+                        <div class="fn-item-desc">碰撞风险降低90%</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T6</span><span class="tag tag-blue">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">区块链溯源</div>
+                        <div class="fn-item-desc">医药物品全程可追溯</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T4</span><span class="tag tag-blue">T8</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">低轨卫星通信</div>
+                        <div class="fn-item-desc">偏远山区通信覆盖</div>
+                        <div class="fn-item-tasks"><span class="tag tag-blue">T3</span><span class="tag tag-blue">T8</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新工艺 -->
+            <div class="fn-col">
+                <div class="fn-header fn-h2">🔧 新工艺</div>
+                <div class="fn-items">
+                    <div class="fn-item">
+                        <div class="fn-item-name">干-支-末三级协同</div>
+                        <div class="fn-item-desc">干线1200km+&rarr;支线50-1200km&rarr;末端0-50km</div>
+                        <div class="fn-item-tasks"><span class="tag tag-green">T3</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">冷链温控运输</div>
+                        <div class="fn-item-desc">温控冷链箱恒温保鲜</div>
+                        <div class="fn-item-tasks"><span class="tag tag-green">T4</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">空投精准投放</div>
+                        <div class="fn-item-desc">定点空投误差&lt;5m</div>
+                        <div class="fn-item-tasks"><span class="tag tag-green">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">索降连续配送</div>
+                        <div class="fn-item-desc">单次航行多医院连续配送</div>
+                        <div class="fn-item-tasks"><span class="tag tag-green">T4</span><span class="tag tag-green">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">无人机+自动接驳柜</div>
+                        <div class="fn-item-desc">丰翼24小时无人化配送</div>
+                        <div class="fn-item-tasks"><span class="tag tag-green">T3</span><span class="tag tag-green">T8</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">无人机+高铁联运</div>
+                        <div class="fn-item-desc">紧急物资4小时送达</div>
+                        <div class="fn-item-tasks"><span class="tag tag-green">T8</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新规范 -->
+            <div class="fn-col">
+                <div class="fn-header fn-h3">📜 新规范</div>
+                <div class="fn-items">
+                    <div class="fn-item">
+                        <div class="fn-item-name">SORA风险评估</div>
+                        <div class="fn-item-desc">特定运行风险评估方法论</div>
+                        <div class="fn-item-tasks"><span class="tag tag-orange">T2</span><span class="tag tag-orange">T6</span><span class="tag tag-orange">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">JT/T 1440-2022</div>
+                        <div class="fn-item-desc">无人机物流配送运行要求</div>
+                        <div class="fn-item-tasks"><span class="tag tag-orange">全部</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">GB/T 44167-2024</div>
+                        <div class="fn-item-desc">大型货运无人机系统通用要求</div>
+                        <div class="fn-item-tasks"><span class="tag tag-orange">T5</span><span class="tag tag-orange">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">MH/T 6126-2022</div>
+                        <div class="fn-item-desc">城市场景物流电动多旋翼技术要求</div>
+                        <div class="fn-item-tasks"><span class="tag tag-orange">T2</span><span class="tag tag-orange">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">GB 42590-2023</div>
+                        <div class="fn-item-desc">强制性国标，17项安全要求</div>
+                        <div class="fn-item-tasks"><span class="tag tag-orange">全部</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">UTMISS监管平台</div>
+                        <div class="fn-item-desc">无人机实时监控接入</div>
+                        <div class="fn-item-tasks"><span class="tag tag-orange">T2</span><span class="tag tag-orange">T3</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新材料 -->
+            <div class="fn-col">
+                <div class="fn-header fn-h4">🧱 新材料</div>
+                <div class="fn-items">
+                    <div class="fn-item">
+                        <div class="fn-item-name">T800碳纤维复材</div>
+                        <div class="fn-item-desc">抗拉强度钢的7倍，密度仅1/4</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T5</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">温控冷链箱</div>
+                        <div class="fn-item-desc">血制品疫苗恒温保鲜</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T4</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">可降解空投包装</div>
+                        <div class="fn-item-desc">环保可降解材料</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">芳纶复合材料</div>
+                        <div class="fn-item-desc">抗冲击、抗坠毁</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T5</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">固态电池</div>
+                        <div class="fn-item-desc">能量密度400Wh/kg+</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T5</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">智能缓冲材料</div>
+                        <div class="fn-item-desc">自适应缓冲保护</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T4</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">氢燃料电池</div>
+                        <div class="fn-item-desc">3分钟加氢、-30&deg;C启动</div>
+                        <div class="fn-item-tasks"><span class="tag tag-purple">T5</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新装备 -->
+            <div class="fn-col">
+                <div class="fn-header fn-h5">🚁 新装备</div>
+                <div class="fn-items">
+                    <div class="fn-item">
+                        <div class="fn-item-name">丰翼方舟40</div>
+                        <div class="fn-item-desc">全国首款获特殊适航证中型无人机</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T3</span><span class="tag tag-dark">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">京东JDX50京燕</div>
+                        <div class="fn-item-desc">8轴8桨大载重高稳定</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T5</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">双尾蝎D</div>
+                        <div class="fn-item-desc">大型双发无人运输机，跨省物流</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T5</span><span class="tag tag-dark">T8</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">丰翼丰舟90</div>
+                        <div class="fn-item-desc">长航程跨城物流无人机</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">美团FP400</div>
+                        <div class="fn-item-desc">城市即时配送专用</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T7</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">白鲸航线W5000</div>
+                        <div class="fn-item-desc">载重5吨航程2600km</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T8</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">飞行模拟器</div>
+                        <div class="fn-item-desc">沉浸式飞行训练设备</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T6</span></div>
+                    </div>
+                    <div class="fn-item">
+                        <div class="fn-item-name">数字孪生平台</div>
+                        <div class="fn-item-desc">虚实映射仿真系统</div>
+                        <div class="fn-item-tasks"><span class="tag tag-dark">T1</span><span class="tag tag-dark">T3</span><span class="tag tag-dark">T6</span><span class="tag tag-dark">T8</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     板块7：底部信息
+     ============================================================ -->
+<section class="footer">
+    <p style="margin-bottom:6px;font-weight:600;color:var(--gray-300)">《智慧运输运营》课程 —— 应急物资低空智慧运输项目</p>
+    <p style="margin-bottom:6px">
+        <strong>现代物流管理专业</strong> | 财经商贸大类 | 高职高专专业课程一组 |
+        智慧物流现场工程师 / 低空物流运营专员 培养目标
+    </p>
+    <p style="margin-bottom:6px;font-size:0.75rem">
+        本教学设计遵循"岗课赛证"综合育人理念，融入低空经济、数字孪生、群体智能等前沿技术
+    </p>
+    <p style="font-size:0.7rem;color:var(--gray-500)">
+        版本：v3.0 | 2025年度 | 数据来源于国务院、交通运输部、民航局等权威渠道
+    </p>
+</section>
+
+</div><!-- /.page-wrapper -->
+
+<!-- ============================================================
+     JavaScript
+     ============================================================ -->
+<script>
+(function() {
+    'use strict';
+
+    // 1. 淡入动画（IntersectionObserver）
+    const fadeEls = document.querySelectorAll('.fade-in');
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    fadeEls.forEach(function(el) { observer.observe(el); });
+
+    // 2. 返回顶部按钮
+    const backTop = document.getElementById('backTop');
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 400) {
+            backTop.classList.add('visible');
+        } else {
+            backTop.classList.remove('visible');
+        }
+    });
+
+    // 3. 标准规范标签切换
+    const stdTabs = document.querySelectorAll('.std-tab');
+    const stdTable = document.querySelector('#standards tbody');
+    if (stdTabs.length && stdTable) {
+        const allRows = Array.from(stdTable.querySelectorAll('tr'));
+        stdTabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                stdTabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                var type = tab.textContent.trim();
+                allRows.forEach(function(row) {
+                    var rowType = row.querySelector('.tag');
+                    if (!rowType) return;
+                    var rowTypeText = rowType.textContent.trim();
+                    if (type === '全部') {
+                        row.style.display = '';
+                    } else if (type === '国家法律法规' && rowTypeText === '法律法规') {
+                        row.style.display = '';
+                    } else if (type === '国家标准' && rowTypeText === '国家标准') {
+                        row.style.display = '';
+                    } else if (type === '行业标准' && rowTypeText === '行业标准') {
+                        row.style.display = '';
+                    } else if (type === '技能标准' && (rowTypeText === '技能标准' || rowType.classList.contains('tag-orange'))) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    // 4. 平滑滚动锚点
+    document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+            var href = a.getAttribute('href');
+            if (href === '#') return;
+            var target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // 5. 表格行点击高亮（临时）
+    document.querySelectorAll('.data-table tbody tr').forEach(function(row) {
+        row.addEventListener('click', function() {
+            var siblings = row.parentElement.querySelectorAll('tr');
+            siblings.forEach(function(s) { s.style.background = ''; });
+            row.style.background = '#fef3e2';
+        });
+    });
+
+})();
+</script>
+</body>
+</html>

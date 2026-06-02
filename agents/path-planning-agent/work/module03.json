@@ -1,0 +1,324 @@
+{
+  "all_models": [
+    {
+      "id": "dji-fc100",
+      "model_id": "dji-fc100",
+      "brand": "大疆",
+      "brand_en": "DJI",
+      "model": "FlyCart 100",
+      "max_payload": 65.0,
+      "range_km": 12.0,
+      "max_speed": 72.0,
+      "cabin_volume": 120.0,
+      "wind_resist": 6,
+      "ip_rating": "IP55",
+      "drop_mode": "箱式空投 / 绞盘吊挂",
+      "features": [
+        "激光雷达+毫米波雷达+五目鱼眼视觉",
+        "全向避障",
+        "标配降落伞",
+        "9分钟极速快充"
+      ],
+      "suitable_for": [
+        "重载",
+        "普通",
+        "抢修",
+        "安置保障"
+      ],
+      "description": "大疆旗舰运载无人机，最大有效载重80kg(单电)/65kg(双电)，120L大货舱，支持箱式空投和绞盘吊挂双模式",
+      "raw_params": "飞行速度: 水平最大20m/s(72km/h); 最大起飞重量: 149.9kg; 最大飞行距离: 空载26km/单电80kg载重6km/双电65kg载重12km; 最大有效载重: 80kg(单电)/65kg(双电); 抗风能力: 12m/s; 防护等级: IP55",
+      "range_points": [
+        [
+          0,
+          12
+        ],
+        [
+          30,
+          12
+        ],
+        [
+          50,
+          12
+        ],
+        [
+          65,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "dji-fc30",
+      "model_id": "dji-fc30",
+      "brand": "大疆",
+      "brand_en": "DJI",
+      "model": "FlyCart 30",
+      "max_payload": 40.0,
+      "range_km": 28.0,
+      "max_speed": 72.0,
+      "cabin_volume": 70.0,
+      "wind_resist": 6,
+      "ip_rating": "IP55",
+      "drop_mode": "箱式空投 / 绞盘吊挂",
+      "features": [
+        "雷达避障",
+        "双电池冗余"
+      ],
+      "suitable_for": [
+        "重载",
+        "普通",
+        "抢修",
+        "安置保障"
+      ],
+      "description": "大疆首款运载无人机，最大有效载重40kg(单电)/30kg(双电)，满载30kg航程16km",
+      "raw_params": "飞行速度: 最大水平飞行速度20m/s(载重30kg); 最大起飞重量: 95kg; 最大飞行距离: 空载28km(双电)/满载30kg→16km(双电)/40kg→8km(单电); 最大有效载重: 40kg(单电)/30kg(双电); 抗风能力: 12m/s",
+      "range_points": [
+        [
+          0,
+          28
+        ],
+        [
+          30,
+          16
+        ],
+        [
+          40,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "fy-ark80",
+      "model_id": "fy-ark80",
+      "brand": "丰翼",
+      "brand_en": "Fengyi",
+      "model": "方舟 ARK80",
+      "max_payload": 30.0,
+      "range_km": 90.0,
+      "max_speed": 90.0,
+      "cabin_volume": 144.0,
+      "wind_resist": 5,
+      "ip_rating": "—",
+      "drop_mode": "箱式空投",
+      "features": [
+        "升力翼多旋翼构型",
+        "多冗余传感器",
+        "单动力失效保护",
+        "标配整机降落伞"
+      ],
+      "suitable_for": [
+        "医疗",
+        "冷链",
+        "精密",
+        "普通"
+      ],
+      "description": "丰翼中大型物流无人机，30kg载重，满载30kg航程30km，载重20kg航程60km，全球首张升力翼多旋翼型号合格证",
+      "raw_params": "最大巡航速度: 90km/h; 最大有效载重: 30kg; 最大飞行距离: 满载30kg→30km/载重20kg→60km; 货舱容积: 144L(模块化货舱); 构型特点: 升力翼多旋翼",
+      "range_points": [
+        [
+          0,
+          90
+        ],
+        [
+          20,
+          60
+        ],
+        [
+          30,
+          30
+        ]
+      ]
+    },
+    {
+      "id": "fy-ark40",
+      "model_id": "fy-ark40",
+      "brand": "丰翼",
+      "brand_en": "Fengyi",
+      "model": "方舟 ARK40",
+      "max_payload": 10.0,
+      "range_km": 20.0,
+      "max_speed": 50.0,
+      "cabin_volume": 96.0,
+      "wind_resist": 7,
+      "ip_rating": "—",
+      "drop_mode": "箱式空投",
+      "features": [
+        "毫米波雷达+双目视觉",
+        "智能避障",
+        "厘米级精准降落"
+      ],
+      "suitable_for": [
+        "医疗",
+        "冷链",
+        "精密",
+        "普通"
+      ],
+      "description": "丰翼轻型物流无人机，10kg载重，4轴8旋翼垂直起降，全国首张中型多旋翼无人机特殊适航证",
+      "raw_params": "最大巡航速度: 平均50km/h(最大14m/s); 最大有效载重: 10kg; 最大飞行距离: 20km(满电); 货舱容积: 超96L; 抗风能力: 可抵御7级风力; 构型特点: 4轴8旋翼垂直起降",
+      "range_points": [
+        [
+          0,
+          20
+        ],
+        [
+          10,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "jd-jdx500",
+      "model_id": "jd-jdx500",
+      "brand": "京东",
+      "brand_en": "JD",
+      "model": "JDX-500 京蜓",
+      "max_payload": 120.0,
+      "range_km": 1800.0,
+      "max_speed": 60.0,
+      "cabin_volume": 0,
+      "wind_resist": 5,
+      "ip_rating": "—",
+      "drop_mode": "短距起降",
+      "features": [
+        "自转旋翼构型",
+        "短距起降"
+      ],
+      "suitable_for": [
+        "重载",
+        "普通",
+        "抢修",
+        "安置保障"
+      ],
+      "description": "京东大型物流无人机，120kg重载，半径450km(最大航程1800km)，自转旋翼构型短距起降，适合中短距物流运输",
+      "raw_params": "最大有效载重: 120kg; 飞行半径/航程: 半径450km(最大航程1800km); 构型特点: 自转旋翼构型短距起降; 适用场景: 中短距物流运输",
+      "range_points": [
+        [
+          0,
+          1800
+        ],
+        [
+          120,
+          900
+        ]
+      ]
+    },
+    {
+      "id": "jd-jdx50",
+      "model_id": "jd-jdx50",
+      "brand": "京东",
+      "brand_en": "JD",
+      "model": "JDX-50 京燕",
+      "max_payload": 15.0,
+      "range_km": 30.0,
+      "max_speed": 54.0,
+      "cabin_volume": 50.0,
+      "wind_resist": 5,
+      "ip_rating": "—",
+      "drop_mode": "箱式空投",
+      "features": [
+        "多旋翼",
+        "模块化设计"
+      ],
+      "suitable_for": [
+        "普通",
+        "医疗",
+        "抢修"
+      ],
+      "description": "京东中型物流无人机，15kg载重，半径15km，模块化设计，适合末端配送、山区及跨江运输、应急配送",
+      "raw_params": "最大有效载重: 15kg; 飞行半径/航程: 半径15km; 构型特点: 多旋翼模块化设计; 适用场景: 末端配送、山区及跨江运输、应急配送",
+      "range_points": [
+        [
+          0,
+          30
+        ],
+        [
+          15,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "jd-jdx20",
+      "model_id": "jd-jdx20",
+      "brand": "京东",
+      "brand_en": "JD",
+      "model": "JDX-20 京鹊",
+      "max_payload": 10.0,
+      "range_km": 48.0,
+      "max_speed": 98.0,
+      "cabin_volume": 20.0,
+      "wind_resist": 6,
+      "ip_rating": "—",
+      "drop_mode": "箱式空投",
+      "features": [
+        "多旋翼",
+        "流线型全封闭外壳"
+      ],
+      "suitable_for": [
+        "普通",
+        "医疗",
+        "精密"
+      ],
+      "description": "京东轻型末端配送无人机，10kg载重，最大速度98km/h，半径24km，可中雨中雪6级大风夜间运行",
+      "raw_params": "最大飞行速度: 98km/h; 最大有效载重: 10kg; 飞行半径/航程: 半径24km; 构型特点: 多旋翼流线型全封闭外壳; 抗环境能力: 中雨中雪6级大风及夜间运行",
+      "range_points": [
+        [
+          0,
+          48
+        ],
+        [
+          10,
+          24
+        ]
+      ]
+    }
+  ],
+  "selected_uavs": [
+    {
+      "id": "dji-fc100-1",
+      "name": "大疆 FlyCart 100",
+      "max_payload": 65.0,
+      "max_range": 12.0,
+      "battery_capacity": 100,
+      "max_speed": 72.0,
+      "quantity": 5,
+      "range_points": [
+        [
+          0,
+          12
+        ],
+        [
+          30,
+          12
+        ],
+        [
+          50,
+          12
+        ],
+        [
+          65,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "jd-jdx500-1",
+      "name": "京东 JDX-500 京蜓",
+      "max_payload": 120.0,
+      "max_range": 1800.0,
+      "battery_capacity": 100,
+      "max_speed": 60.0,
+      "quantity": 8,
+      "range_points": [
+        [
+          0,
+          1800
+        ],
+        [
+          120,
+          900
+        ]
+      ]
+    }
+  ],
+  "saved_at": "2026-05-26T19:00:00"
+}
