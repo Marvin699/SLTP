@@ -38,19 +38,15 @@ except ImportError as e:
 async def application(scope, receive, send):
     """
     Main ASGI application that routes requests to Django or FastAPI.
+    FastAPI app already has /api prefix in its routes (e.g. /api/course-graph/*)
+    So we pass the original path directly without stripping /api.
     """
     if scope["type"] == "http" or scope["type"] == "websocket":
         path = scope.get("path", "")
 
-        # Route path-planning requests to FastAPI
-        if path.startswith("/api/path-planning"):
+        # Route all /api/* and /health requests to FastAPI
+        if path.startswith("/api/") or path in ("/health", "/docs", "/redoc", "/openapi.json"):
             if path_planning_app is not None:
-                # Strip the prefix before passing to FastAPI
-                root_path = scope.get("root_path", "")
-                scope = dict(scope)
-                scope["root_path"] = root_path + "/api/path-planning"
-                # Remove the prefix from the path
-                scope["path"] = path[len("/api/path-planning"):] or "/"
                 await path_planning_app(scope, receive, send)
                 return
 
