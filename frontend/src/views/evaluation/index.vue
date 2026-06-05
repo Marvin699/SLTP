@@ -17,6 +17,9 @@
           @change="onTaskChange">
           <el-option v-for="t in taskList" :key="t.id" :label="t.name" :value="t.id" />
         </el-select>
+        <button class="back-graph-btn" @click="goBackToGraph">
+          <span>📊</span> 返回图谱
+        </button>
         <button class="back-home-btn" @click="$router.push('/')">
           <span>🏠</span> 返回首页
         </button>
@@ -197,6 +200,10 @@ function goSection(secId, tab) {
   router.push({ path: `/evaluation/section/${secId}`, query: { tab } })
 }
 
+function goBackToGraph() {
+  router.push('/agent/teaching-graph')
+}
+
 function onTaskChange(taskId) {
   if (taskId === 7) {
     router.push('/evaluation/task7')
@@ -233,6 +240,13 @@ onMounted(async () => {
 .header-right {
   display: flex; align-items: center; gap: 12px; flex-shrink: 0;
 }
+.back-graph-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(64,158,255,0.15); border: 1px solid rgba(64,158,255,0.3);
+  color: #409eff; border-radius: 8px; padding: 8px 16px; cursor: pointer;
+  font-size: 14px; transition: all 0.2s;
+}
+.back-graph-btn:hover { background: rgba(64,158,255,0.25); color: #fff; }
 .back-home-btn {
   display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);

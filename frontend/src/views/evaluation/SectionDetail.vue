@@ -237,6 +237,11 @@
 
     <!-- ========== 智能体评分Tab（原成绩总览） ========== -->
     <div class="tab-content" v-show="viewMode === 'ai'">
+      <div class="ai-header">
+        <button class="back-graph-btn" @click="goBackToGraph">
+          <span>📊</span> 返回图谱
+        </button>
+      </div>
       <div class="overview-grid" v-if="aiHasData">
         <!-- 左侧 -->
         <div class="ov-left">
@@ -1251,6 +1256,10 @@ function handleResize() {
   fsRadar?.resize(); fsBar?.resize()
 }
 
+function goBackToGraph() {
+  router.push('/agent/teaching-graph/view')
+}
+
 onMounted(async () => {
   await loadSections()
   await loadSessions()
@@ -1335,6 +1344,19 @@ onUnmounted(() => {
 
 /* Tab内容区 */
 .tab-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* AI评分Tab头部 */
+.ai-header {
+  display: flex; justify-content: flex-start; align-items: center;
+  padding: 8px 0 16px;
+}
+.back-graph-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(64,158,255,0.15); border: 1px solid rgba(64,158,255,0.3);
+  color: #409eff; border-radius: 8px; padding: 8px 16px; cursor: pointer;
+  font-size: 14px; transition: all 0.2s;
+}
+.back-graph-btn:hover { background: rgba(64,158,255,0.25); color: #fff; }
 
 /* 成绩总览工具栏 */
 .overview-toolbar {

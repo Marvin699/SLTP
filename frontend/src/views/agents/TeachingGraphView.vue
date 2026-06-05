@@ -65,6 +65,7 @@
             <button class="ctrl-btn" @click="zoomIn"><el-icon><ZoomIn /></el-icon> 放大</button>
             <button class="ctrl-btn" @click="zoomOut"><el-icon><ZoomOut /></el-icon> 缩小</button>
             <button class="ctrl-btn" @click="resetView"><el-icon><RefreshRight /></el-icon> 重置</button>
+            <button class="ctrl-btn" :class="{ active: focusedNodeId }" @click="clearFocus"><el-icon><Aim /></el-icon> 取消聚焦</button>
           </div>
           <div class="panel-group">
             <div class="group-label">搜索节点</div>
@@ -179,7 +180,14 @@
         </div>
         <div v-loading="loading" class="graph-container">
           <!-- 图谱类型(力导向图) -->
-          <div v-show="activeTab !== 'standards' && activeTab !== 'requirements'" ref="chartRef" class="chart-area"></div>
+          <div 
+            v-show="activeTab !== 'standards' && activeTab !== 'requirements'" 
+            ref="chartRef" 
+            class="chart-area"
+            @touchstart.passive="handleTouchStart"
+            @touchmove.passive="handleTouchMove"
+            @touchend="handleTouchEnd"
+          ></div>
           <!-- 标准规范表格 -->
           <div v-if="activeTab === 'standards'" class="standards-panel">
             <div class="standards-grid">
@@ -523,7 +531,7 @@
                   <div class="detail-section">
                     <h4>包含知识点/技能点</h4>
                     <div class="detail-tags">
-                      <el-tag v-for="pt in selectedNode.points" :key="pt.id" size="small" :type="pt.type === 'knowledge' ? '' : 'success'" effect="plain">
+                      <el-tag v-for="pt in selectedNode.points" :key="pt.id" size="small" :type="pt.type === 'knowledge' ? 'info' : 'success'" effect="plain">
                         {{ pt.name }}
                       </el-tag>
                     </div>
@@ -565,7 +573,7 @@ import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ArrowLeft, ArrowRight, ZoomIn, ZoomOut, RefreshRight, Search, Medal, Close,
-  Connection, TrendCharts, QuestionFilled, Reading, Document, List, Share
+  Connection, TrendCharts, QuestionFilled, Reading, Document, List, Share, Aim
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import graphData from '@/data/four-graph-data.json'
@@ -613,6 +621,9 @@ const searchKeyword = ref('')
 const searchResults = ref([])
 const selectedNode = ref(null)
 const nodeCount = ref(0)
+
+// 聚焦节点状态
+const focusedNodeId = ref(null)
 
 // 当前选中小节点所属的任务ID
 const currentNodeTaskId = computed(() => {
@@ -723,6 +734,114 @@ function goToEvaluation(sectionId) {
   router.push({ path: '/evaluation', query: { project: projectId, task: taskId, section: sectionId, tab: 'ai' } })
 }
 
+// === 节点聚焦功能（点击节点后高亮关联节点，淡化无关节点）===
+function focusOnNode(nodeId) {
+  if (!chart) return
+  
+  focusedNodeId.value = nodeId
+  
+  const option = chart.getOption()
+  if (!option.series?.[0]?.data) return
+  
+  const nodes = option.series[0].data
+  const links = option.series[0].links || []
+  
+  // 找到聚焦节点及其关联节点
+  const focusedNode = nodes.find(n => n.id === nodeId)
+  if (!focusedNode) return
+  
+  // 获取所有关联节点（通过连线）
+  const relatedNodeIds = new Set([nodeId])
+  links.forEach(link => {
+    if (link.source === nodeId || link.target === nodeId) {
+      relatedNodeIds.add(link.source)
+      relatedNodeIds.add(link.target)
+    }
+  })
+  
+  // 更新节点：关联节点高亮，无关节点淡化
+  chart.setOption({
+    series: [{
+      data: nodes.map(n => {
+        const isRelated = relatedNodeIds.has(n.id)
+        const isFocused = n.id === nodeId
+        
+        // 使用原始大小（如果已保存），否则使用当前大小作为基准（只保存一次）
+        const baseSize = n._originalSymbolSize || n.symbolSize
+        
+        return {
+          ...n,
+          _originalSymbolSize: n._originalSymbolSize || n.symbolSize, // 保存原始大小，避免累积放大
+          _originalItemStyle: n._originalItemStyle || { ...n.itemStyle }, // 保存原始样式
+          _originalLabel: n._originalLabel || { ...n.label }, // 保存原始标签
+          itemStyle: {
+            ...(n._originalItemStyle || n.itemStyle),
+            opacity: isRelated ? 1 : 0.25,
+            shadowBlur: isFocused ? 25 : (isRelated ? 18 : 2),
+            shadowColor: isFocused ? (n._originalItemStyle?.color || '#409eff') + 'cc' : (isRelated ? (n._originalItemStyle?.color || '#409eff') + '88' : 'transparent'),
+            borderWidth: isFocused ? 4 : (isRelated ? 3 : 1),
+            borderColor: isFocused ? '#fff' : (isRelated ? (n._originalItemStyle?.color || '#409eff') : 'rgba(255,255,255,0.2)'),
+            brightness: isRelated ? 1.1 : 0.9
+          },
+          label: {
+            ...(n._originalLabel || n.label),
+            show: true,
+            opacity: isRelated ? 1 : 0.45,
+            fontSize: isFocused ? ((n._originalLabel?.fontSize || 12) * 1.3) : (isRelated ? ((n._originalLabel?.fontSize || 12) * 1.15) : (n._originalLabel?.fontSize || 12)),
+            fontWeight: isRelated ? 'bold' : (n._originalLabel?.fontWeight || 'normal')
+          },
+          symbolSize: isFocused ? baseSize * 1.35 : (isRelated ? baseSize * 1.15 : Math.max(baseSize * 0.75, 8))
+        }
+      }),
+      links: links.map(l => {
+        const isRelatedLink = relatedNodeIds.has(l.source) && relatedNodeIds.has(l.target)
+        const baseWidth = l._originalLineStyle?.width || l.lineStyle?.width || 2
+        
+        return {
+          ...l,
+          _originalLineStyle: l._originalLineStyle || { ...l.lineStyle }, // 保存原始连线样式
+          lineStyle: {
+            ...(l._originalLineStyle || l.lineStyle),
+            opacity: isRelatedLink ? 0.85 : 0.15,
+            width: isRelatedLink ? baseWidth * 1.8 : baseWidth * 0.6,
+            color: isRelatedLink ? '#409eff' : (l._originalLineStyle?.color),
+            shadowBlur: isRelatedLink ? 10 : 0,
+            shadowColor: isRelatedLink ? '#409eff88' : 'transparent'
+          }
+        }
+      })
+    }]
+  })
+}
+
+function clearFocus() {
+  if (!chart) return
+  
+  focusedNodeId.value = null
+  
+  const option = chart.getOption()
+  if (!option.series?.[0]?.data) return
+  
+  const nodes = option.series[0].data
+  const links = option.series[0].links || []
+  
+  // 恢复所有节点和连线的原始状态
+  chart.setOption({
+    series: [{
+      data: nodes.map(n => ({
+        ...n,
+        itemStyle: n._originalItemStyle || n.itemStyle,
+        label: n._originalLabel || n.label,
+        symbolSize: n._originalSymbolSize || n.symbolSize
+      })),
+      links: links.map(l => ({
+        ...l,
+        lineStyle: l._originalLineStyle || l.lineStyle
+      }))
+    }]
+  })
+}
+
 // 学习路径数据
 const basicPath = [
   { title: '任务1 需求分析', desc: '学习应急物流需求分析与飞行计划编制' },
@@ -745,7 +864,7 @@ const knowledgeCategoryNames = { KC: '基础知识模块', KP: '专业知识模�
 const ideologicalDimColors = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71', '#9b59b6', '#1abc9c']
 
 function getKnowledgeCategoryType(cat) {
-  const map = { KC: '', KP: 'success', KE: 'danger', KF: 'warning' }
+  const map = { KC: 'info', KP: 'success', KE: 'danger', KF: 'warning' }
   return map[cat] || 'info'
 }
 function getKnowledgeCategoryName(cat) {
@@ -953,7 +1072,7 @@ function initKnowledgeChart() {
     // 连接到分类中心
     links.push({
       source: `cat-${n.category}`, target: n.id,
-      lineStyle: { color: knowledgeCategoryColors[n.category] || '#4a6a8a', width: 1, opacity: 0.4, curveness: 0.15 }
+      lineStyle: { color: knowledgeCategoryColors[n.category] || '#4a6a8a', width: 2.5, opacity: 0.4, curveness: 0.15 }
     })
   })
 
@@ -963,7 +1082,7 @@ function initKnowledgeChart() {
       links.push({
         source: l.source, target: l.target,
         label: { show: true, formatter: l.relation, fontSize: 8, color: '#718096' },
-        lineStyle: { color: '#4a6a8a', width: 1, curveness: 0.2, type: 'dashed' }
+        lineStyle: { color: '#4a6a8a', width: 2.5, curveness: 0.2, type: 'dashed' }
       })
     }
   })
@@ -981,6 +1100,10 @@ function initKnowledgeChart() {
     if (params.dataType !== 'node') { selectedNode.value = null; return }
     const d = params.data
     selectedNode.value = { name: d.name, rawData: d._raw || {} }
+    // 点击节点时聚焦
+    if (params.data.id) {
+      focusOnNode(params.data.id)
+    }
   })
 }
 
@@ -1016,7 +1139,7 @@ function initCapabilityChart() {
     })
     links.push({
       source: `level-${c.level}`, target: c.id,
-      lineStyle: { color: levelColors[c.level] || '#4a6a8a', width: 1, opacity: 0.4, curveness: 0.15 }
+      lineStyle: { color: levelColors[c.level] || '#4a6a8a', width: 2.5, opacity: 0.4, curveness: 0.15 }
     })
   })
 
@@ -1032,6 +1155,10 @@ function initCapabilityChart() {
   chart.on('click', (params) => {
     if (params.dataType !== 'node') { selectedNode.value = null; return }
     selectedNode.value = { name: params.data.name, rawData: params.data._raw || {} }
+    // 点击节点时聚焦
+    if (params.data.id) {
+      focusOnNode(params.data.id)
+    }
   })
 }
 
@@ -1073,7 +1200,7 @@ function initProblemChart() {
     })
     links.push({
       source: taskId, target: problemId,
-      lineStyle: { color: '#e74c3c', width: 1.5, curveness: 0.2, opacity: 0.6 }
+      lineStyle: { color: '#e74c3c', width: 2.5, curveness: 0.2, opacity: 0.6 }
     })
 
     // 分析节点（橙色）
@@ -1088,7 +1215,7 @@ function initProblemChart() {
       })
       links.push({
         source: taskId, target: analysisId,
-        lineStyle: { color: '#f39c12', width: 1, curveness: 0.2, opacity: 0.5 }
+        lineStyle: { color: '#f39c12', width: 2.5, curveness: 0.2, opacity: 0.5 }
       })
     }
 
@@ -1104,7 +1231,7 @@ function initProblemChart() {
       })
       links.push({
         source: taskId, target: solutionId,
-        lineStyle: { color: '#2ecc71', width: 1, curveness: 0.2, opacity: 0.5 }
+        lineStyle: { color: '#2ecc71', width: 2.5, curveness: 0.2, opacity: 0.5 }
       })
     }
   })
@@ -1124,6 +1251,10 @@ function initProblemChart() {
       selectedNode.value = { name: d.name, rawData: d._raw }
     } else {
       selectedNode.value = { name: d._problemName || d.name, rawData: d._raw }
+    }
+    // 点击节点时聚焦
+    if (params.data.id) {
+      focusOnNode(params.data.id)
     }
   })
 }
@@ -1157,7 +1288,7 @@ function initIdeologicalChart() {
     })
     links.push({
       source: 'center', target: dimId,
-      lineStyle: { color: ideologicalDimColors[di], width: 2, opacity: 0.5 }
+      lineStyle: { color: ideologicalDimColors[di], width: 3, opacity: 0.5 }
     })
 
     dim.elements.forEach(el => {
@@ -1170,7 +1301,7 @@ function initIdeologicalChart() {
       })
       links.push({
         source: dimId, target: el.id,
-        lineStyle: { color: ideologicalDimColors[di], width: 1, opacity: 0.35, curveness: 0.2 }
+        lineStyle: { color: ideologicalDimColors[di], width: 2.5, opacity: 0.35, curveness: 0.2 }
       })
     })
   })
@@ -1187,6 +1318,10 @@ function initIdeologicalChart() {
     if (params.dataType !== 'node') { selectedNode.value = null; return }
     const d = params.data
     selectedNode.value = { name: d._raw ? `${d._raw.content?.substring(0, 20)}...` : d.name, rawData: d._raw || { content: d.name, method: '', outcome: '' } }
+    // 点击节点时聚焦
+    if (params.data.id) {
+      focusOnNode(params.data.id)
+    }
   })
 }
 
@@ -1229,7 +1364,7 @@ function initCourseChart() {
       _data: sp,
       _tasks: sp.tasks || []
     })
-    links.push({ source: 'root', target: spId, lineStyle: { color: '#95a5a6', opacity, width: 2 } })
+    links.push({ source: 'root', target: spId, lineStyle: { color: '#95a5a6', opacity, width: 3 } })
 
     ;(sp.tasks || []).forEach(task => {
       const tId = `t-${task.id || task.name}`
@@ -1254,7 +1389,7 @@ function initCourseChart() {
         _parentName: sp.name,
         _points: task.points || []
       })
-      links.push({ source: spId, target: tId, lineStyle: { color: '#95a5a6', opacity: taskOpacity, width: 1.5 } })
+      links.push({ source: spId, target: tId, lineStyle: { color: '#95a5a6', opacity: taskOpacity, width: 2.5 } })
 
       ;(task.points || []).forEach(pt => {
         const ptVisible = taskVisible
@@ -1272,7 +1407,7 @@ function initCourseChart() {
           _type: pt.type,
           _data: pt
         })
-        links.push({ source: tId, target: pt.id, lineStyle: { color: ptColor, opacity: ptOpacity * 0.5, width: 1 } })
+        links.push({ source: tId, target: pt.id, lineStyle: { color: ptColor, opacity: ptOpacity * 0.5, width: 2 } })
       })
     })
   })
@@ -1287,7 +1422,7 @@ function initCourseChart() {
             if (targetNode) {
               links.push({
                 source: pt.id, target: targetId,
-                lineStyle: { color: '#3498db', type: 'dashed', opacity: 0.35, width: 1.5 }
+                lineStyle: { color: '#3498db', type: 'dashed', opacity: 0.35, width: 2.5 }
               })
             }
           })
@@ -1324,6 +1459,10 @@ function initCourseChart() {
       points: d._points,
       tasks: d._tasks,
       hours: d._data?.hours
+    }
+    // 点击节点时聚焦
+    if (params.data.id) {
+      focusOnNode(params.data.id)
     }
   })
 }
@@ -1424,7 +1563,7 @@ function getForceOption(nodes, links, categories, forceConfig) {
       categories: categories || [],
       data: nodes,
       links: links,
-      lineStyle: { opacity: 0.6, width: 1.5, curveness: 0.1 },
+      lineStyle: { opacity: 0.6, width: 2.5, curveness: 0.1 },
       emphasis: {
         focus: 'adjacency',
         lineStyle: { width: 3 }
@@ -1509,6 +1648,65 @@ watch([selectedNode, viewMode], () => {
     setTimeout(() => chart?.resize(), 350)
   })
 })
+
+// === 触屏手势支持 ===
+let touchStartX = 0
+let touchStartY = 0
+let touchStartDistance = 0
+let isPinching = false
+
+function handleTouchStart(e) {
+  if (e.touches.length === 2) {
+    isPinching = true
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    touchStartDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY)
+  } else if (e.touches.length === 1) {
+    isPinching = false
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+  }
+}
+
+function handleTouchMove(e) {
+  if (!chart) return
+  
+  if (e.touches.length === 2 && isPinching) {
+    e.preventDefault()
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY)
+    const scale = currentDistance / touchStartDistance
+    
+    if (scale > 1.05) {
+      zoomIn()
+      touchStartDistance = currentDistance
+    } else if (scale < 0.95) {
+      zoomOut()
+      touchStartDistance = currentDistance
+    }
+  } else if (e.touches.length === 1 && !isPinching) {
+    const deltaX = e.touches[0].clientX - touchStartX
+    const deltaY = e.touches[0].clientY - touchStartY
+    
+    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+      const dispatchAction = chart.getOption().series?.[0]?.type === 'graph' ? 'drag' : ''
+      if (dispatchAction) {
+        chart.dispatchAction({
+          type: 'drag',
+          dx: deltaX,
+          dy: deltaY
+        })
+      }
+      touchStartX = e.touches[0].clientX
+      touchStartY = e.touches[0].clientY
+    }
+  }
+}
+
+function handleTouchEnd() {
+  isPinching = false
+}
 </script>
 
 <style scoped>
@@ -1958,7 +2156,7 @@ watch([selectedNode, viewMode], () => {
 
 /* 右侧详情面板 */
 .right-detail {
-  width: 320px;
+  width: 350px;
   flex-shrink: 0;
   background: linear-gradient(135deg, rgba(13, 33, 55, 0.9), rgba(26, 58, 92, 0.7));
   border: 1px solid rgba(64, 158, 255, 0.2);
@@ -1971,23 +2169,23 @@ watch([selectedNode, viewMode], () => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 18px;
+  padding: 18px 20px;
   border-bottom: 1px solid rgba(64, 158, 255, 0.15);
 }
-.detail-title-row { display: flex; flex-direction: column; gap: 6px; }
+.detail-title-row { display: flex; flex-direction: column; gap: 8px; }
 .detail-type-tag {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 13px;
   color: #fff;
   font-weight: 600;
 }
-.detail-header h3 { margin: 0; font-size: 15px; color: #fff; line-height: 1.4; }
+.detail-header h3 { margin: 0; font-size: 18px; color: #fff; line-height: 1.4; font-weight: 600; }
 .detail-close {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   border: 1px solid rgba(64, 158, 255, 0.2);
   background: rgba(13, 33, 55, 0.8);
   color: #c0c8d4;
@@ -1997,39 +2195,41 @@ watch([selectedNode, viewMode], () => {
   justify-content: center;
   transition: all 0.3s;
   flex-shrink: 0;
+  font-size: 16px;
 }
 .detail-close:hover { border-color: #f56c6c; color: #f56c6c; background: rgba(245, 108, 108, 0.1); }
 .detail-body {
   flex: 1;
-  padding: 16px 18px;
+  padding: 18px 20px;
   overflow-y: auto;
 }
-.detail-section { margin-bottom: 16px; }
+.detail-section { margin-bottom: 18px; }
 .detail-section h4 {
-  font-size: 13px;
+  font-size: 15px;
   color: #c0c8d4;
-  margin: 0 0 8px;
-  padding-bottom: 6px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 500;
 }
 .detail-section p {
-  font-size: 13px;
+  font-size: 15px;
   color: #c0c8d4;
   line-height: 1.7;
   margin: 0;
 }
-.detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.detail-task-list { display: flex; flex-direction: column; gap: 6px; }
+.detail-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.detail-task-list { display: flex; flex-direction: column; gap: 8px; }
 .detail-task-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 10px;
+  font-size: 15px;
   color: #c0c8d4;
 }
 .task-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #f39c12;
   flex-shrink: 0;
@@ -2039,21 +2239,21 @@ watch([selectedNode, viewMode], () => {
 .detail-card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 14px;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 .detail-card .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 .detail-card .card-icon {
-  font-size: 18px;
+  font-size: 22px;
 }
 .detail-card .card-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #e2e8f0;
 }
@@ -2065,15 +2265,15 @@ watch([selectedNode, viewMode], () => {
 .status-radio-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .status-radio {
   display: flex;
   align-items: center;
-  height: 36px;
+  height: 44px;
   width: 100%;
-  padding: 0 12px;
-  border-radius: 8px;
+  padding: 0 14px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   transition: all 0.2s;
@@ -2084,11 +2284,11 @@ watch([selectedNode, viewMode], () => {
   border-color: rgba(255, 255, 255, 0.12);
 }
 :deep(.status-radio .el-radio__input) {
-  margin-right: 6px;
+  margin-right: 8px;
 }
 :deep(.status-radio .el-radio__label) {
   color: #c0c8d4;
-  font-size: 13px;
+  font-size: 15px;
   padding-left: 2px;
   width: 100%;
 }
@@ -2097,7 +2297,8 @@ watch([selectedNode, viewMode], () => {
   width: 100%;
 }
 .radio-icon {
-  margin-right: 4px;
+  margin-right: 6px;
+  font-size: 16px;
 }
 
 /* 智能体评价链接 */
@@ -2105,9 +2306,9 @@ watch([selectedNode, viewMode], () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
   background: rgba(64, 158, 255, 0.08);
   border: 1px solid rgba(64, 158, 255, 0.15);
   cursor: pointer;
@@ -2118,62 +2319,64 @@ watch([selectedNode, viewMode], () => {
   border-color: rgba(64, 158, 255, 0.3);
 }
 .eval-link-name {
-  font-size: 13px;
+  font-size: 15px;
   color: #a0c4ff;
   flex: 1;
+  font-weight: 500;
 }
 .eval-link-arrow {
   color: #409eff;
-  font-size: 14px;
-  margin-left: 8px;
+  font-size: 18px;
+  margin-left: 10px;
 }
 
 /* 学习路径卡片 */
 .learning-goal,
 .learning-path,
-.learning-suggestion { margin-bottom: 18px; }
+.learning-suggestion { margin-bottom: 20px; }
 .learning-goal h4,
 .learning-path h4,
 .learning-suggestion h4 {
-  font-size: 13px;
+  font-size: 15px;
   color: #c0c8d4;
-  margin: 0 0 8px;
-  padding-bottom: 6px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 500;
 }
 .learning-goal p,
 .learning-suggestion p {
-  font-size: 13px;
+  font-size: 15px;
   color: #c0c8d4;
   line-height: 1.7;
   margin: 0;
 }
-.path-steps { display: flex; flex-direction: column; gap: 10px; }
+.path-steps { display: flex; flex-direction: column; gap: 12px; }
 .path-step {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px;
+  gap: 12px;
+  padding: 14px;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border-left: 3px solid #409eff;
+  border-radius: 10px;
+  border-left: 4px solid #409eff;
 }
 .step-num {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #409eff;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
 }
 .step-content { flex: 1; }
-.step-title { font-size: 13px; color: #e2e8f0; font-weight: 500; }
-.step-desc { font-size: 11px; color: #c0c8d4; margin-top: 2px; }
+.step-title { font-size: 15px; color: #e2e8f0; font-weight: 600; }
+.step-desc { font-size: 14px; color: #c0c8d4; margin-top: 4px; }
 
 /* 右侧面板过渡 */
 .right-detail {
