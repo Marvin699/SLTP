@@ -5,7 +5,7 @@
       <div class="header-left">
         <el-button @click="goBack" type="primary" plain size="small">
           <el-icon><ArrowLeft /></el-icon>
-          返回首页
+          返回
         </el-button>
         <h1 class="page-title">小翼 · AI智能助教</h1>
         <el-tag type="success" size="small" effect="dark">在线</el-tag>
@@ -209,7 +209,13 @@ import axios from 'axios'
 
 const router = useRouter()
 
-const goBack = () => router.push('/home')
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/home')
+  }
+}
 
 // 聊天状态
 const chatMessages = ref([

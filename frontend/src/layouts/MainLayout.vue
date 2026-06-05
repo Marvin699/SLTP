@@ -43,6 +43,9 @@
     <main class="main-content">
       <router-view />
     </main>
+
+    <!-- AI小翼全局悬浮球 -->
+    <AiAssistantFloat />
   </div>
 </template>
 
@@ -51,6 +54,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Bell, SwitchButton } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import AiAssistantFloat from '@/components/AiAssistantFloat.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
