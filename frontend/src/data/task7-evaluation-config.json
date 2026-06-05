@@ -1,0 +1,82 @@
+{
+  "task_id": 7,
+  "task_name": "任务7：飞行实操与物资精准投放",
+  "description": "操控无人机完成视距内/超视距飞行，实现应急物资精准投放",
+  "max_score": 100,
+  "dimensions": [
+    {
+      "id": "preflight",
+      "name": "起飞前检查",
+      "weight": 0.18,
+      "max_score": 18,
+      "items": [
+        {"id": "pre-1", "name": "飞机外观", "score": 3, "criteria": "机身无变形、传感器无遮挡"},
+        {"id": "pre-2", "name": "电池电量", "score": 3, "criteria": "机载电池、飞控电池电量≥30%"},
+        {"id": "pre-3", "name": "卡扣与螺旋桨", "score": 5, "criteria": "机翼卡扣、货柜/绳卡扣稳固（2.5分）；螺旋桨安装牢固无裂纹（2.5分）"},
+        {"id": "pre-4", "name": "物资包装", "score": 7, "criteria": "包装完好、标识清晰、重量合规（不符合每项扣1.5分，全不符合扣7分）"}
+      ]
+    },
+    {
+      "id": "flight",
+      "name": "飞行操控",
+      "weight": 0.32,
+      "max_score": 32,
+      "items": [
+        {"id": "fly-1", "name": "飞行高度", "score": 5, "criteria": "稳定在10~30米之间，超出范围每次扣2分"},
+        {"id": "fly-2", "name": "飞行速度", "score": 5, "criteria": "≤5m/s，超过每次扣1分"},
+        {"id": "fly-3", "name": "绳索摆幅", "score": 7, "criteria": "≤30°，超过每次扣1分（观测员记录最大摆幅）"},
+        {"id": "fly-4", "name": "控制反应", "score": 5, "criteria": "根据教师/导师提示正确操作，错误或延迟超2秒每次扣1分"},
+        {"id": "fly-5", "name": "悬停修正次数", "score": 5, "criteria": "靶心上空修正次数≤3次得5分；4~5次得3分；＞5次得0分"},
+        {"id": "fly-6", "name": "释放果断性", "score": 5, "criteria": "十字锁定后1秒内释放得5分；犹豫1~3秒得3分；>3秒得0分"}
+      ]
+    },
+    {
+      "id": "accuracy",
+      "name": "投放精准度",
+      "weight": 0.35,
+      "max_score": 35,
+      "items": [
+        {"id": "acc-1", "name": "物资落点与靶区距离", "score": 35, "criteria": "靶区内（35分）、偏离靶区30cm以内（30分）、偏离靶区30cm-50cm以内（25分）、偏离靶区50cm以上（15分）", "type": "range", "ranges": [
+          {"label": "靶区内", "score": 35, "condition": "0"},
+          {"label": "偏离30cm以内", "score": 30, "condition": "<=30"},
+          {"label": "偏离30-50cm", "score": 25, "condition": "<=50"},
+          {"label": "偏离50cm以上", "score": 15, "condition": ">50"}
+        ]}
+      ]
+    },
+    {
+      "id": "safety",
+      "name": "安全与应急",
+      "weight": 0.10,
+      "max_score": 10,
+      "items": [
+        {"id": "safe-1", "name": "安全操作", "score": 5, "criteria": "飞出安全区、危险操作、超速/超高（超20%以上），有任何一项扣5分"},
+        {"id": "safe-2", "name": "应急处置", "score": 5, "criteria": "出现信号丢失、大风干扰等，按正确处置流程（返航/悬停等待）给分；未处置或错误处置扣3分"}
+      ]
+    },
+    {
+      "id": "teamwork",
+      "name": "团队协作",
+      "weight": 0.05,
+      "max_score": 5,
+      "items": [
+        {"id": "team-1", "name": "角色履职", "score": 5, "criteria": "安全员、观测员、记录员、地勤员各司其职，无漏检、漏记、漏提示（每人次失职扣1分）"}
+      ]
+    }
+  ],
+  "time_coefficient": {
+    "name": "时间系数",
+    "description": "总飞行时间（从起飞到物资触地）",
+    "rules": [
+      {"label": "≤5分钟", "coefficient": 1.0, "condition": "<=5"},
+      {"label": "5~6分钟", "coefficient": 0.9, "condition": "<=6"},
+      {"label": ">6分钟", "coefficient": 0.7, "condition": ">6"}
+    ]
+  },
+  "scorer_roles": [
+    {"id": "teacher", "name": "教师", "weight": 0.5},
+    {"id": "enterprise", "name": "企业导师", "weight": 0.3},
+    {"id": "observer", "name": "学生观察员", "weight": 0.2}
+  ],
+  "groups": ["逐日组", "揽星组"]
+}

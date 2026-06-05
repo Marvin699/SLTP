@@ -65,21 +65,42 @@
               <div class="card-right">
                 <div class="illustration">
                   <svg viewBox="0 0 200 160" class="agent-illustration">
-                    <rect x="20" y="80" width="160" height="70" rx="8" fill="rgba(64,158,255,0.15)" stroke="rgba(64,158,255,0.3)" stroke-width="1"/>
-                    <path d="M40 115 L80 95 L120 105 L160 85" stroke="#409eff" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <path d="M40 115 L80 95 L120 105 L160 85" stroke="#409eff" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.3"/>
-                    <circle cx="40" cy="115" r="6" fill="#409eff"/>
-                    <circle cx="40" cy="115" r="10" fill="none" stroke="#409eff" stroke-width="1" opacity="0.5"/>
-                    <circle cx="80" cy="95" r="5" fill="#67c23a"/>
-                    <circle cx="120" cy="105" r="5" fill="#67c23a"/>
-                    <circle cx="160" cy="85" r="6" fill="#f56c6c"/>
-                    <circle cx="160" cy="85" r="10" fill="none" stroke="#f56c6c" stroke-width="1" opacity="0.5"/>
-                    <g transform="translate(130, 45)">
-                      <ellipse cx="20" cy="5" rx="15" ry="4" fill="#1a3a5c"/>
-                      <rect x="5" y="0" width="30" height="10" rx="3" fill="#409eff"/>
-                      <rect x="0" y="2" width="8" height="2" rx="1" fill="#67c23a"/>
-                      <rect x="32" y="2" width="8" height="2" rx="1" fill="#67c23a"/>
-                      <circle cx="20" cy="5" r="3" fill="#fff"/>
+                    <defs>
+                      <linearGradient id="pathGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:0.8"/>
+                        <stop offset="50%" style="stop-color:#409eff;stop-opacity:0.6"/>
+                        <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0.8"/>
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <ellipse cx="100" cy="140" rx="60" ry="8" fill="rgba(64,158,255,0.15)"/>
+                    <path d="M30 120 Q70 100, 100 110 T170 70" stroke="url(#pathGlow)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+                    <path d="M30 125 Q70 105, 100 115 T170 75" stroke="#409eff" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/>
+                    <circle cx="30" cy="120" r="8" fill="#409eff" filter="url(#glow)">
+                      <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="30" cy="120" r="14" fill="none" stroke="#409eff" stroke-width="1" opacity="0.3"/>
+                    <circle cx="100" cy="110" r="6" fill="#67c23a" filter="url(#glow)"/>
+                    <circle cx="170" cy="70" r="8" fill="#f56c6c" filter="url(#glow)">
+                      <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="170" cy="70" r="14" fill="none" stroke="#f56c6c" stroke-width="1" opacity="0.3"/>
+                    <g transform="translate(125, 35)">
+                      <ellipse cx="22" cy="8" rx="18" ry="6" fill="rgba(64,158,255,0.2)" stroke="#409eff" stroke-width="1.5"/>
+                      <rect x="3" y="2" width="38" height="12" rx="4" fill="linear-gradient(135deg, #409eff 0%, #00d4ff 100%)"/>
+                      <rect x="0" y="4" width="10" height="3" rx="1.5" fill="#67c23a" opacity="0.8"/>
+                      <rect x="30" y="4" width="10" height="3" rx="1.5" fill="#67c23a" opacity="0.8"/>
+                      <circle cx="22" cy="8" r="4" fill="#fff">
+                        <animate attributeName="opacity" values="1;0.7;1" dur="1.5s" repeatCount="indefinite"/>
+                      </circle>
+                      <rect x="15" y="-5" width="3" height="8" rx="1" fill="#409eff"/>
+                      <rect x="24" y="-5" width="3" height="8" rx="1" fill="#409eff"/>
                     </g>
                   </svg>
                 </div>
@@ -108,14 +129,51 @@
               <div class="card-right">
                 <div class="illustration">
                   <svg viewBox="0 0 200 160" class="agent-illustration">
-                    <rect x="60" y="60" width="50" height="50" rx="4" fill="rgba(156,39,176,0.2)" stroke="#9c27b0" stroke-width="1.5"/>
-                    <rect x="70" y="50" width="50" height="50" rx="4" fill="rgba(156,39,176,0.3)" stroke="#9c27b0" stroke-width="1.5"/>
-                    <rect x="80" y="40" width="50" height="50" rx="4" fill="rgba(156,39,176,0.4)" stroke="#9c27b0" stroke-width="1.5"/>
-                    <line x1="105" y1="50" x2="105" y2="90" stroke="#9c27b0" stroke-width="0.5" opacity="0.5"/>
-                    <line x1="80" y1="70" x2="130" y2="70" stroke="#9c27b0" stroke-width="0.5" opacity="0.5"/>
-                    <rect x="50" y="110" width="100" height="15" rx="3" fill="rgba(156,39,176,0.15)" stroke="#9c27b0" stroke-width="1"/>
-                    <rect x="140" y="30" width="20" height="20" rx="3" fill="rgba(156,39,176,0.3)" stroke="#9c27b0" stroke-width="1"/>
-                    <rect x="30" y="80" width="18" height="18" rx="3" fill="rgba(156,39,176,0.25)" stroke="#9c27b0" stroke-width="1"/>
+                    <defs>
+                      <linearGradient id="boxGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#9c27b0;stop-opacity:0.4"/>
+                        <stop offset="100%" style="stop-color:#673ab7;stop-opacity:0.2"/>
+                      </linearGradient>
+                      <linearGradient id="boxGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ab47bc;stop-opacity:0.4"/>
+                        <stop offset="100%" style="stop-color:#7e57c2;stop-opacity:0.2"/>
+                      </linearGradient>
+                      <filter id="purpleGlow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <rect x="55" y="70" width="55" height="55" rx="6" fill="url(#boxGrad1)" stroke="#9c27b0" stroke-width="1.5" filter="url(#purpleGlow)"/>
+                    <polygon points="55,70 82.5,52 110,70" fill="rgba(156,39,176,0.3)" stroke="#9c27b0" stroke-width="1.5"/>
+                    <rect x="65" y="60" width="55" height="55" rx="6" fill="url(#boxGrad2)" stroke="#ab47bc" stroke-width="1.5" filter="url(#purpleGlow)">
+                      <animate attributeName="x" values="65;68;65" dur="2s" repeatCount="indefinite"/>
+                      <animate attributeName="y" values="60;57;60" dur="2s" repeatCount="indefinite"/>
+                    </rect>
+                    <polygon points="65,60 92.5,42 120,60" fill="rgba(171,71,188,0.3)" stroke="#ab47bc" stroke-width="1.5"/>
+                    <rect x="75" y="50" width="55" height="55" rx="6" fill="rgba(194,89,206,0.4)" stroke="#ce93d8" stroke-width="1.5" filter="url(#purpleGlow)">
+                      <animate attributeName="x" values="75;72;75" dur="2.5s" repeatCount="indefinite"/>
+                      <animate attributeName="y" values="50;53;50" dur="2.5s" repeatCount="indefinite"/>
+                    </rect>
+                    <polygon points="75,50 102.5,32 130,50" fill="rgba(194,89,206,0.3)" stroke="#ce93d8" stroke-width="1.5"/>
+                    <line x1="102" y1="50" x2="102" y2="100" stroke="#9c27b0" stroke-width="0.5" opacity="0.4" stroke-dasharray="3,2"/>
+                    <line x1="75" y1="75" x2="130" y2="75" stroke="#9c27b0" stroke-width="0.5" opacity="0.4" stroke-dasharray="3,2"/>
+                    <rect x="45" y="130" width="110" height="18" rx="4" fill="rgba(156,39,176,0.15)" stroke="#9c27b0" stroke-width="1.5"/>
+                    <rect x="145" y="35" width="22" height="22" rx="4" fill="rgba(156,39,176,0.3)" stroke="#9c27b0" stroke-width="1.5"/>
+                    <circle cx="156" cy="46" r="3" fill="#fff" opacity="0.8"/>
+                    <rect x="25" y="85" width="20" height="20" rx="4" fill="rgba(156,39,176,0.25)" stroke="#9c27b0" stroke-width="1.5"/>
+                    <circle cx="35" cy="95" r="3" fill="#fff" opacity="0.8"/>
+                    <circle cx="102" cy="140" r="4" fill="#9c27b0" opacity="0.6">
+                      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="85" cy="140" r="3" fill="#9c27b0" opacity="0.4">
+                      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="120" cy="140" r="3" fill="#9c27b0" opacity="0.4">
+                      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2s" repeatCount="indefinite"/>
+                    </circle>
                   </svg>
                 </div>
               </div>
@@ -143,25 +201,60 @@
               <div class="card-right">
                 <div class="illustration">
                   <svg viewBox="0 0 200 160" class="agent-illustration">
-                    <circle cx="100" cy="50" r="12" fill="rgba(103,194,58,0.3)" stroke="#67c23a" stroke-width="2"/>
-                    <text x="100" y="55" text-anchor="middle" fill="#67c23a" font-size="10" font-weight="bold">核心</text>
-                    <circle cx="60" cy="90" r="10" fill="rgba(103,194,58,0.2)" stroke="#67c23a" stroke-width="1.5"/>
-                    <text x="60" y="94" text-anchor="middle" fill="#67c23a" font-size="8">节点1</text>
-                    <circle cx="100" cy="110" r="10" fill="rgba(103,194,58,0.2)" stroke="#67c23a" stroke-width="1.5"/>
-                    <text x="100" y="114" text-anchor="middle" fill="#67c23a" font-size="8">节点2</text>
-                    <circle cx="140" cy="90" r="10" fill="rgba(103,194,58,0.2)" stroke="#67c23a" stroke-width="1.5"/>
-                    <text x="140" y="94" text-anchor="middle" fill="#67c23a" font-size="8">节点3</text>
-                    <circle cx="50" cy="130" r="8" fill="rgba(103,194,58,0.15)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="90" cy="140" r="8" fill="rgba(103,194,58,0.15)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="130" cy="130" r="8" fill="rgba(103,194,58,0.15)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="150" cy="60" r="8" fill="rgba(103,194,58,0.15)" stroke="#67c23a" stroke-width="1"/>
-                    <line x1="100" y1="62" x2="60" y2="80" stroke="#67c23a" stroke-width="1" opacity="0.5"/>
-                    <line x1="100" y1="62" x2="100" y2="100" stroke="#67c23a" stroke-width="1" opacity="0.5"/>
-                    <line x1="100" y1="62" x2="140" y2="80" stroke="#67c23a" stroke-width="1" opacity="0.5"/>
-                    <line x1="60" y1="100" x2="50" y2="122" stroke="#67c23a" stroke-width="0.8" opacity="0.4"/>
-                    <line x1="100" y1="120" x2="90" y2="132" stroke="#67c23a" stroke-width="0.8" opacity="0.4"/>
-                    <line x1="140" y1="100" x2="130" y2="122" stroke="#67c23a" stroke-width="0.8" opacity="0.4"/>
-                    <line x1="100" y1="62" x2="150" y2="52" stroke="#67c23a" stroke-width="0.8" opacity="0.4"/>
+                    <defs>
+                      <linearGradient id="graphGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#67c23a;stop-opacity:0.8"/>
+                        <stop offset="100%" style="stop-color:#85ce61;stop-opacity:0.6"/>
+                      </linearGradient>
+                      <filter id="greenGlow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <circle cx="100" cy="50" r="16" fill="url(#graphGrad)" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)">
+                      <animate attributeName="r" values="16;18;16" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="100" cy="50" r="8" fill="#fff">
+                      <animate attributeName="opacity" values="1;0.8;1" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <text x="100" y="54" text-anchor="middle" fill="#67c23a" font-size="10" font-weight="bold">核心</text>
+                    <circle cx="60" cy="90" r="14" fill="rgba(103,194,58,0.35)" stroke="#67c23a" stroke-width="1.5" filter="url(#greenGlow)">
+                      <animate attributeName="r" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="60" cy="90" r="6" fill="#fff"/>
+                    <text x="60" y="108" text-anchor="middle" fill="#67c23a" font-size="9" font-weight="500">知识</text>
+                    <circle cx="100" cy="115" r="14" fill="rgba(103,194,58,0.35)" stroke="#67c23a" stroke-width="1.5" filter="url(#greenGlow)">
+                      <animate attributeName="r" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="100" cy="115" r="6" fill="#fff"/>
+                    <text x="100" y="133" text-anchor="middle" fill="#67c23a" font-size="9" font-weight="500">能力</text>
+                    <circle cx="140" cy="90" r="14" fill="rgba(103,194,58,0.35)" stroke="#67c23a" stroke-width="1.5" filter="url(#greenGlow)">
+                      <animate attributeName="r" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="140" cy="90" r="6" fill="#fff"/>
+                    <text x="140" y="108" text-anchor="middle" fill="#67c23a" font-size="9" font-weight="500">思政</text>
+                    <circle cx="50" cy="140" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
+                    <circle cx="100" cy="150" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
+                    <circle cx="150" cy="140" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
+                    <circle cx="155" cy="55" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
+                    <circle cx="45" cy="55" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
+                    <line x1="100" y1="66" x2="60" y2="76" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)"/>
+                    <line x1="100" y1="66" x2="100" y2="101" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)"/>
+                    <line x1="100" y1="66" x2="140" y2="76" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)"/>
+                    <line x1="60" y1="104" x2="50" y2="130" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="100" y1="129" x2="100" y2="140" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="140" y1="104" x2="150" y2="130" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="100" y1="66" x2="155" y2="45" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="100" y1="66" x2="45" y2="45" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
+                    <circle cx="35" cy="80" r="4" fill="#67c23a" opacity="0.6">
+                      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="165" cy="80" r="4" fill="#67c23a" opacity="0.6">
+                      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
                   </svg>
                 </div>
               </div>
@@ -540,20 +633,20 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: clamp(18px, 1.5vw, 24px);
+  font-size: clamp(22px, 1.8vw, 30px);
   font-weight: 800;
   color: #fff;
   line-height: 1.2;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.65);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .stat-change {
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
 }
 
@@ -651,16 +744,16 @@ onMounted(() => {
 }
 
 .banner-title {
-  font-size: clamp(20px, 2vw, 36px);
+  font-size: clamp(26px, 2.5vw, 44px);
   font-weight: 800;
   color: #fff;
-  margin-bottom: clamp(8px, 0.8vw, 14px);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  margin-bottom: clamp(10px, 1vw, 18px);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   letter-spacing: 2px;
 }
 
 .banner-subtitle {
-  font-size: clamp(12px, 0.9vw, 15px);
+  font-size: clamp(14px, 1.1vw, 18px);
   color: rgba(255, 255, 255, 0.85);
   letter-spacing: 1px;
 }
@@ -759,7 +852,7 @@ onMounted(() => {
 }
 
 .card-right {
-  width: 130px;
+  width: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -767,33 +860,33 @@ onMounted(() => {
 
 /* 标题样式 */
 .agent-title {
-  font-size: clamp(14px, 1.2vw, 18px);
+  font-size: clamp(16px, 1.4vw, 22px);
   font-weight: 700;
   color: #fff;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .agent-subtitle {
-  font-size: clamp(11px, 0.8vw, 12px);
+  font-size: clamp(13px, 1vw, 15px);
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: clamp(10px, 1vw, 16px);
+  margin-bottom: clamp(14px, 1.2vw, 20px);
 }
 
 /* 功能列表 */
 .feature-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px 0;
+  margin: 0 0 24px 0;
   flex: 1;
 }
 
 .feature-list li {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: clamp(11px, 0.8vw, 13px);
+  gap: 12px;
+  font-size: clamp(13px, 1vw, 15px);
   color: rgba(255, 255, 255, 0.85);
-  margin-bottom: clamp(6px, 0.6vw, 10px);
+  margin-bottom: clamp(8px, 0.8vw, 12px);
 }
 
 .dot {
@@ -862,8 +955,8 @@ onMounted(() => {
 }
 
 .agent-illustration {
-  width: clamp(80px, 8vw, 130px);
-  height: clamp(80px, 8vw, 130px);
+  width: clamp(100px, 10vw, 180px);
+  height: clamp(100px, 10vw, 180px);
 }
 
 /* 右侧面板 */
@@ -1019,7 +1112,7 @@ onMounted(() => {
 }
 
 .stats-value {
-  font-size: clamp(16px, 1.3vw, 22px);
+  font-size: clamp(20px, 1.6vw, 28px);
   font-weight: 800;
   background: linear-gradient(135deg, #409eff, #67c23a);
   -webkit-background-clip: text;
@@ -1027,9 +1120,9 @@ onMounted(() => {
 }
 
 .stats-label {
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .chart-container {
@@ -1327,6 +1420,38 @@ onMounted(() => {
   background: linear-gradient(135deg, rgba(0, 229, 255, 0.45), rgba(0, 180, 204, 0.45));
   transform: scale(1.1);
   box-shadow: 0 4px 16px rgba(0, 229, 255, 0.35);
+}
+
+/* ===== 大屏适配（≥1920px）===== */
+@media (min-width: 1920px) {
+  .top-section {
+    gap: 32px;
+  }
+
+  .bottom-section {
+    gap: 24px;
+  }
+
+  .agent-card {
+    min-height: 320px;
+    padding: 28px;
+  }
+
+  .stat-card {
+    padding: 18px;
+  }
+
+  .chart-card {
+    padding: 28px;
+  }
+
+  .stats-grid {
+    gap: 16px;
+  }
+
+  .agents-section {
+    gap: 24px;
+  }
 }
 
 /* ===== 小屏适配 ===== */

@@ -13,7 +13,8 @@
         </el-select>
         <!-- 任务选择 -->
         <el-select v-model="selectedTaskId" placeholder="选择任务" size="default"
-          style="width: 260px" :disabled="!selectedProjectId || tasksLoading" :loading="tasksLoading">
+          style="width: 260px" :disabled="!selectedProjectId || tasksLoading" :loading="tasksLoading"
+          @change="onTaskChange">
           <el-option v-for="t in taskList" :key="t.id" :label="t.name" :value="t.id" />
         </el-select>
         <button class="back-home-btn" @click="$router.push('/')">
@@ -194,6 +195,12 @@ function getStatusClass(secId) {
 
 function goSection(secId, tab) {
   router.push({ path: `/evaluation/section/${secId}`, query: { tab } })
+}
+
+function onTaskChange(taskId) {
+  if (taskId === 7) {
+    router.push('/evaluation/task7')
+  }
 }
 
 onMounted(async () => {

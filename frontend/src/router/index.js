@@ -49,6 +49,12 @@ const routes = [
         meta: { title: 'AI教学分析' }
       },
       {
+        path: 'evaluation/task7',
+        name: 'Task7Score',
+        component: () => import('../views/evaluation/Task7Score.vue'),
+        meta: { title: '任务7评分' }
+      },
+      {
         path: 'resources',
         name: 'Resources',
         component: () => import('../views/resources/index.vue'),
