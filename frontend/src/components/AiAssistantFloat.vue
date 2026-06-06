@@ -742,6 +742,19 @@ function scrollBottom() {
   border-radius: 10px;
   font-size: 14px;
   resize: none;
+  background: #f0f9ff;
+  border: 1px solid #7dd3fc;
+  color: #0c4a6e;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.panel-input :deep(.el-textarea__inner:focus) {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+  background: white;
+}
+.panel-input :deep(.el-textarea__inner::placeholder) {
+  color: #7dd3fc;
 }
 
 .panel-input .el-button {
