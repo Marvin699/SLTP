@@ -1,15 +1,19 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import L from 'leaflet'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useUavsStore } from '@/stores/pathPlanning/uavs'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
+import { useTeacherSolutionsStore } from '@/stores/pathPlanning/teacherSolutions'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },
-  embeddedFull: { type: Boolean, default: false }
+  embeddedFull: { type: Boolean, default: false },
+  solution: { type: Object, default: null },
+  readOnly: { type: Boolean, default: false }
 })
 const router = useRouter()
 const pointsStore = usePointsStore()
@@ -18,7 +22,13 @@ const uavStore = useUavsStore()
 const optStore = useOptimizerStore()
 
 const stage = ref(1)
-const isPanelOpen = ref(true)
+const isPanelOpen = ref(!props.readOnly)
+
+watch(() => props.solution, () => {
+  if (props.readOnly) {
+    isPanelOpen.value = true
+  }
+})
 const isNight = ref(true)
 let map = null
 let baseTileLayer = null
@@ -26,6 +36,56 @@ let routeLayer = null
 let markerLayer = null
 let floodLayer = null
 let noFlyLayer = null
+
+const DIRECT_FLIGHT_COLOR = '#ff3d57'
+const ROUTE_COLORS = ['#2196f3', '#4caf50', '#ff9800', '#9c27b0', '#00bcd4', '#e91e63', '#795548', '#607d8b']
+function getRouteColor(tripIndex) { return ROUTE_COLORS[tripIndex % ROUTE_COLORS.length] }
+
+const activeGeojson = computed(() => {
+  if (props.solution?.optimizer?.geojson) return props.solution.optimizer.geojson
+  if (optStore.geojson) return optStore.geojson
+  return null
+})
+
+function renderGeojsonRoutes() {
+  const geo = activeGeojson.value
+  if (!geo || !geo.features) return false
+
+  for (const feat of geo.features) {
+    if (feat.geometry.type === 'LineString') {
+      const coords = feat.geometry.coordinates.map(c => [c[1], c[0]])
+      if (coords.length < 2) continue
+      const fp = feat.properties || {}
+      const tripIndex = fp.trip_index ?? 0
+      let color = fp.delivery_mode === 'direct' ? DIRECT_FLIGHT_COLOR : getRouteColor(tripIndex)
+      L.polyline(coords, { color, weight: 5, opacity: 0.9, lineCap: 'round' }).addTo(routeLayer)
+      L.marker(coords[0], {
+        icon: L.divIcon({
+          className: 'waypoint-marker',
+          html: `<div style="width:22px;height:22px;border-radius:50%;background:#22c55e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">🛫</div>`,
+          iconSize: [28, 28], iconAnchor: [14, 14]
+        })
+      }).addTo(markerLayer)
+      L.marker(coords[coords.length - 1], {
+        icon: L.divIcon({
+          className: 'waypoint-marker',
+          html: `<div style="width:22px;height:22px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">🛬</div>`,
+          iconSize: [28, 28], iconAnchor: [14, 14]
+        })
+      }).addTo(markerLayer)
+    } else if (feat.geometry.type === 'Point') {
+      const pt = [feat.geometry.coordinates[1], feat.geometry.coordinates[0]]
+      L.marker(pt, {
+        icon: L.divIcon({
+          className: 'waypoint-marker',
+          html: `<div style="width:20px;height:20px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+          iconSize: [26, 26], iconAnchor: [13, 13]
+        })
+      }).addTo(markerLayer)
+    }
+  }
+  return true
+}
 
 function toggleMapMode() {
   isNight.value = !isNight.value
@@ -70,16 +130,28 @@ const fallbackDemands = [
 ]
 
 const depotReal = computed(() => {
-  if (pointsStore.center) return {
-    name: pointsStore.center.name || '起飞点',
-    lng: Number(pointsStore.center.longitude),
-    lat: Number(pointsStore.center.latitude),
-    type: 'start'
+  if (props.solution?.depot) {
+    const d = props.solution.depot
+    return { name: d.name || '起飞点', lng: Number(d.lng || d.longitude), lat: Number(d.lat || d.latitude), type: 'start' }
+  }
+  if (pointsStore.center) {
+    const c = pointsStore.center
+    return { name: c.name || '起飞点', lng: Number(c.longitude), lat: Number(c.latitude), type: 'start' }
   }
   return { name: fallbackCenter.name, lng: fallbackCenter.longitude, lat: fallbackCenter.latitude, type: 'start' }
 })
 
 const demandsReal = computed(() => {
+  if (props.solution?.demands) {
+    return props.solution.demands.map((p, i) => ({
+      name: p.name || `需求点${i + 1}`,
+      lng: Number(p.lng ?? p.longitude),
+      lat: Number(p.lat ?? p.latitude),
+      type: 'delivery',
+      priority: p.priority || 3,
+      materials: p.materials || []
+    }))
+  }
   const src = pointsStore.demands.length > 0 ? pointsStore.demands : fallbackDemands
   return src.map((p, i) => ({
     name: p.name || `需求点${i + 1}`,
@@ -91,13 +163,31 @@ const demandsReal = computed(() => {
   }))
 })
 
-const totalPayload = computed(() => uavStore.totalPayload || 0)
-const totalDistance = computed(() => optStore.totalDistance || 0)
-const totalTime = computed(() => optStore.totalTime || 0)
-const feasible = computed(() => optStore.feasible)
+const totalPayload = computed(() => {
+  if (props.solution?.uav?.totalPayload != null) return props.solution.uav.totalPayload
+  return uavStore.totalPayload || 0
+})
+const totalDistance = computed(() => {
+  if (props.solution?.optimizer?.totalDistance != null) return props.solution.optimizer.totalDistance
+  return optStore.totalDistance || 0
+})
+const totalTime = computed(() => {
+  if (props.solution?.optimizer?.totalTime != null) return props.solution.optimizer.totalTime
+  return optStore.totalTime || 0
+})
+const feasible = computed(() => {
+  if (props.solution?.optimizer?.feasible != null) return props.solution.optimizer.feasible
+  return optStore.feasible
+})
 
-const routeTableReal = computed(() => optStore.routeTable || [])
-const tripsReal = computed(() => optStore.routes || [])
+const routeTableReal = computed(() => {
+  if (props.solution?.optimizer?.routeTable) return props.solution.optimizer.routeTable
+  return optStore.routeTable || []
+})
+const tripsReal = computed(() => {
+  if (props.solution?.optimizer?.routes) return props.solution.optimizer.routes
+  return optStore.routes || []
+})
 
 const initialRoute = computed(() => {
   const pts = [depotReal.value, ...demandsReal.value]
@@ -357,51 +447,55 @@ function updateMap() {
 
   const initPts = initialRoute.value
 
-  if (stage.value === 1) {
-    drawRoute(initPts, '#facc15', false, 4)
-    initPts.forEach((pt, i) => { drawMarker(pt, i, initPts.length, false, false).addTo(markerLayer) })
-  } else if (stage.value === 2) {
-    drawRoute(initPts, '#facc15', true, 3)
-    initPts.forEach((pt, i) => { drawMarker(pt, i, initPts.length, false, false).addTo(markerLayer) })
-  } else if (stage.value === 3) {
-    drawRoute(routeA.value, altRoutes.value.A.color, false, 4)
-    drawRoute(routeB.value, altRoutes.value.B.color, '10,8', 3)
-    const d = depotReal.value
-    L.marker(routeA.value[1], {
-      icon: L.divIcon({
-        className: 'route-label',
-        html: '<div style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🅰 改降篮球场</div>',
-        iconSize: [110, 26], iconAnchor: [55, 13]
+  const usedReal = renderGeojsonRoutes()
+
+  if (!usedReal) {
+    if (stage.value === 1) {
+      drawRoute(initPts, '#facc15', false, 4)
+      initPts.forEach((pt, i) => { drawMarker(pt, i, initPts.length, false, false).addTo(markerLayer) })
+    } else if (stage.value === 2) {
+      drawRoute(initPts, '#facc15', true, 3)
+      initPts.forEach((pt, i) => { drawMarker(pt, i, initPts.length, false, false).addTo(markerLayer) })
+    } else if (stage.value === 3) {
+      drawRoute(routeA.value, altRoutes.value.A.color, false, 4)
+      drawRoute(routeB.value, altRoutes.value.B.color, '10,8', 3)
+      const d = depotReal.value
+      L.marker(routeA.value[1], {
+        icon: L.divIcon({
+          className: 'route-label',
+          html: '<div style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🅰 改降篮球场</div>',
+          iconSize: [110, 26], iconAnchor: [55, 13]
+        })
+      }).addTo(markerLayer)
+      L.marker(routeB.value[1], {
+        icon: L.divIcon({
+          className: 'route-label',
+          html: '<div style="background:#22c55e;color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🅱 空中抛投</div>',
+          iconSize: [100, 26], iconAnchor: [50, 13]
+        })
+      }).addTo(markerLayer)
+      initPts.forEach((pt, i) => {
+        const isDelivery = pt.type === 'delivery'
+        const ic = L.divIcon({
+          className: 'waypoint-marker',
+          html: `<div style="width:24px;height:24px;border-radius:50%;background:${isDelivery ? '#f59e0b' : (pt.type === 'start' ? '#22c55e' : '#3b82f6')};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">${isDelivery ? '📍' : (pt.type === 'start' ? '🛫' : '🛬')}</div>`,
+          iconSize: [30, 30], iconAnchor: [15, 15]
+        })
+        L.marker([pt.lat, pt.lng], { icon: ic }).addTo(markerLayer)
       })
-    }).addTo(markerLayer)
-    L.marker(routeB.value[1], {
-      icon: L.divIcon({
-        className: 'route-label',
-        html: '<div style="background:#22c55e;color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🅱 空中抛投</div>',
-        iconSize: [100, 26], iconAnchor: [50, 13]
-      })
-    }).addTo(markerLayer)
-    initPts.forEach((pt, i) => {
-      const isDelivery = pt.type === 'delivery'
-      const ic = L.divIcon({
-        className: 'waypoint-marker',
-        html: `<div style="width:24px;height:24px;border-radius:50%;background:${isDelivery ? '#f59e0b' : (pt.type === 'start' ? '#22c55e' : '#3b82f6')};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">${isDelivery ? '📍' : (pt.type === 'start' ? '🛫' : '🛬')}</div>`,
-        iconSize: [30, 30], iconAnchor: [15, 15]
-      })
-      L.marker([pt.lat, pt.lng], { icon: ic }).addTo(markerLayer)
-    })
-  } else if (stage.value === 4) {
-    drawRoute(initPts, '#facc15', true, 2)
-    const opt = dragPoints.value
-    if (opt.length >= 2) drawRoute(opt, '#22c55e', false, 5)
-    opt.forEach((pt, i) => { drawMarker(pt, i, opt.length, true, true).addTo(markerLayer) })
-    L.marker([opt.length >= 2 ? opt[1].lat : depotReal.value.lat, opt.length >= 2 ? opt[1].lng - 0.002 : depotReal.value.lng + 0.003], {
-      icon: L.divIcon({
-        className: 'optimize-tag',
-        html: '<div style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.25);">✓ 已调整配送顺序</div>',
-        iconSize: [100, 22], iconAnchor: [50, 11]
-      })
-    }).addTo(markerLayer)
+    } else if (stage.value === 4) {
+      drawRoute(initPts, '#facc15', true, 2)
+      const opt = dragPoints.value
+      if (opt.length >= 2) drawRoute(opt, '#22c55e', false, 5)
+      opt.forEach((pt, i) => { drawMarker(pt, i, opt.length, true, true).addTo(markerLayer) })
+      L.marker([opt.length >= 2 ? opt[1].lat : depotReal.value.lat, opt.length >= 2 ? opt[1].lng - 0.002 : depotReal.value.lng + 0.003], {
+        icon: L.divIcon({
+          className: 'optimize-tag',
+          html: '<div style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.25);">✓ 已调整配送顺序</div>',
+          iconSize: [100, 22], iconAnchor: [50, 11]
+        })
+      }).addTo(markerLayer)
+    }
   }
 
   const center = depotReal.value
@@ -419,7 +513,7 @@ watch(stage, (v) => {
   })
 })
 
-watch([() => depotReal.value, () => demandsReal.value], () => {
+watch([() => depotReal.value, () => demandsReal.value, activeGeojson], () => {
   nextTick(() => {
     updateMap()
   })
@@ -438,6 +532,43 @@ onMounted(() => {
     setTimeout(initMap, 150)
   })
 })
+
+function submitCurrentSolution() {
+  if (props.readOnly) return
+  const tStore = useTeacherSolutionsStore()
+  const name = prompt('请输入你的姓名 / 小组名称（用于提交方案）：', '演示组')
+  if (!name) return
+  const s = {
+    groupId: name,
+    studentName: name,
+    notes: '学生通过路径规划智能体调整参数后生成的方案',
+    depot: depotReal.value,
+    demands: demandsReal.value,
+    materials: { totalMass: matStore.totalMass || 0, items: Object.keys(matStore.assignments || {}) },
+    uav: {
+      model: uavStore.selectedUav?.name || '自定义',
+      count: uavStore.selectedUav ? 1 : 0,
+      perPayload: uavStore.selectedUav?.payload || uavStore.totalPayload || 0,
+      totalPayload: uavStore.totalPayload || 0
+    },
+    optimizer: {
+      feasible: optStore.feasible ?? true,
+      totalDistance: optStore.totalDistance || 0,
+      totalTime: optStore.totalTime || 0,
+      routes: optStore.routes || tripsReal.value,
+      routeTable: optStore.routeTable || routeTableReal.value,
+      geojson: optStore.geojson || null
+    }
+  }
+  const id = tStore.add(s)
+  ElMessage.success(`方案提交成功！方案ID: ${id}，教师端已可查看`)
+}
+
+watch(() => props.solution, () => {
+  nextTick(() => {
+    setTimeout(initMap, 80)
+  })
+}, { deep: true })
 
 onBeforeUnmount(() => {
   if (map) { map.remove(); map = null }
@@ -475,7 +606,7 @@ function gotoAgent() { router.push('/agent/path-planning') }
     </header>
 
     <div class="app-body">
-      <aside class="left-nav">
+      <aside v-if="!readOnly" class="left-nav">
         <div class="ln-title">
           <span class="ln-icon">🛰️</span>
           <div>
@@ -734,7 +865,8 @@ function gotoAgent() { router.push('/agent/path-planning') }
               </div>
               <div class="panel-actions">
                 <el-button size="large" @click="stage = 3">← 上一步</el-button>
-                <el-button type="primary" size="large" @click="stage = 1" plain>🔄 重新开始</el-button>
+                <el-button type="primary" size="large" :disabled="readOnly" @click="submitCurrentSolution">🚀 提交方案</el-button>
+                <el-button size="large" @click="stage = 1">🔄 回到初始</el-button>
               </div>
             </div>
           </div>

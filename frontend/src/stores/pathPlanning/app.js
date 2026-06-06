@@ -12,6 +12,7 @@ export const useAppStore = defineStore('app', () => {
     { id: 9, label: '航线详情', icon: '🛰️' },
     { id: 5, label: '方案诊断', icon: '🔍' },
     { id: 6, label: '方案优出', icon: '📊' },
+    { id: 10, label: '方案审阅', icon: '👨‍🏫' },
     { id: 7, label: '案例管理', icon: '📚' },
     { id: 8, label: '系统设置', icon: '⚙' },
   ]

@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAppStore } from '@/stores/pathPlanning/app'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
@@ -17,6 +18,7 @@ import Module6 from '@/views/agents/pathPlanning/Module6.vue'
 import Module7 from '@/views/agents/pathPlanning/Module7.vue'
 import Module8 from '@/views/agents/pathPlanning/Module8.vue'
 import RoutesDetail from '@/views/agents/RoutesDetail.vue'
+import { useTeacherSolutionsStore } from '@/stores/pathPlanning/teacherSolutions'
 
 const router = useRouter()
 const app = useAppStore()
@@ -24,6 +26,7 @@ const store = usePointsStore()
 const matStore = useMaterialsStore()
 const uavStore = useUavsStore()
 const optStore = useOptimizerStore()
+const tSolStore = useTeacherSolutionsStore()
 
 const isLoading = computed(() => store.loading || matStore.loading || uavStore.loading)
 const isDayMode = ref(false)
@@ -31,6 +34,17 @@ const toggleTheme = () => { isDayMode.value = !isDayMode.value }
 
 const goBack = () => {
   router.push('/home')
+}
+
+function deleteSolution(s) {
+  ElMessageBox.confirm(`确定删除「${s.groupId} ${s.studentName}」的提交方案吗？`, '删除确认', {
+    confirmButtonText: '删除',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    tSolStore.remove(s.id)
+    ElMessage.success('方案已删除')
+  }).catch(() => {})
 }
 
 onMounted(() => {
@@ -67,6 +81,53 @@ onMounted(() => {
     <div class="main-area routes-mode" v-if="app.activeModule === 9">
       <RoutesDetail embedded-full />
     </div>
+
+    <!-- 教师端方案审阅（模块 10）-->
+    <div class="main-area" v-else-if="app.activeModule === 10">
+      <div class="side-panel">
+        <div class="panel-body">
+          <div class="tc-header">
+            <div class="tc-title">👨‍🏫 教师端 · 学生方案审阅</div>
+            <div class="tc-sub">共 {{ tSolStore.list.length }} 份方案 · 点击查看可视化</div>
+          </div>
+
+          <div class="tc-list">
+            <div
+              v-for="s in tSolStore.list"
+              :key="s.id"
+              class="tc-card"
+              :class="{ active: s.id === tSolStore.selectedId }"
+            >
+              <div class="tc-row-1" @click="tSolStore.select(s.id)">
+                <span class="tc-group">{{ s.groupId }}</span>
+                <span class="tc-verdict" :style="{ color: s.verdictColor || '#64748b', borderColor: s.verdictColor || '#64748b' }">{{ s.verdict || '待评' }}</span>
+              </div>
+              <div class="tc-name" @click="tSolStore.select(s.id)">👤 {{ s.studentName }}</div>
+              <div class="tc-meta" @click="tSolStore.select(s.id)">
+                <span>📅 {{ s.submittedAt }}</span>
+                <span>✈️ {{ s.uav?.model || '未填' }}</span>
+              </div>
+              <div class="tc-meta" @click="tSolStore.select(s.id)">
+                <span>🛰️ {{ s.optimizer?.totalDistance?.toFixed(1) || 0 }} km</span>
+                <span>⏱️ {{ s.optimizer?.totalTime || 0 }} min</span>
+                <span>📍 {{ s.demands?.length || 0 }} 点</span>
+              </div>
+              <div class="tc-note" @click="tSolStore.select(s.id)">{{ s.notes }}</div>
+              <button class="tc-del-btn" @click.stop="deleteSolution(s)">🗑 删除</button>
+            </div>
+
+            <div v-if="tSolStore.list.length === 0" class="tc-empty">
+              暂无学生提交的方案
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tc-map-side">
+        <RoutesDetail embedded-full :solution="tSolStore.selected" readOnly />
+      </div>
+    </div>
+
     <div class="main-area" v-else>
       <!-- Left side panel -->
       <div class="side-panel">
@@ -319,4 +380,26 @@ onMounted(() => {
   color: var(--teal);
   letter-spacing: 2px;
 }
+
+.tc-map-side { flex: 1; position: relative; overflow: hidden; background: #060d1a; }
+.tc-header { padding: 16px 16px 10px; border-bottom: 1px solid var(--border); background: var(--navy3); }
+.tc-title { font-size: 14px; font-weight: 700; color: #cdd9f0; font-family: var(--mono); letter-spacing: 0.4px; }
+.tc-sub { font-size: 11px; color: var(--text3); margin-top: 4px; letter-spacing: 0.3px; }
+.tc-list { padding: 10px 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+.tc-card { border: 1px solid var(--border); border-radius: 8px; background: var(--navy3); padding: 10px 12px; cursor: pointer; transition: all 0.2s; }
+.tc-card:hover { border-color: var(--teal); background: #15325f; }
+.tc-card.active { border-color: var(--teal); background: linear-gradient(180deg, #11305a, #0b2445); box-shadow: 0 0 0 1px rgba(0,229,255,0.2), 0 2px 10px rgba(0,0,0,0.35); }
+.tc-row-1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.tc-group { font-size: 12px; font-weight: 700; color: var(--teal); font-family: var(--mono); }
+.tc-verdict { font-size: 10px; font-weight: 700; border: 1px solid currentColor; padding: 1px 8px; border-radius: 10px; letter-spacing: 0.5px; }
+.tc-name { font-size: 12px; color: var(--text); margin-bottom: 4px; }
+.tc-meta { display: flex; gap: 10px; font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+.tc-note { font-size: 10.5px; color: #64748b; margin-top: 6px; line-height: 1.5; border-left: 2px solid var(--border2); padding-left: 8px; }
+.tc-del-btn {
+  margin-top: 8px; width: 100%; padding: 5px 0; font-size: 11px; font-family: var(--mono);
+  color: #fca5a5; background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.4);
+  border-radius: 6px; cursor: pointer; transition: all 0.2s;
+}
+.tc-del-btn:hover { background: rgba(220,38,38,0.25); color: #fecaca; border-color: #ef4444; }
+.tc-empty { text-align: center; padding: 40px 10px; color: var(--text3); font-size: 12px; font-family: var(--mono); }
 </style>
