@@ -1,7 +1,7 @@
 # Django
 # ===== 系统依赖 (apt, 非 pip) =====
 # 安装后 convert_word_to_pdf 会优先用 libreoffice 真 Word→PDF (中文完美)
-sudo apt-get install -y libreoffice fonts-noto-cjk
+# sudo apt-get install -y libreoffice fonts-noto-cjk
 
 django>=4.2,<5.0
 
