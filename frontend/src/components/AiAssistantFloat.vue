@@ -3,24 +3,34 @@
     <!-- 悬浮球按钮 -->
     <div
       class="float-button"
-      :class="{ 'is-open': isOpen, 'thinking': thinking }"
+      :class="{ 'is-open': isOpen }"
       @click="togglePanel"
     >
-      <!-- CSS动画形象 -->
-      <div class="mini-avatar" :class="{ thinking: thinking }">
-        <div class="mini-glow"></div>
-        <div class="mini-head">
-          <div class="mini-face">
+      <!-- 和原AI助教页面一样的数字人，整体缩小 -->
+      <div class="mini-digital-avatar" :class="{ idle: true, thinking: thinking }">
+        <div class="mini-avatar-glow"></div>
+        <div class="mini-avatar-head">
+          <div class="mini-avatar-face">
             <div class="mini-eyes">
               <div class="mini-eye"><div class="mini-pupil"></div></div>
               <div class="mini-eye"><div class="mini-pupil"></div></div>
             </div>
-            <div class="mini-mouth"><div class="mini-mouth-shape"></div></div>
+            <div class="mini-mouth" :class="{ talking: thinking }">
+              <div class="mini-mouth-shape"></div>
+            </div>
           </div>
           <div class="mini-antenna">
             <div class="mini-antenna-line"></div>
             <div class="mini-antenna-dot"></div>
           </div>
+        </div>
+        <div class="mini-avatar-body">
+          <div class="mini-body-core">
+            <div class="mini-core-ring"></div>
+            <div class="mini-core-dot"></div>
+          </div>
+          <div class="mini-wing mini-left-wing"></div>
+          <div class="mini-wing mini-right-wing"></div>
         </div>
       </div>
       <span class="float-label">小翼</span>
@@ -228,9 +238,8 @@ function scrollBottom() {
 /* ===== 悬浮球按钮 ===== */
 .float-button {
   position: relative;
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
+  width: 88px;
+  height: 96px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -248,183 +257,265 @@ function scrollBottom() {
   pointer-events: none;
 }
 
-/* ===== CSS动画形象（小翼缩小版） ===== */
-.mini-avatar {
+/* ===== 和原AI助教页面一模一样的数字人，整体缩小 ===== */
+.mini-digital-avatar {
   position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%);
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5), 0 2px 8px rgba(0, 0, 0, 0.15);
+  width: 72px;
+  height: 88px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  overflow: visible;
-  animation: miniFloat 3s ease-in-out infinite;
+  animation: miniAvatarFloat 3s ease-in-out infinite;
 }
 
-@keyframes miniFloat {
+@keyframes miniAvatarFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  50% { transform: translateY(-2px); }
 }
 
-.mini-avatar.thinking {
-  animation: miniThinkingFloat 0.6s ease-in-out infinite;
+.mini-digital-avatar.thinking {
+  animation: miniAvatarThinking 0.6s ease-in-out infinite;
 }
-@keyframes miniThinkingFloat {
+@keyframes miniAvatarThinking {
   0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-2px) scale(1.05); }
+  50% { transform: translateY(-1px) scale(1.04); }
 }
 
-.mini-glow {
+/* 光晕 */
+.mini-avatar-glow {
   position: absolute;
-  inset: -6px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0ea5e9, #14b8a6, #0ea5e9);
-  z-index: 0;
-  animation: miniGlow 2.8s ease-in-out infinite;
-  filter: blur(6px);
-  opacity: 0.6;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.25) 0%, transparent 70%);
+  animation: miniGlowPulse 3s ease-in-out infinite;
 }
 
-@keyframes miniGlow {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.15); opacity: 0.9; }
+@keyframes miniGlowPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
 }
 
-.mini-avatar.thinking .mini-glow {
+.mini-digital-avatar.thinking .mini-avatar-glow {
   animation: miniGlowThinking 0.8s ease-in-out infinite;
 }
 @keyframes miniGlowThinking {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.2); opacity: 1; }
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
 }
 
-.mini-head {
+/* 头部 */
+.mini-avatar-head {
   position: relative;
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(145deg, #e0f7ff 0%, #b3e5fc 100%);
-  border-radius: 45% 45% 42% 42%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  box-shadow: inset 0 -2px 4px rgba(14, 165, 233, 0.2);
+  width: 48px;
+  height: 48px;
+  z-index: 2;
 }
 
-.mini-face {
-  position: relative;
-  width: 28px;
-  height: 22px;
+.mini-avatar-face {
+  width: 48px;
+  height: 43px;
+  background: linear-gradient(135deg, #0d2137, #0a1a2e);
+  border-radius: 19px 19px 16px 16px;
+  border: 1px solid rgba(0, 229, 255, 0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25), inset 0 0 8px rgba(0, 229, 255, 0.1);
 }
 
+/* 眼睛 */
 .mini-eyes {
   display: flex;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 12px;
 }
 
 .mini-eye {
-  width: 8px;
+  width: 9px;
   height: 9px;
-  background: white;
+  background: #0a1628;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.6);
 }
 
 .mini-pupil {
   width: 4px;
   height: 4px;
-  background: #0c4a6e;
+  background: #00e5ff;
   border-radius: 50%;
+  animation: miniBlink 4s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.9);
 }
 
+@keyframes miniBlink {
+  0%, 45%, 55%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); }
+}
+
+/* 嘴巴 */
 .mini-mouth {
-  margin-top: 1px;
+  width: 10px;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mini-mouth-shape {
-  width: 10px;
-  height: 4px;
-  border-bottom: 2px solid #0c4a6e;
-  border-radius: 0 0 10px 10px;
+  width: 8px;
+  height: 2px;
+  background: rgba(0, 229, 255, 0.6);
+  border-radius: 0 0 4px 4px;
+  transition: all 0.15s;
 }
 
-.mini-avatar.thinking .mini-mouth-shape {
-  width: 6px;
-  height: 6px;
-  border: 2px solid #0c4a6e;
-  border-radius: 50%;
+.mini-mouth.talking .mini-mouth-shape {
+  height: 5px;
+  border-radius: 2px;
+  animation: miniTalk 0.3s ease-in-out infinite alternate;
+  background: rgba(0, 229, 255, 0.85);
 }
 
+@keyframes miniTalk {
+  0% { height: 2px; width: 7px; }
+  100% { height: 5px; width: 10px; }
+}
+
+/* 天线 */
 .mini-antenna {
   position: absolute;
-  top: -10px;
+  top: -9px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 2;
 }
 
 .mini-antenna-line {
-  width: 1.5px;
-  height: 8px;
-  background: linear-gradient(to top, #0ea5e9, #06b6d4);
+  width: 1px;
+  height: 7px;
+  background: linear-gradient(to top, rgba(0, 229, 255, 0.6), rgba(0, 229, 255, 0.2));
 }
 
 .mini-antenna-dot {
+  width: 3px;
+  height: 3px;
+  background: #00e5ff;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.9);
+  animation: miniAntennaBlink 2s ease-in-out infinite;
+}
+
+@keyframes miniAntennaBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* 身体 */
+.mini-avatar-body {
+  position: relative;
+  width: 38px;
+  height: 34px;
+  margin-top: -2px;
+  z-index: 1;
+}
+
+.mini-body-core {
+  width: 28px;
+  height: 24px;
+  background: linear-gradient(135deg, #0d2137, #0a1a2e);
+  border-radius: 7px 7px 12px 12px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+}
+
+.mini-core-ring {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  border-radius: 50%;
+  position: absolute;
+  animation: miniCoreRotate 4s linear infinite;
+}
+
+@keyframes miniCoreRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mini-core-dot {
   width: 4px;
   height: 4px;
-  background: #06b6d4;
+  background: #00e5ff;
   border-radius: 50%;
-  margin-top: -1px;
-  animation: miniBlink 2s ease-in-out infinite;
-  box-shadow: 0 0 4px #06b6d4;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.9);
 }
 
-@keyframes miniBlink {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.6; }
+/* 翅膀 */
+.mini-wing {
+  position: absolute;
+  width: 10px;
+  height: 18px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(0, 229, 255, 0.1));
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  top: 2px;
 }
 
-.mini-avatar.thinking .mini-antenna-dot {
-  animation: miniBlinkThinking 0.5s ease-in-out infinite;
+.mini-left-wing {
+  left: -4px;
+  border-radius: 5px 0 0 8px;
+  transform-origin: right center;
+  animation: miniWingFlap 2s ease-in-out infinite;
 }
-@keyframes miniBlinkThinking {
-  0%, 100% { transform: scale(1); background: #f97316; }
-  50% { transform: scale(1.5); background: #ef4444; }
+
+.mini-right-wing {
+  right: -4px;
+  border-radius: 0 5px 8px 0;
+  transform-origin: left center;
+  animation: miniWingFlap 2s ease-in-out infinite reverse;
+}
+
+@keyframes miniWingFlap {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-8deg); }
 }
 
 .float-label {
   position: absolute;
-  bottom: -22px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #0ea5e9;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 2px 10px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  color: #00e5ff;
+  background: rgba(10, 22, 40, 0.85);
+  padding: 1px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.35);
   white-space: nowrap;
+  letter-spacing: 2px;
 }
 
 /* ===== 对话面板 ===== */
 .float-panel {
   position: absolute;
-  bottom: 84px;
+  bottom: 100px;
   right: 0;
   width: 380px;
   height: 520px;
@@ -509,7 +600,6 @@ function scrollBottom() {
   color: #0ea5e9;
 }
 
-/* 消息区 */
 .panel-messages {
   flex: 1;
   overflow-y: auto;
@@ -610,7 +700,6 @@ function scrollBottom() {
   30% { transform: translateY(-6px); }
 }
 
-/* 快捷问题 */
 .panel-quick {
   display: flex;
   flex-wrap: wrap;
@@ -640,7 +729,6 @@ function scrollBottom() {
   border-color: #0ea5e9;
 }
 
-/* 输入区 */
 .panel-input {
   display: flex;
   align-items: flex-end;
