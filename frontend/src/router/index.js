@@ -61,6 +61,12 @@ const routes = [
         meta: { title: '应急装载AI智能体大屏' }
       },
       {
+        path: 'evaluation/task4/student',
+        name: 'Section4Student',
+        component: () => import('../views/evaluation/Section4Student.vue'),
+        meta: { title: '任务4 · AI智能体子系统' }
+      },
+      {
         path: 'resources',
         name: 'Resources',
         component: () => import('../views/resources/index.vue'),

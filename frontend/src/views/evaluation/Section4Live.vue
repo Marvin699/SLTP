@@ -131,6 +131,20 @@
         <el-button size="small" type="warning" plain @click="disaster('伤员求助：2 名儿童被铁钉扎伤，急需破伤风疫苗，是否优先安排？')">伤员求助</el-button>
         <el-button size="small" type="warning" plain @click="disaster('风速 8m/s，货物总重量不得超过 10kg，否则飞行不安全')">风速警报</el-button>
         <el-button size="small" type="warning" plain @click="disaster('霍乱疑似病例，需额外增加 20 盒诺氟沙星胶囊')">霍乱疑似病例</el-button>
+
+        <h3 style="margin-top: 18px">📱 学生端 · 扫码进入</h3>
+        <div class="stu-qr-grid">
+          <div v-for="g in groups" :key="g.id" class="stu-qr-card">
+            <div class="stu-qr-header" :style="{ background: g.color }">{{ g.name }}</div>
+            <img :src="qrImages[g.id]" :alt="g.name" class="stu-qr-img" />
+            <div class="stu-qr-task">{{ g.task }}</div>
+            <div class="stu-qr-actions">
+              <a :href="stuLink(g)" target="_blank" class="stu-qr-link">打开</a>
+              <el-button size="small" text @click="copyStuLink(g)">复制链接</el-button>
+            </div>
+          </div>
+        </div>
+        <p class="stu-links-hint">每组学生用手机扫描对应二维码，即可进入自己组的 AI 智能体子系统并开启摄像头</p>
       </div>
     </div>
 
@@ -153,6 +167,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import QRCode from 'qrcode'
 
 const groups = reactive([
   { id: 1, name: '逐日组', task: '2-8℃ 冷链疫苗', color: '#5b8def', stream: null, detections: [], events: [], score: 88.2, scoreColor: '#42d39c', stage: 1 },
@@ -208,6 +223,28 @@ function groupHasLevel(g, lv) { return g.events.some(e => e.level === lv) }
 function groupWarnCount(g) { return g.events.filter(e => e.level === 'orange' || e.level === 'red').length }
 function levelLabel(lv) { return lv === 'yellow' ? '一般' : lv === 'orange' ? '严重' : '致命' }
 function levelTagType(lv) { return lv === 'yellow' ? 'warning' : lv === 'orange' ? 'danger' : 'danger' }
+
+function stuLink(g) {
+  return `${location.origin}/evaluation/task4/student?group=${encodeURIComponent(g.name)}`
+}
+
+const qrImages = reactive({})
+async function buildQRs() {
+  for (const g of groups) {
+    try {
+      qrImages[g.id] = await QRCode.toDataURL(stuLink(g), { margin: 1, scale: 3, width: 160 })
+    } catch {
+      qrImages[g.id] = ''
+    }
+  }
+}
+
+function copyStuLink(g) {
+  const u = stuLink(g)
+  navigator.clipboard.writeText(u).then(() => {
+    ElMessage.success(`${g.name} 链接已复制`)
+  }).catch(() => { ElMessage.info(u) })
+}
 
 function setVideoRef(id, el) { if (el) videoRefs[id] = el }
 function setOverlayRef(id, el) { if (el) overlayRefs[id] = el }
@@ -433,6 +470,7 @@ function resetAll() {
 
 onMounted(() => {
   groups.forEach(g => { updateScoreColor(g) })
+  buildQRs()
 })
 
 onUnmounted(() => {
@@ -518,4 +556,14 @@ onUnmounted(() => {
 .disaster-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
 .disaster-text { font-size: 13px; line-height: 1.6; }
 .disaster-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+.stu-qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+.stu-qr-card { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 8px 8px 10px; text-align: center; }
+.stu-qr-header { color: #fff; font-weight: 700; font-size: 13px; padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 1px; }
+.stu-qr-img { width: 140px; height: 140px; background: #fff; border-radius: 6px; padding: 4px; }
+.stu-qr-task { font-size: 11px; color: #9fb3c8; margin-top: 4px; }
+.stu-qr-actions { margin-top: 4px; display: flex; justify-content: center; gap: 8px; }
+.stu-qr-link { color: #f8c537; font-size: 12px; text-decoration: none; }
+.stu-qr-link:hover { text-decoration: underline; }
+.stu-links-hint { font-size: 12px; color: #9fb3c8; margin-top: 10px; line-height: 1.5; }
 </style>
