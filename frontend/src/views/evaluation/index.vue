@@ -62,7 +62,7 @@
         <!-- 操作按钮 -->
         <div class="card-actions">
           <template v-if="sec.isLive">
-            <el-button type="primary" @click="$router.push('/evaluation/section/task4/live')">
+            <el-button type="primary" @click="$router.push(sec.livePath || '/evaluation/section/task4/live')">
               <el-icon><Monitor /></el-icon> 进入大屏
             </el-button>
           </template>
@@ -101,7 +101,6 @@ import { fetchProjects, fetchProject } from '@/api/courseGraph'
 
 const router = useRouter()
 const route = useRoute()
-const sections = ref([])
 const overviewData = ref({})
 
 // --- 项目/任务选择 ---
@@ -121,12 +120,25 @@ const selectedTaskName = computed(() => {
   return '教学智评'
 })
 
-const FALLBACK_SECTIONS = [
-  { id: 'section1', name: '环节一：运输方案汇报与知识深化', short_name: '方案汇报', time_range: '0-10min', description: '小组汇报运输方案，教师/企业导师提问，AI词云与风险分析', dimensions: ['方案完整性', '表达展示', '操作规范', '团队配合'] },
-  { id: 'section2', name: '环节二：无预案应急推演', short_name: '应急推演', time_range: '10-20min', description: '突发应急场景，使用路径规划智能体进行无预案推演', dimensions: ['决策速度', '方案可行性', '风险评估', '团队配合'] },
-  { id: 'section3', name: '环节三：飞行前准备应急演练比拼', short_name: '应急演练', time_range: '21-36min', description: '限时飞行前检查、双电转单电操作、团队协作应急演练', dimensions: ['安全性', '操作规范性', '用时效率', '团队配合'] },
-  { id: 'task4', name: '环节四：应急物资低空智慧运输装载 · AI智能体实操', short_name: 'AI实操', time_range: '10min', description: '6组同步包装装载，AI实时识别操作、语音播报错误、推送灾情指令', dimensions: ['操作规范性', '时效性', '安全性', '团队配合'], isLive: true },
-]
+const TASK_SECTION_MAP = {
+  4: [
+    { id: 'live-task4', name: '任务4 · 应急物资低空智慧运输装载与行前准备', short_name: 'AI智能体大屏', time_range: '10min', description: '6组同步包装装载，AI实时识别操作、语音播报错误、推送灾情指令', dimensions: ['操作规范性', '时效性', '安全性', '团队配合'], isLive: true, livePath: '/evaluation/section/task4/live' },
+  ],
+  8: [
+    { id: 'section1', name: '环节一：运输方案汇报与知识深化', short_name: '方案汇报', time_range: '0-10min', description: '小组汇报运输方案，教师/企业导师提问，AI词云与风险分析', dimensions: ['方案完整性', '表达展示', '操作规范', '团队配合'] },
+    { id: 'section2', name: '环节二：无预案应急推演', short_name: '应急推演', time_range: '10-20min', description: '突发应急场景，使用路径规划智能体进行无预案推演', dimensions: ['决策速度', '方案可行性', '风险评估', '团队配合'] },
+    { id: 'section3', name: '环节三：飞行前准备应急演练比拼', short_name: '应急演练', time_range: '21-36min', description: '限时飞行前检查、双电转单电操作、团队协作应急演练', dimensions: ['安全性', '操作规范性', '用时效率', '团队配合'] },
+  ],
+}
+
+const backendSections = ref([])
+
+const sections = computed(() => {
+  if (!selectedTaskId.value) return []
+  const mapped = TASK_SECTION_MAP[selectedTaskId.value]
+  if (mapped) return mapped
+  return backendSections.value || []
+})
 
 // --- 数据加载 ---
 async function loadProjects() {
@@ -178,11 +190,9 @@ async function onProjectChange(projectId) {
 async function loadSections() {
   try {
     const res = await fetchSections()
-    const backendSections = Array.isArray(res.data) ? res.data : []
-    const hasSection4 = backendSections.some(s => s.id === 'task4')
-    sections.value = hasSection4 ? backendSections : [...backendSections, ...FALLBACK_SECTIONS.filter(f => f.id === 'task4')]
+    backendSections.value = Array.isArray(res.data) ? res.data : []
   } catch {
-    sections.value = FALLBACK_SECTIONS
+    backendSections.value = []
   }
 }
 

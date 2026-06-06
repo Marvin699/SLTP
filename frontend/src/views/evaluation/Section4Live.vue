@@ -2,7 +2,7 @@
   <div class="s4-live">
     <div class="s4-header">
       <div class="h-left">
-        <h1>应急物资低空智慧运输 · AI智能体大屏</h1>
+        <h1>任务4 · 应急物资低空智慧运输装载与行前准备 · AI智能体大屏</h1>
         <span class="h-sub">渠阳镇特大水灾 · 6组同步装载 · 实时监控</span>
       </div>
       <div class="h-right">
@@ -128,9 +128,9 @@
         <el-button type="primary" @click="fireManual">▶ 立即触发</el-button>
 
         <h3 style="margin-top: 18px">灾情事件</h3>
-        <el-button size="small" type="warning" plain @click="disaster('旧州村 2 名儿童被铁钉扎伤，急需破伤风疫苗，是否优先安排？')">旧州村伤员求助</el-button>
+        <el-button size="small" type="warning" plain @click="disaster('伤员求助：2 名儿童被铁钉扎伤，急需破伤风疫苗，是否优先安排？')">伤员求助</el-button>
         <el-button size="small" type="warning" plain @click="disaster('风速 8m/s，货物总重量不得超过 10kg，否则飞行不安全')">风速警报</el-button>
-        <el-button size="small" type="warning" plain @click="disaster('新靖村出现霍乱疑似病例，需额外增加 20 盒诺氟沙星胶囊')">霍乱疑似病例</el-button>
+        <el-button size="small" type="warning" plain @click="disaster('霍乱疑似病例，需额外增加 20 盒诺氟沙星胶囊')">霍乱疑似病例</el-button>
       </div>
     </div>
 
@@ -155,12 +155,12 @@ import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const groups = reactive([
-  { id: 1, name: '旧州村', task: '2-8℃ 冷链疫苗', color: '#5b8def', stream: null, detections: [], events: [], score: 88.2, scoreColor: '#42d39c', stage: 1 },
-  { id: 2, name: '弄贴村', task: '-20℃ 深冷血浆', color: '#c77dff', stream: null, detections: [], events: [], score: 85.5, scoreColor: '#42d39c', stage: 1 },
-  { id: 3, name: '新靖村', task: '避光防潮抗生素', color: '#6be6a1', stream: null, detections: [], events: [], score: 93.1, scoreColor: '#42d39c', stage: 2 },
-  { id: 4, name: '化峒村', task: '易碎防震注射液', color: '#ff9f43', stream: null, detections: [], events: [], score: 76.8, scoreColor: '#ffa94d', stage: 1 },
-  { id: 5, name: '同德村', task: '易燃危险品消毒品', color: '#ff6b81', stream: null, detections: [], events: [], score: 81.4, scoreColor: '#42d39c', stage: 1 },
-  { id: 6, name: '安宁村', task: '多品类综合药品', color: '#74b9ff', stream: null, detections: [], events: [], score: 84.0, scoreColor: '#42d39c', stage: 1 },
+  { id: 1, name: '逐日组', task: '2-8℃ 冷链疫苗', color: '#5b8def', stream: null, detections: [], events: [], score: 88.2, scoreColor: '#42d39c', stage: 1 },
+  { id: 2, name: '揽星组', task: '-20℃ 深冷血浆', color: '#c77dff', stream: null, detections: [], events: [], score: 85.5, scoreColor: '#42d39c', stage: 1 },
+  { id: 3, name: '驭风组', task: '避光防潮抗生素', color: '#6be6a1', stream: null, detections: [], events: [], score: 93.1, scoreColor: '#42d39c', stage: 2 },
+  { id: 4, name: '长空组', task: '易碎防震注射液', color: '#ff9f43', stream: null, detections: [], events: [], score: 76.8, scoreColor: '#ffa94d', stage: 1 },
+  { id: 5, name: '凌云组', task: '易燃危险品消毒品', color: '#ff6b81', stream: null, detections: [], events: [], score: 81.4, scoreColor: '#42d39c', stage: 1 },
+  { id: 6, name: '巡天组', task: '多品类综合药品', color: '#74b9ff', stream: null, detections: [], events: [], score: 84.0, scoreColor: '#42d39c', stage: 1 },
 ])
 
 const stages = ['待开始', '物资分拣', '包装装载', '固定贴标', '重心测量', '行前检查', '完成']
@@ -294,7 +294,7 @@ function disaster(msg) {
 
 function disasterAck(action) {
   disasterDlg.value = false
-  emit(3, 'yellow', action === 'adjust' ? '建议：请将新靖村方案调整为优先包装诺氟沙星胶囊，其他药品压缩重量应对风速限制' : '已向各组传达灾情事件，注意各组状态变化', '教师')
+  emit(3, 'yellow', action === 'adjust' ? '建议：驭风组方案调整为优先包装诺氟沙星胶囊，其他药品压缩重量应对风速限制' : '已向各组传达灾情事件，注意各组状态变化', '教师')
 }
 
 async function startCamera(g) {
@@ -412,7 +412,7 @@ function startRun() {
   setTimeout(() => applyPreset(presets[3]), 50000)
   setTimeout(() => trigger(6, 'yellow'), 60000)
   setTimeout(() => disaster('风速 8m/s，货物总重量不得超过 10kg，否则飞行不安全'), 70000)
-  setTimeout(() => disaster('新靖村出现霍乱疑似病例，需额外增加 20 盒诺氟沙星胶囊，请立即调整'), 140000)
+  setTimeout(() => disaster('霍乱疑似病例，需额外增加 20 盒诺氟沙星胶囊，请立即调整'), 140000)
 }
 
 function stopRun() {
