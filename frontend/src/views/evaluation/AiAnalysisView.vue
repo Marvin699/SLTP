@@ -30,7 +30,8 @@
               </div>
               <div class="col-keywords">
                 <span v-for="kw in keywordsB" :key="kw.text"
-                  class="keyword-pill pill-orange">
+                  class="keyword-pill pill-orange"
+                  :class="getKwSizeClass(kw.weight)">
                   {{ kw.text }}
                 </span>
               </div>
@@ -45,7 +46,8 @@
               </div>
               <div class="col-keywords">
                 <span v-for="kw in keywordsA" :key="kw.text"
-                  class="keyword-pill pill-blue">
+                  class="keyword-pill pill-blue"
+                  :class="getKwSizeClass(kw.weight)">
                   {{ kw.text }}
                 </span>
               </div>
@@ -79,6 +81,10 @@
             <div class="risk-top">
               <span class="risk-level" :class="'level-' + risk.level">{{ risk.levelLabel }}</span>
               <span class="risk-group" :class="risk.group === groupA ? 'grp-blue' : 'grp-orange'">{{ risk.group }}</span>
+              <button class="speak-btn" :class="{ speaking: speakingId === 'risk-' + i }" @click="speakRisk(risk, i)">
+                <span v-if="speakingId === 'risk-' + i">🔊 播放中...</span>
+                <span v-else>🔈 播报</span>
+              </button>
             </div>
             <div class="risk-desc">{{ risk.description }}</div>
           </div>
@@ -93,6 +99,10 @@
           <span class="sc-rank">#1</span>
           <span class="sc-name">{{ groupA }}</span>
           <span class="sc-score">{{ groupAScore }}<small>分</small></span>
+          <button class="speak-btn speak-btn-lg" :class="{ speaking: speakingId === 'summary-A' }" @click="speakSummary('A')">
+            <span v-if="speakingId === 'summary-A'">🔊 播放中...</span>
+            <span v-else>🔈 播报点评</span>
+          </button>
         </div>
         <div class="sc-body">
           <div class="sc-tag">技术深度</div>
@@ -106,6 +116,10 @@
           <span class="sc-rank">#2</span>
           <span class="sc-name">{{ groupB }}</span>
           <span class="sc-score">{{ groupBScore }}<small>分</small></span>
+          <button class="speak-btn speak-btn-lg" :class="{ speaking: speakingId === 'summary-B' }" @click="speakSummary('B')">
+            <span v-if="speakingId === 'summary-B'">🔊 播放中...</span>
+            <span v-else>🔈 播报点评</span>
+          </button>
         </div>
         <div class="sc-body">
           <div class="sc-tag">系统整合</div>
@@ -125,17 +139,68 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 
+const speakingId = ref(null)
+let currentUtterance = null
+
 const groupA = computed(() => route.query.groupA || '揽星组')
 const groupB = computed(() => route.query.groupB || '驭风组')
 const groupAScore = 92
 const groupBScore = 91
+
+function getKwSizeClass(weight) {
+  if (weight >= 85) return 'kw-lg'
+  if (weight >= 70) return 'kw-md'
+  return 'kw-sm'
+}
+
+function speak(text, id) {
+  if (!('speechSynthesis' in window)) {
+    alert('您的浏览器不支持语音播报')
+    return
+  }
+  if (speakingId.value === id) {
+    window.speechSynthesis.cancel()
+    speakingId.value = null
+    return
+  }
+  window.speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(text)
+  u.lang = 'zh-CN'
+  u.rate = 1
+  u.pitch = 1
+  u.onstart = () => { speakingId.value = id }
+  u.onend = () => { if (speakingId.value === id) speakingId.value = null }
+  u.onerror = () => { if (speakingId.value === id) speakingId.value = null }
+  currentUtterance = u
+  speakingId.value = id
+  window.speechSynthesis.speak(u)
+}
+
+function speakRisk(risk, i) {
+  const text = `${risk.group}，${risk.levelLabel}：${risk.description}`
+  speak(text, 'risk-' + i)
+}
+
+function speakSummary(which) {
+  if (which === 'A') {
+    const text = `${groupA.value}，排名第一，${groupAScore}分。亮点：技术深度、安全冗余量化、动态航程约束建模。点评：方案数学建模扎实，数据支撑充分；但总耗时偏长，实际应急中需再压缩。`
+    speak(text, 'summary-A')
+  } else {
+    const text = `${groupB.value}，排名第二，${groupBScore}分。亮点：系统整合、三层冗余备份、多机协同设计。点评：协同设计有前瞻性，效率优先策略清晰；但数据口径必须统一，这是企业汇报基本要求。`
+    speak(text, 'summary-B')
+  }
+}
+
+onBeforeUnmount(() => {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+})
 
 // 关键词数据
 const wordCloudData = {
@@ -362,11 +427,10 @@ function goBack() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 0;
+  padding: 6px 0;
   width: 100%;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-weight: 700;
   line-height: 1.4;
   cursor: default;
   transition: all 0.2s ease;
@@ -375,6 +439,9 @@ function goBack() {
   text-overflow: ellipsis;
   text-align: center;
 }
+.keyword-pill.kw-lg { font-size: 19px; padding: 8px 0; letter-spacing: 1px; }
+.keyword-pill.kw-md { font-size: 15px; padding: 6px 0; letter-spacing: 0.5px; }
+.keyword-pill.kw-sm { font-size: 13px; padding: 5px 0; letter-spacing: 0; }
 .keyword-pill:hover {
   transform: translateY(-1px);
 }
@@ -547,5 +614,42 @@ function goBack() {
 .footer-sub {
   font-size: 12px;
   color: rgba(255,255,255,0.3);
+}
+
+/* ===== 语音播报按钮 ===== */
+.speak-btn {
+  margin-left: auto;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: #7dd3fc;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.speak-btn:hover {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: #0ea5e9;
+  color: #bae6fd;
+}
+.speak-btn.speaking {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #6ee7b7;
+  animation: speakPulse 1.2s ease-in-out infinite;
+}
+@keyframes speakPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+}
+
+.speak-btn-lg {
+  font-size: 13px;
+  padding: 5px 14px;
+  border-radius: 8px;
+  margin-left: auto;
 }
 </style>

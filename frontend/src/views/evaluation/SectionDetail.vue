@@ -874,6 +874,8 @@ function loadAIData() {
   groups.forEach((g, i) => g.rank = i + 1)
   aiData.value = { dimensions: AI_DIMENSIONS, groups }
   if (groups.length) selectedAIGroup.value = groups[0].group_id
+  if (groups.length >= 1) compareGroupA.value = groups[0].group_id
+  if (groups.length >= 2) compareGroupB.value = groups[1].group_id
 }
 
 function switchToAI() {
