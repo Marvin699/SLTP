@@ -438,14 +438,18 @@ def convert_word_to_pdf(word_path: str, pdf_path: str = None) -> str:
     将Word转换为PDF
 
     策略:
-      1) 优先尝试 libreoffice (服务器需 apt install libreoffice)
-      2) 回退: 用 reportlab 基于 Word 内容渲染中文 PDF (注册中文字体)
+      1) 优先尝试 libreoffice (服务器需 apt install libreoffice fonts-noto-cjk)
+         → Word 原样转 PDF, 中文完美, 图片/表格/页眉页脚全部保留
+      2) 回退: 用 reportlab + 中文字体 基于 Word 内容渲染 PDF
+         (只保证文字/表格, 不保证图片和样式; 建议装 libreoffice)
     """
+    import shutil as _shutil
+
     if not pdf_path:
         pdf_path = word_path.replace('.docx', '.pdf')
 
-    soffice_candidates = ['libreoffice', 'soffice']
-    for soffice in soffice_candidates:
+    soffice = _shutil.which('libreoffice') or _shutil.which('soffice')
+    if soffice:
         try:
             out_dir = os.path.dirname(pdf_path) or '.'
             subprocess.run(
@@ -460,10 +464,13 @@ def convert_word_to_pdf(word_path: str, pdf_path: str = None) -> str:
                     os.remove(pdf_path)
                 os.rename(converted, pdf_path)
             if os.path.exists(pdf_path):
+                print(f"[report] convert_word_to_pdf -> libreoffice ({soffice}) -> {pdf_path}")
                 return pdf_path
-        except Exception:
-            continue
+        except Exception as e:
+            print(f"[report] libreoffice conversion failed ({soffice}): {e}, falling back")
 
+    font = _register_cjk_font()
+    print(f"[report] libreoffice not installed, falling back to reportlab (font={font})")
     return _render_pdf_fallback(word_path, pdf_path)
 
 
