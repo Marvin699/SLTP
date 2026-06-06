@@ -543,7 +543,7 @@ function getDemoGroups(dimensions) {
     '驭风组': [90, 86, 92, 88],
     '长空组': [85, 90, 87, 92],
     '凌云组': [88, 85, 90, 87],
-    '巡天组': [91, 89, 88, 90],
+    '巡天组': [94, 92, 90, 92],
   }
   const groups = Object.entries(demoScores).map(([name, scores]) => {
     const isZero = ZERO_GROUPS.includes(name)
@@ -632,73 +632,131 @@ function switchToOverview() {
   })
 }
 
-// 模拟实时打分
 const SIM_ROLES = ['老师', '企业导师', '逐日组观察员', '揽星组观察员', '驭风组观察员', '长空组观察员', '凌云组观察员', '巡天组观察员']
+const ROUND_TICK_MS = 1500
+const LERP_TICK_MS = 120
+const LERP_DURATION_MS = 3000
 let simData = null
-let simBaseScores = null
+let simRoleTimer = null
+let simLerpTimer = null
+let simTickPhase = 'scoring'
+let simLerpStart = 0
+let simLerpFrom = null
+
+function lerp(a, b, t) { return a + (b - a) * t }
+
+function roundScores() {
+  const dims = dashboardData.value.dimensions || []
+  simData.forEach(g => {
+    if (g.isZero) return
+    dims.forEach(d => {
+      g.current_scores[d] = Math.round(Math.max(0, Math.min(100, g.current_scores[d])) * 100) / 100
+    })
+  })
+}
 
 function startSimulation() {
   if (simulating.value) return
   if (!dashboardData.value?.groups?.length) return
 
-  const groups = dashboardData.value.groups
   const dims = dashboardData.value.dimensions || []
-  const totalSteps = SIM_ROLES.length
 
-  // 1. 保存目标分数
-  simData = groups.map(g => ({
+  simData = (dashboardData.value.groups || []).map(g => ({
     group_id: g.group_id,
-    target_scores: { ...g.dimension_scores },
+    isZero: ZERO_GROUPS.includes(g.group_id),
+    target_scores: { ...(g.dimension_scores || {}) },
     current_scores: Object.fromEntries(dims.map(d => [d, 0])),
   }))
 
-  // 2. 预分配每个评委的贡献分（随机波动，总和 = 目标分）
-  simBaseScores = {}
-  simData.forEach(g => {
-    simBaseScores[g.group_id] = {}
-    dims.forEach(d => {
-      const target = g.target_scores[d] ?? 80
-      const perScorer = target / totalSteps
-      const shares = []
-      let remaining = target
-      for (let i = 0; i < totalSteps; i++) {
-        const variance = (Math.random() - 0.5) * perScorer * 0.4
-        const share = i === totalSteps - 1 ? remaining : Math.round(Math.max(0, perScorer + variance) * 100) / 100
-        shares.push(share)
-        remaining -= share
-      }
-      simBaseScores[g.group_id][d] = shares
-    })
-  })
-
-  // 3. 立即用0分渲染图表（不显示目标分）
+  simTickPhase = 'scoring'
   submittedCount.value = 0
   simulating.value = true
+
   renderSimCharts()
 
-  // 4. 启动定时器，每1.5秒加一个评委的分数
-  let step = 0
-  simTimer = setInterval(() => {
-    if (step >= totalSteps) { stopSimulation(); return }
+  const active = simData.filter(g => !g.isZero)
+  let roleIdx = 0
 
-    const role = SIM_ROLES[step]
-    submittedCount.value = step + 1
+  function scheduleRoleStep() {
+    if (roleIdx >= SIM_ROLES.length) {
+      simTickPhase = 'lerp'
+      simLerpStart = Date.now()
+      simLerpFrom = simData.map(g => ({ ...g.current_scores }))
+      submittedCount.value = SIM_ROLES.length
+      tickLerp()
+      return
+    }
 
-    // 累加本轮分数
-    simData.forEach(g => {
+    const role = SIM_ROLES[roleIdx]
+    const totalRoles = SIM_ROLES.length
+    const roleProgress = roleIdx / totalRoles
+
+    active.forEach(g => {
       dims.forEach(d => {
-        g.current_scores[d] = Math.round((g.current_scores[d] + simBaseScores[g.group_id][d][step]) * 100) / 100
+        const target = g.target_scores[d] ?? 0
+        const remaining = target - (g.current_scores[d] || 0)
+        if (remaining <= 0) return
+        const baseShare = target / totalRoles
+        const r = 0.75 + Math.random() * 0.5
+        let add = baseShare * r
+        if (roleProgress < 0.4) add *= 1.5
+        else if (roleProgress < 0.7) add *= 1.0
+        else add *= 0.55
+        add = Math.min(add, remaining + 0.5)
+        g.current_scores[d] = Math.round(((g.current_scores[d] || 0) + add) * 100) / 100
       })
     })
 
-    // 只更新图表数据，不重建图表
-    renderSimCharts()
-    step++
-
-    if (step <= 3 || step === totalSteps) {
-      ElMessage({ message: `${role} 已提交评分`, type: 'success', duration: 2000 })
+    if (roleIdx >= 2 && roleIdx < SIM_ROLES.length - 1 && active.length) {
+      const revGroup = active[Math.floor(Math.random() * active.length)]
+      const revDim = dims[Math.floor(Math.random() * dims.length)]
+      const cur = revGroup.current_scores[revDim]
+      const delta = (Math.random() - 0.35) * 6
+      revGroup.current_scores[revDim] = Math.max(0, Math.min(revGroup.target_scores[revDim] ?? 100, cur + delta))
+      ElMessage({ message: `${role} 提交评分 · 有人微调了一处`, type: 'success', duration: 1500 })
+    } else {
+      ElMessage({ message: `${role} 提交了评分`, type: 'success', duration: 1500 })
     }
-  }, 1500)
+
+    roundScores()
+    submittedCount.value = roleIdx + 1
+    renderSimCharts()
+    roleIdx++
+    simRoleTimer = setTimeout(scheduleRoleStep, ROUND_TICK_MS)
+  }
+
+  function tickLerp() {
+    if (simTickPhase !== 'lerp') return
+    const elapsed = Date.now() - simLerpStart
+    const t = Math.min(1, elapsed / LERP_DURATION_MS)
+    const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+
+    simData.forEach((g, gi) => {
+      if (g.isZero) return
+      dims.forEach(d => {
+        const from = simLerpFrom[gi][d] || 0
+        const to = g.target_scores[d] ?? 0
+        g.current_scores[d] = Math.round(lerp(from, to, eased) * 100) / 100
+      })
+    })
+
+    renderSimCharts()
+
+    if (t >= 1) {
+      simData.forEach(g => {
+        dims.forEach(d => {
+          g.current_scores[d] = Math.round((g.target_scores[d] ?? 0) * 100) / 100
+        })
+      })
+      submittedCount.value = SIM_ROLES.length
+      renderSimCharts()
+      stopSimulation()
+      return
+    }
+    simLerpTimer = setTimeout(tickLerp, LERP_TICK_MS)
+  }
+
+  simRoleTimer = setTimeout(scheduleRoleStep, 500)
 }
 
 // 构造当前模拟快照
@@ -728,6 +786,8 @@ function renderSimCharts() {
   if (ovRankBar) {
     const maxVal = 100
     ovRankBar.setOption({
+      animationDuration: 900,
+      animationEasing: 'cubicOut',
       backgroundColor: 'transparent',
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}分' },
       grid: { left: 80, right: 60, top: 10, bottom: 10 },
@@ -758,6 +818,8 @@ function renderSimCharts() {
         }),
         barWidth: '55%',
         label: { show: true, position: 'right', color: '#fff', fontSize: 14, fontWeight: 700 },
+        animationDuration: 900,
+        animationEasing: 'cubicOut',
       }],
     }, true)
   }
@@ -769,6 +831,8 @@ function renderSimCharts() {
   if (ovDimBar) {
     const dimColors = ['#00d4ff', '#36d7b7', '#f7b731', '#e056a0']
     ovDimBar.setOption({
+      animationDuration: 900,
+      animationEasing: 'cubicOut',
       backgroundColor: 'transparent',
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
       legend: { data: dimensions, textStyle: { color: 'rgba(255,255,255,0.7)', fontSize: 11 }, top: 0, itemWidth: 12, itemHeight: 8 },
@@ -780,6 +844,8 @@ function renderSimCharts() {
         data: groups.map(g => g.dimension_scores[dim] || 0),
         itemStyle: { color: dimColors[di % 4], borderRadius: [3, 3, 0, 0], opacity: 0.85 },
         barGap: '8%',
+        animationDuration: 900,
+        animationEasing: 'cubicOut',
       })),
     }, true)
   }
@@ -795,6 +861,8 @@ function renderSimCharts() {
     const dimSorted = [...groups].sort((a, b) => (b.dimension_scores[dim] || 0) - (a.dimension_scores[dim] || 0))
     const dimScores = dimSorted.map(g => g.dimension_scores[dim] || 0)
     dimCharts[i].setOption({
+      animationDuration: 900,
+      animationEasing: 'cubicOut',
       backgroundColor: 'transparent',
       tooltip: { trigger: 'axis', formatter: '{b}: {c}分' },
       grid: { left: 12, right: 12, top: 8, bottom: 8, containLabel: true },
@@ -823,15 +891,19 @@ function renderSimCharts() {
         })),
         barWidth: '50%',
         label: { show: true, position: 'top', color: 'rgba(255,255,255,0.75)', fontSize: 10, fontWeight: 600 },
+        animationDuration: 900,
+        animationEasing: 'cubicOut',
       }],
     }, true)
   })
 }
 
 function stopSimulation() {
+  if (simRoleTimer) { clearTimeout(simRoleTimer); simRoleTimer = null }
+  if (simLerpTimer) { clearTimeout(simLerpTimer); simLerpTimer = null }
   if (simTimer) { clearInterval(simTimer); simTimer = null }
+  simTickPhase = 'scoring'
   simulating.value = false
-  // 模拟结束后恢复轮询（如果有真实数据）
   if (viewMode.value === 'overview') {
     nextTick().then(() => startPolling())
   }
