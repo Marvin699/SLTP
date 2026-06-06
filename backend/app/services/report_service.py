@@ -237,194 +237,139 @@ def generate_report_data(task: dict, solution: dict, diagnosis: dict = None) -> 
 
 
 def generate_word_report(report_data: dict, output_path: str = None) -> str:
-    """
-    生成Word报告
-    
-    参数:
-        report_data: 报告数据
-        output_path: 输出路径（可选）
-    
-    返回:
-        生成的文件路径
-    """
     doc = Document()
-    
-    # 设置默认字体
     style = doc.styles['Normal']
     style.font.name = '宋体'
     style.font.size = Pt(10.5)
     style._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-    
-    # 封面
+
     _add_heading(doc, report_data['project_name'], level=1)
-    _add_heading(doc, report_data['scheme_type'], level=1)
-    _add_paragraph(doc, f"（{report_data['subtitle']}）", align='center', font_size=12)
+    _add_heading(doc, report_data['scheme_type'], level=2)
+    _add_paragraph(doc, f"（{report_data['subtitle']}）", align='center', font_size=11)
+    _add_paragraph(doc, f"生成时间：{report_data['generated_at']}", align='center', font_size=10.5)
     doc.add_paragraph()
-    doc.add_paragraph()
-    
-    # 生成时间
-    _add_paragraph(doc, f"生成时间：{report_data['generated_at']}", align='center')
-    doc.add_page_break()
-    
-    # 一、项目概况
+
     _add_heading(doc, '一、项目概况', level=2)
-    
     depot = report_data['depot']
     stats = report_data['stats']
-    
-    overview_text = f"""
-    本次无人机应急物资配送任务以{depot.get('name', '未知')}为配送中心，
-    共需配送{stats['village_count']}个村庄，总物资重量约{stats['total_weight']}kg。
-    调配{stats['drone_count']}架无人机执行配送任务，
-    预计总飞行距离{stats['total_distance']}km，总飞行时间{stats['total_time']}分钟，
-    共需执行{stats['total_trips']}趟次。
-    """
+    overview_text = (
+        f"本次无人机应急物资配送任务以{depot.get('name', '未知')}为配送中心，"
+        f"共需配送{stats['village_count']}个村庄，总物资重量约{stats['total_weight']}kg。"
+        f"调配{stats['drone_count']}架无人机执行配送任务，"
+        f"预计总飞行距离{stats['total_distance']}km，总飞行时间{stats['total_time']}分钟，"
+        f"共需执行{stats['total_trips']}趟次。"
+    )
     _add_paragraph(doc, overview_text.strip())
-    
-    # 配送点列表
-    _add_paragraph(doc, '配送点信息：', bold=True)
-    demand_points = report_data['demand_points']
-    dp_rows = []
-    for i, dp in enumerate(demand_points):
-        materials = dp.get('materials', [])
-        material_names = '、'.join([m.get('type', '物资') for m in materials]) if materials else '无'
-        dp_rows.append([
-            i + 1,
-            dp.get('name', '未知'),
-            dp.get('priority', '普通'),
-            round(sum(m.get('weight', 0) for m in materials), 2),
-            material_names,
-        ])
-    
-    _add_table(doc,
-        ['序号', '村庄名称', '优先级', '需求重量(kg)', '物资类型'],
-        dp_rows,
-        [1.5, 3, 2.5, 2.5, 6]
-    )
-    
-    # 无人机配置
-    _add_paragraph(doc, '无人机配置：', bold=True)
-    uavs = report_data['uavs']
-    uav_rows = []
-    for i, uav in enumerate(uavs):
-        uav_rows.append([
-            i + 1,
-            uav.get('name', '未知'),
-            uav.get('max_payload', 0),
-            uav.get('range_km', uav.get('max_range', 0)),
-            uav.get('max_speed', 0),
-        ])
-    
-    _add_table(doc,
-        ['序号', '机型', '最大载重(kg)', '最大航程(km)', '最大速度(km/h)'],
-        uav_rows,
-        [1.5, 4, 2.5, 2.5, 3]
-    )
-    
-    # 诊断评分（如果有）
+
+    _add_paragraph(doc, '主要指标：', bold=True)
+    stat_labels = [
+        ('总飞行距离', f"{stats['total_distance']} km"),
+        ('总飞行时间', f"{stats['total_time']} 分钟"),
+        ('总趟次', str(stats['total_trips'])),
+        ('无人机数量', str(stats['drone_count'])),
+    ]
+    stat_table = doc.add_table(rows=1, cols=4)
+    stat_table.style = 'Table Grid'
+    stat_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    for i, (label, value) in enumerate(stat_labels):
+        cell = stat_table.rows[0].cells[i]
+        cell.text = ''
+        p1 = cell.paragraphs[0]
+        run1 = p1.add_run(label)
+        _set_run_font(run1, '宋体', 9, bold=False)
+        p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p1.space_after = Pt(2)
+        p2 = cell.add_paragraph()
+        run2 = p2.add_run(value)
+        _set_run_font(run2, '黑体', 12, bold=True)
+        run2.font.color.rgb = RGBColor(0x2F, 0x54, 0x96)
+        p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for row in stat_table.rows:
+        for ci in range(4):
+            row.cells[ci].width = Cm(5.5)
+    doc.add_paragraph()
+
     scores = report_data.get('scores', {})
     if scores:
-        _add_paragraph(doc, '方案评估：', bold=True)
-        score_rows = [
-            ['安全性', scores.get('safety', 0), '载重安全、航程安全、飞行安全'],
-            ['时效性', scores.get('timeliness', 0), '配送时间、无人机利用率、优先级满足'],
-            ['经济性', scores.get('economy', 0), '路径优化、负载均衡、资源利用'],
-            ['可行性', scores.get('feasibility', 0), '需求覆盖、硬约束满足、可执行性'],
-        ]
-        _add_table(doc,
-            ['评估维度', '得分', '评估说明'],
-            score_rows,
-            [3, 2, 8]
-        )
-    
-    doc.add_page_break()
-    
-    # 二、航线规划与调度
+        _add_heading(doc, '方案评估', level=2)
+        score_labels = {
+            'safety': '安全性',
+            'timeliness': '时效性',
+            'economy': '经济性',
+            'feasibility': '可行性',
+        }
+        score_items = [(score_labels.get(k, k), v) for k, v in scores.items()]
+        sc_table = doc.add_table(rows=1, cols=len(score_items))
+        sc_table.style = 'Table Grid'
+        sc_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        for i, (name, val) in enumerate(score_items):
+            cell = sc_table.rows[0].cells[i]
+            cell.text = ''
+            p1 = cell.paragraphs[0]
+            run1 = p1.add_run(name)
+            _set_run_font(run1, '宋体', 9)
+            p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p1.space_after = Pt(2)
+            p2 = cell.add_paragraph()
+            run2 = p2.add_run(f"{val}分")
+            _set_run_font(run2, '黑体', 14, bold=True)
+            if val >= 80:
+                run2.font.color.rgb = RGBColor(0x21, 0x96, 0xF3)
+            elif val >= 60:
+                run2.font.color.rgb = RGBColor(0xFF, 0x98, 0x00)
+            else:
+                run2.font.color.rgb = RGBColor(0xF4, 0x43, 0x36)
+            p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_paragraph()
+
     _add_heading(doc, '二、航线规划与调度', level=2)
-    
-    # 汇总统计
-    _add_paragraph(doc, '无人机应急物资配送路径汇总表', bold=True, align='center')
-    summary_rows = [
-        ['总飞行距离', f"{stats['total_distance']} km"],
-        ['总飞行时间', f"{stats['total_time']} 分钟"],
-        ['总趟次', str(stats['total_trips'])],
-        ['无人机数量', str(stats['drone_count'])],
-        ['配送村庄数', str(stats['village_count'])],
-    ]
-    _add_table(doc, ['指标', '数值'], summary_rows, [5, 5])
-    
-    # 路径汇总表
+
     _add_paragraph(doc, '路径汇总', bold=True)
     route_table = report_data.get('route_table', [])
     if route_table:
-        route_rows = []
-        for r in route_table:
-            route_rows.append([
-                r.get('route_id', '-'),
-                r.get('drone_name', '-'),
-                r.get('route_path', '-'),
-                r.get('route_nodes', '-'),
-                r.get('distance', 0),
-                r.get('time', 0),
-                r.get('weight', 0),
-                r.get('village_name', '-'),
-                r.get('trip_count', 1),
-            ])
-        _add_table(doc,
-            ['路径编号', '无人机', '路径', '途径节点', '距离(km)', '时间(min)', '配送重量(kg)', '目标村庄', '趟次'],
-            route_rows,
-            [1.2, 2, 2.5, 2.5, 1.5, 1.5, 2, 2.5, 1]
-        )
-    
-    # 村庄配送详情
+        headers = ['路径编号', '无人机', '路径', '距离(km)', '时间(min)', '配送重量(kg)', '目标村庄']
+        rows = [[
+            r.get('route_id', '-'),
+            r.get('drone_name', '-'),
+            r.get('route_path', '-'),
+            r.get('distance', 0),
+            r.get('time', 0),
+            r.get('weight', 0),
+            r.get('village_name', '-'),
+        ] for r in route_table]
+        _add_table(doc, headers, rows, [1.5, 2.5, 4.5, 1.5, 2, 2.5, 2.5])
+
     _add_paragraph(doc, '村庄配送详情', bold=True)
     village_table = report_data.get('village_table', [])
     if village_table:
-        village_rows = []
-        for v in village_table:
-            village_rows.append([
-                v.get('village_id', '-'),
-                v.get('village_name', '-'),
-                v.get('demand_weight', 0),
-                v.get('drone_name', '-'),
-                v.get('drone_weight', 0),
-                v.get('trip_count', 0),
-                v.get('one_way_distance', 0),
-                v.get('special_req', '普通配送'),
-            ])
-        _add_table(doc,
-            ['村庄编号', '村庄名称', '需求重量(kg)', '配送无人机', '无人机配送重量(kg)', '趟次', '单程距离(km)', '特殊要求'],
-            village_rows,
-            [1.2, 2, 2, 2.5, 2.5, 1.2, 2, 3]
-        )
-    
-    # 无人机配送详情
+        headers = ['村庄编号', '村庄名称', '需求重量(kg)', '配送无人机', '趟次', '特殊要求']
+        rows = [[
+            v.get('village_id', '-'),
+            v.get('village_name', '-'),
+            v.get('demand_weight', 0),
+            v.get('drone_name', '-'),
+            v.get('trip_count', 0),
+            v.get('special_req', '普通配送'),
+        ] for v in village_table]
+        _add_table(doc, headers, rows, [1.5, 2.5, 2.5, 3, 1.5, 3.5])
+
     _add_paragraph(doc, '无人机配送详情', bold=True)
     drone_table = report_data.get('drone_table', [])
     if drone_table:
-        drone_rows = []
-        for d in drone_table:
-            drone_rows.append([
-                d.get('drone_id', '-'),
-                d.get('drone_type', '-'),
-                d.get('speed_ms', 0),
-                d.get('max_payload', 0),
-                d.get('total_distance', 0),
-                d.get('total_time', 0),
-                d.get('total_trips', 0),
-                d.get('villages', '-'),
-                d.get('note', '-'),
-            ])
-        _add_table(doc,
-            ['无人机编号', '机型', '速度(m/s)', '最大载重(kg)', '总飞行距离(km)', '总飞行时间(min)', '总趟次', '服务村庄', '备注'],
-            drone_rows,
-            [1.5, 2, 1.5, 2, 2, 2, 1.2, 3, 2]
-        )
-    
-    # 保存文件
+        headers = ['无人机编号', '机型', '总飞行距离(km)', '总飞行时间(min)', '总趟次', '服务村庄', '备注']
+        rows = [[
+            d.get('drone_id', '-'),
+            d.get('drone_type', '-'),
+            d.get('total_distance', 0),
+            d.get('total_time', 0),
+            d.get('total_trips', 0),
+            d.get('villages', '-'),
+            d.get('note', '-'),
+        ] for d in drone_table]
+        _add_table(doc, headers, rows, [1.5, 3, 2.5, 3, 1.5, 3, 2.5])
+
     if not output_path:
         output_path = tempfile.mktemp(suffix='.docx')
-    
     doc.save(output_path)
     return output_path
 
