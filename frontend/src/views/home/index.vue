@@ -773,6 +773,19 @@ onMounted(() => {
   box-shadow: 0 12px 32px rgba(64, 158, 255, 0.2);
 }
 
+/* 青色主题 - 航线详情 */
+.agent-cyan {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(10, 22, 40, 0.95) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+.agent-cyan::before {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(10, 22, 40, 0.95) 100%);
+}
+.agent-cyan:hover {
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 12px 32px rgba(6, 182, 212, 0.2);
+}
+
 /* 紫色主题 - 装箱评价 */
 .agent-purple {
   background: linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(10, 22, 40, 0.95) 100%);
@@ -875,6 +888,11 @@ onMounted(() => {
 .dot.green {
   background: #67c23a;
   box-shadow: 0 0 8px rgba(103, 194, 58, 0.6);
+}
+
+.dot.cyan {
+  background: #06b6d4;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
 }
 
 /* 进入按钮 */

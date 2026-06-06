@@ -16,6 +16,7 @@ import Module5 from '@/views/agents/pathPlanning/Module5.vue'
 import Module6 from '@/views/agents/pathPlanning/Module6.vue'
 import Module7 from '@/views/agents/pathPlanning/Module7.vue'
 import Module8 from '@/views/agents/pathPlanning/Module8.vue'
+import RoutesDetail from '@/views/agents/RoutesDetail.vue'
 
 const router = useRouter()
 const app = useAppStore()
@@ -63,7 +64,10 @@ onMounted(() => {
     <TopBar />
 
     <!-- Main area -->
-    <div class="main-area">
+    <div class="main-area routes-mode" v-if="app.activeModule === 9">
+      <RoutesDetail embedded-full />
+    </div>
+    <div class="main-area" v-else>
       <!-- Left side panel -->
       <div class="side-panel">
         <div class="panel-body">
