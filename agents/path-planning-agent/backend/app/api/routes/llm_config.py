@@ -9,7 +9,7 @@ from app.core.database import get_db
 from app.models.llm_config import LLMConfig
 from app.core.config import settings
 
-router = APIRouter(prefix="/api/llm", tags=["系统管理-大模型配置"])
+router = APIRouter(prefix="/api/path-planning/llm", tags=["系统管理-大模型配置"])
 
 
 class LLMConfigCreate(BaseModel):

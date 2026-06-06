@@ -6,7 +6,7 @@ from pathlib import Path
 import json
 from datetime import datetime
 
-router = APIRouter(prefix="/api/workspace", tags=["workspace"])
+router = APIRouter(prefix="/api/path-planning/workspace", tags=["workspace"])
 
 WORK_DIR = Path(__file__).parent.parent.parent.parent.parent / "work"
 WORK_DIR.mkdir(exist_ok=True)

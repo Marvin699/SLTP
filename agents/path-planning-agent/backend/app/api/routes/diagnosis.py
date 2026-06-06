@@ -7,7 +7,7 @@ from app.core.database import SessionLocal
 from app.models.diagnosis import DiagnosisRecord
 from datetime import datetime
 
-router = APIRouter(prefix="/api/diagnosis", tags=["模块五-方案诊断"])
+router = APIRouter(prefix="/api/path-planning/diagnosis", tags=["模块五-方案诊断"])
 
 
 class DiagnosisRequest(BaseModel):

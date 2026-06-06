@@ -14,7 +14,7 @@ from app.services.llm_service import is_configured
 from app.core.database import SessionLocal
 from app.models.ai_result import AiSelectionResult
 
-router = APIRouter(prefix="/api/uavs", tags=["模块三-无人机选择"])
+router = APIRouter(prefix="/api/path-planning/uavs", tags=["模块三-无人机选择"])
 
 
 class UAVSelection(BaseModel):

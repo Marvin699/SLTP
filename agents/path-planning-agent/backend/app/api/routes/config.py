@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from app.services.config_service import list_configs, save_config, load_config, delete_config
 
-router = APIRouter(prefix="/api/config", tags=["配置管理"])
+router = APIRouter(prefix="/api/path-planning/config", tags=["配置管理"])
 
 
 class SaveRequest(BaseModel):

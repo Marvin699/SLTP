@@ -15,7 +15,7 @@ from app.models.optimizer import OptimizationRecord
 import json
 from datetime import datetime
 
-router = APIRouter(prefix="/api/optimizer", tags=["模块四-路径规划"])
+router = APIRouter(prefix="/api/path-planning/optimizer", tags=["模块四-路径规划"])
 
 
 class OptimizeRequest(BaseModel):

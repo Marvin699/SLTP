@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.case_study import CaseStudy
 
-router = APIRouter(prefix="/api/case", tags=["教学管理-案例管理"])
+router = APIRouter(prefix="/api/path-planning/case", tags=["教学管理-案例管理"])
 
 
 class CaseStudyCreate(BaseModel):

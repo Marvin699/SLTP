@@ -15,7 +15,7 @@ from app.services.report_service import generate_report, generate_report_data, g
 from app.core.database import SessionLocal
 from app.models.report import ReportRecord
 
-router = APIRouter(prefix="/api/report", tags=["模块六-方案优出"])
+router = APIRouter(prefix="/api/path-planning/report", tags=["模块六-方案优出"])
 
 # 报告存储目录
 REPORTS_DIR = Path(__file__).parent.parent.parent / "reports"

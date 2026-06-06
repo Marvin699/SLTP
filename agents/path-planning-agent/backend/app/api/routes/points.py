@@ -18,7 +18,7 @@ from app.schemas.point import (
 from app.services.geojson_service import points_to_geojson
 from app.services.distance_service import build_distance_matrix
 
-router = APIRouter(prefix="/api/points", tags=["配送点管理"])
+router = APIRouter(prefix="/api/path-planning/points", tags=["配送点管理"])
 
 
 @router.get("", response_model=List[PointResponse], summary="获取所有点位")

@@ -15,7 +15,7 @@ from app.services.material_service import (
 from app.core.database import SessionLocal
 from app.models.assignment import MaterialAssignment
 
-router = APIRouter(prefix="/api/materials", tags=["物资需求"])
+router = APIRouter(prefix="/api/path-planning/materials", tags=["物资需求"])
 
 
 # ── Schemas ──
