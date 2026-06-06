@@ -55,6 +55,12 @@ const routes = [
         meta: { title: '任务7评分' }
       },
       {
+        path: 'evaluation/section/task4/live',
+        name: 'Section4Live',
+        component: () => import('../views/evaluation/Section4Live.vue'),
+        meta: { title: '应急装载AI智能体大屏' }
+      },
+      {
         path: 'resources',
         name: 'Resources',
         component: () => import('../views/resources/index.vue'),

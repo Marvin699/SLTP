@@ -61,15 +61,22 @@
 
         <!-- 操作按钮 -->
         <div class="card-actions">
-          <el-button type="primary" @click="goSection(sec.id, 'links')">
-            <el-icon><Link /></el-icon> 管理链接
-          </el-button>
-          <el-button @click="goSection(sec.id, 'overview')">
-            <el-icon><DataAnalysis /></el-icon> 成绩总览
-          </el-button>
-          <el-button @click="goSection(sec.id, 'ai')">
-            <el-icon><Monitor /></el-icon> 智能体评分
-          </el-button>
+          <template v-if="sec.isLive">
+            <el-button type="primary" @click="$router.push('/evaluation/section/task4/live')">
+              <el-icon><Monitor /></el-icon> 进入大屏
+            </el-button>
+          </template>
+          <template v-else>
+            <el-button type="primary" @click="goSection(sec.id, 'links')">
+              <el-icon><Link /></el-icon> 管理链接
+            </el-button>
+            <el-button @click="goSection(sec.id, 'overview')">
+              <el-icon><DataAnalysis /></el-icon> 成绩总览
+            </el-button>
+            <el-button @click="goSection(sec.id, 'ai')">
+              <el-icon><Monitor /></el-icon> 智能体评分
+            </el-button>
+          </template>
         </div>
       </div>
     </div>
@@ -118,6 +125,7 @@ const FALLBACK_SECTIONS = [
   { id: 'section1', name: '环节一：运输方案汇报与知识深化', short_name: '方案汇报', time_range: '0-10min', description: '小组汇报运输方案，教师/企业导师提问，AI词云与风险分析', dimensions: ['方案完整性', '表达展示', '操作规范', '团队配合'] },
   { id: 'section2', name: '环节二：无预案应急推演', short_name: '应急推演', time_range: '10-20min', description: '突发应急场景，使用路径规划智能体进行无预案推演', dimensions: ['决策速度', '方案可行性', '风险评估', '团队配合'] },
   { id: 'section3', name: '环节三：飞行前准备应急演练比拼', short_name: '应急演练', time_range: '21-36min', description: '限时飞行前检查、双电转单电操作、团队协作应急演练', dimensions: ['安全性', '操作规范性', '用时效率', '团队配合'] },
+  { id: 'task4', name: '环节四：应急物资低空智慧运输装载 · AI智能体实操', short_name: 'AI实操', time_range: '10min', description: '6组同步包装装载，AI实时识别操作、语音播报错误、推送灾情指令', dimensions: ['操作规范性', '时效性', '安全性', '团队配合'], isLive: true },
 ]
 
 // --- 数据加载 ---
