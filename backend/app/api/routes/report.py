@@ -106,12 +106,16 @@ def generate_report_endpoint(req: GenerateReportRequest):
         raise HTTPException(status_code=500, detail=error_detail)
 
 
-def _safe_fname(name: str, ext: str) -> str:
+def _ascii_name(name: str) -> str:
+    return (re.sub(r'[^A-Za-z0-9._-]+', '_', name).strip('_') or 'report')
+
+
+def _enc_name(name: str, ext: str) -> str:
     clean = re.sub(r'[\\/:*?"<>|\s]+', '_', name).strip('_') or 'report'
     try:
-        return urllib.parse.quote(f"{clean}.pdf".encode('utf-8'))
+        return urllib.parse.quote((clean + '.' + ext).encode('utf-8'))
     except Exception:
-        return f"{clean}.pdf"
+        return clean + '.' + ext
 
 @router.get("/download/{report_id}/word")
 def download_word(report_id: int):
@@ -128,17 +132,21 @@ def download_word(report_id: int):
             raise HTTPException(status_code=404, detail="Word文件不存在")
 
         base = record.filename or 'report'
-        fname_ascii = re.sub(r'[\\/:*?"<>|\s]+', '_', base).strip('_') or 'report'
+        safe_ascii = _ascii_name(base)
+        encoded = _enc_name(base, 'docx')
         headers = {
             'Content-Disposition': (
-                f'attachment; filename="{fname_ascii}.docx"; '
-                f"filename*=UTF-8''{_safe_fname(base, 'docx').replace('.pdf','.docx')}"
-            )
+                f"attachment; filename=\"{safe_ascii}.docx\"; "
+                f"filename*=UTF-8''{encoded}"
+            ),
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
         }
         return FileResponse(
             record.word_path,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            filename=f"{fname_ascii}.docx",
+            filename=f"{safe_ascii}.docx",
             headers=headers,
         )
     except HTTPException:
@@ -162,11 +170,12 @@ def download_pdf(report_id: int):
             raise HTTPException(status_code=404, detail="PDF文件不存在")
 
         base = record.filename or 'report'
-        fname_ascii = re.sub(r'[\\/:*?"<>|\s]+', '_', base).strip('_') or 'report'
+        safe_ascii = _ascii_name(base)
+        encoded = _enc_name(base, 'pdf')
         headers = {
             'Content-Disposition': (
-                f'attachment; filename="{fname_ascii}.pdf"; '
-                f"filename*=UTF-8''{_safe_fname(base, 'pdf')}"
+                f"attachment; filename=\"{safe_ascii}.pdf\"; "
+                f"filename*=UTF-8''{encoded}"
             ),
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
@@ -174,8 +183,8 @@ def download_pdf(report_id: int):
         }
         return FileResponse(
             record.pdf_path,
-            media_type="application/pdf; charset=utf-8",
-            filename=f"{fname_ascii}.pdf",
+            media_type="application/pdf",
+            filename=f"{safe_ascii}.pdf",
             headers=headers,
         )
     except HTTPException:
