@@ -453,7 +453,7 @@ const dimChartRefs = ref([])
 const simulating = ref(false)
 const submittedCount = ref(0)
 const totalScorers = ref(8)
-let simTimer = null
+
 let dimCharts = []
 
 // --- 轮询实时刷新 ---
@@ -633,26 +633,23 @@ function switchToOverview() {
 }
 
 const SIM_ROLES = ['老师', '企业导师', '逐日组观察员', '揽星组观察员', '驭风组观察员', '长空组观察员', '凌云组观察员', '巡天组观察员']
-const ROUND_TICK_MS = 1500
-const LERP_TICK_MS = 120
-const LERP_DURATION_MS = 3000
+const WAVE_TICK_MS = 260
+const WAVE_DURATION_MS = 15000
+const FREEZE_TICK_MS = 60
+const FREEZE_DURATION_MS = 1200
 let simData = null
-let simRoleTimer = null
-let simLerpTimer = null
-let simTickPhase = 'scoring'
-let simLerpStart = 0
-let simLerpFrom = null
+let simWaveTimer = null
+let simFreezeTimer = null
 
-function lerp(a, b, t) { return a + (b - a) * t }
+function gaussianNoise(sigma) {
+  let u = 0, v = 0
+  while (u === 0) u = Math.random()
+  while (v === 0) v = Math.random()
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v) * sigma
+}
 
-function roundScores() {
-  const dims = dashboardData.value.dimensions || []
-  simData.forEach(g => {
-    if (g.isZero) return
-    dims.forEach(d => {
-      g.current_scores[d] = Math.round(Math.max(0, Math.min(100, g.current_scores[d])) * 100) / 100
-    })
-  })
+function clampAndRound(x) {
+  return Math.round(Math.max(0, Math.min(100, x)) * 100) / 100
 }
 
 function startSimulation() {
@@ -665,98 +662,112 @@ function startSimulation() {
     group_id: g.group_id,
     isZero: ZERO_GROUPS.includes(g.group_id),
     target_scores: { ...(g.dimension_scores || {}) },
-    current_scores: Object.fromEntries(dims.map(d => [d, 0])),
+    current_scores: {},
   }))
 
-  simTickPhase = 'scoring'
-  submittedCount.value = 0
+  simData.forEach(g => {
+    if (g.isZero) {
+      dims.forEach(d => { g.current_scores[d] = 0 })
+    } else {
+      dims.forEach(d => {
+        const t = g.target_scores[d] ?? 85
+        g.current_scores[d] = clampAndRound(t + gaussianNoise(6))
+      })
+    }
+  })
+
   simulating.value = true
+  submittedCount.value = SIM_ROLES.length
 
   renderSimCharts()
 
-  const active = simData.filter(g => !g.isZero)
-  let roleIdx = 0
+  const waveStart = Date.now()
 
-  function scheduleRoleStep() {
-    if (roleIdx >= SIM_ROLES.length) {
-      simTickPhase = 'lerp'
-      simLerpStart = Date.now()
-      simLerpFrom = simData.map(g => ({ ...g.current_scores }))
-      submittedCount.value = SIM_ROLES.length
-      tickLerp()
-      return
-    }
+  function tickWave() {
+    const elapsed = Date.now() - waveStart
+    const t = Math.min(1, elapsed / WAVE_DURATION_MS)
 
-    const role = SIM_ROLES[roleIdx]
-    const totalRoles = SIM_ROLES.length
-    const roleProgress = roleIdx / totalRoles
+    let sigma
+    if (t < 0.35) sigma = 12
+    else if (t < 0.75) sigma = 7
+    else sigma = 2.5
 
-    active.forEach(g => {
-      dims.forEach(d => {
-        const target = g.target_scores[d] ?? 0
-        const remaining = target - (g.current_scores[d] || 0)
-        if (remaining <= 0) return
-        const baseShare = target / totalRoles
-        const r = 0.75 + Math.random() * 0.5
-        let add = baseShare * r
-        if (roleProgress < 0.4) add *= 1.5
-        else if (roleProgress < 0.7) add *= 1.0
-        else add *= 0.55
-        add = Math.min(add, remaining + 0.5)
-        g.current_scores[d] = Math.round(((g.current_scores[d] || 0) + add) * 100) / 100
-      })
-    })
-
-    if (roleIdx >= 2 && roleIdx < SIM_ROLES.length - 1 && active.length) {
-      const revGroup = active[Math.floor(Math.random() * active.length)]
-      const revDim = dims[Math.floor(Math.random() * dims.length)]
-      const cur = revGroup.current_scores[revDim]
-      const delta = (Math.random() - 0.35) * 6
-      revGroup.current_scores[revDim] = Math.max(0, Math.min(revGroup.target_scores[revDim] ?? 100, cur + delta))
-      ElMessage({ message: `${role} 提交评分 · 有人微调了一处`, type: 'success', duration: 1500 })
-    } else {
-      ElMessage({ message: `${role} 提交了评分`, type: 'success', duration: 1500 })
-    }
-
-    roundScores()
-    submittedCount.value = roleIdx + 1
-    renderSimCharts()
-    roleIdx++
-    simRoleTimer = setTimeout(scheduleRoleStep, ROUND_TICK_MS)
-  }
-
-  function tickLerp() {
-    if (simTickPhase !== 'lerp') return
-    const elapsed = Date.now() - simLerpStart
-    const t = Math.min(1, elapsed / LERP_DURATION_MS)
-    const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
-
-    simData.forEach((g, gi) => {
+    simData.forEach(g => {
       if (g.isZero) return
       dims.forEach(d => {
-        const from = simLerpFrom[gi][d] || 0
-        const to = g.target_scores[d] ?? 0
-        g.current_scores[d] = Math.round(lerp(from, to, eased) * 100) / 100
+        const target = g.target_scores[d] ?? 85
+        const cur = g.current_scores[d] ?? target
+        let next = cur + gaussianNoise(sigma)
+        const drift = (target - cur) * 0.18
+        next += drift
+        next = clampAndRound(next)
+        g.current_scores[d] = next
       })
     })
+
+    if (Math.random() < 0.28) {
+      const role = SIM_ROLES[Math.floor(Math.random() * SIM_ROLES.length)]
+      const nonzero = simData.filter(g => !g.isZero)
+      if (nonzero.length) {
+        const g = nonzero[Math.floor(Math.random() * nonzero.length)]
+        const d = dims[Math.floor(Math.random() * dims.length)]
+        const cur = g.current_scores[d]
+        const next = clampAndRound(cur + gaussianNoise(5))
+        g.current_scores[d] = next
+        ElMessage({
+          message: `${role} 调整了 ${g.group_id}·${d}：${cur} → ${next}`,
+          type: 'success',
+          duration: 1200,
+        })
+      }
+    }
 
     renderSimCharts()
 
     if (t >= 1) {
-      simData.forEach(g => {
-        dims.forEach(d => {
-          g.current_scores[d] = Math.round((g.target_scores[d] ?? 0) * 100) / 100
-        })
-      })
-      submittedCount.value = SIM_ROLES.length
-      renderSimCharts()
-      stopSimulation()
+      startFreeze()
       return
     }
-    simLerpTimer = setTimeout(tickLerp, LERP_TICK_MS)
+    simWaveTimer = setTimeout(tickWave, WAVE_TICK_MS)
   }
 
-  simRoleTimer = setTimeout(scheduleRoleStep, 500)
+  function startFreeze() {
+    const freezeStart = Date.now()
+    const freezeFrom = simData.map(g => ({ ...g.current_scores }))
+
+    function tickFreeze() {
+      const elapsed = Date.now() - freezeStart
+      const t = Math.min(1, elapsed / FREEZE_DURATION_MS)
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+
+      simData.forEach((g, gi) => {
+        if (g.isZero) return
+        dims.forEach(d => {
+          const from = freezeFrom[gi][d] || 0
+          const to = g.target_scores[d] ?? 85
+          g.current_scores[d] = clampAndRound(from + (to - from) * eased)
+        })
+      })
+
+      renderSimCharts()
+
+      if (t >= 1) {
+        simData.forEach(g => {
+          dims.forEach(d => {
+            g.current_scores[d] = clampAndRound(g.target_scores[d] ?? 85)
+          })
+        })
+        renderSimCharts()
+        stopSimulation()
+        return
+      }
+      simFreezeTimer = setTimeout(tickFreeze, FREEZE_TICK_MS)
+    }
+
+    tickFreeze()
+  }
+
+  simWaveTimer = setTimeout(tickWave, 400)
 }
 
 // 构造当前模拟快照
@@ -899,10 +910,8 @@ function renderSimCharts() {
 }
 
 function stopSimulation() {
-  if (simRoleTimer) { clearTimeout(simRoleTimer); simRoleTimer = null }
-  if (simLerpTimer) { clearTimeout(simLerpTimer); simLerpTimer = null }
-  if (simTimer) { clearInterval(simTimer); simTimer = null }
-  simTickPhase = 'scoring'
+  if (simWaveTimer) { clearTimeout(simWaveTimer); simWaveTimer = null }
+  if (simFreezeTimer) { clearTimeout(simFreezeTimer); simFreezeTimer = null }
   simulating.value = false
   if (viewMode.value === 'overview') {
     nextTick().then(() => startPolling())
