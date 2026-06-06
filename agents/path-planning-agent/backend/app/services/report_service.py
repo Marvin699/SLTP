@@ -1,6 +1,8 @@
 """方案报告生成服务 - 生成Word和PDF报告"""
 import json
 import os
+import re
+import subprocess
 import tempfile
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -20,6 +22,39 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+
+_CJK_FONT_REGISTERED = False
+_CJK_FONT_NAME = None
+
+def _register_cjk_font():
+    global _CJK_FONT_REGISTERED, _CJK_FONT_NAME
+    if _CJK_FONT_REGISTERED:
+        return _CJK_FONT_NAME
+    candidates = [
+        ('NotoSansSC', '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'),
+        ('NotoSansSC2', '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc'),
+        ('WenQuanYi', '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc'),
+        ('SourceHanSansSC', '/usr/share/fonts/opentype/noto/SourceHanSansSC-Regular.otf'),
+        ('PingFang', '/System/Library/Fonts/PingFang.ttc'),
+        ('STHeiti', '/System/Library/Fonts/STHeiti Medium.ttc'),
+        ('ArialUnicode', '/Library/Fonts/Arial Unicode.ttf'),
+        ('ArialUnicode2', '/System/Library/Fonts/Supplemental/Arial Unicode.ttf'),
+        ('SimSun', 'C:/Windows/Fonts/simsun.ttc'),
+        ('SimHei', 'C:/Windows/Fonts/simhei.ttf'),
+        ('MicrosoftYaHei', 'C:/Windows/Fonts/msyh.ttc'),
+    ]
+    for name, path in candidates:
+        if os.path.exists(path):
+            try:
+                pdfmetrics.registerFont(TTFont(name, path))
+                _CJK_FONT_REGISTERED = True
+                _CJK_FONT_NAME = name
+                return name
+            except Exception:
+                continue
+    _CJK_FONT_REGISTERED = True
+    _CJK_FONT_NAME = 'Helvetica'
+    return 'Helvetica'
 
 
 def _set_cell_shading(cell, color):
@@ -394,48 +429,124 @@ def generate_word_report(report_data: dict, output_path: str = None) -> str:
     return output_path
 
 
+def _sanitize_filename(s: str) -> str:
+    return re.sub(r'[\\/:*?"<>|\s]+', '_', s).strip('_') or 'report'
+
+
 def convert_word_to_pdf(word_path: str, pdf_path: str = None) -> str:
     """
     将Word转换为PDF
-    
-    参数:
-        word_path: Word文件路径
-        pdf_path: PDF输出路径（可选）
-    
-    返回:
-        PDF文件路径
+
+    策略:
+      1) 优先尝试 libreoffice (服务器需 apt install libreoffice)
+      2) 回退: 用 reportlab 基于 Word 内容渲染中文 PDF (注册中文字体)
     """
     if not pdf_path:
         pdf_path = word_path.replace('.docx', '.pdf')
-    
-    # 使用reportlab重新生成PDF（更可靠）
-    # 这里简化处理，实际项目中可以使用libreoffice或其他工具
-    # 或者使用python-docx2pdf（仅限Windows）
-    
-    # 临时方案：生成一个包含基本信息的PDF
-    doc = SimpleDocTemplate(pdf_path, pagesize=A4,
-                           rightMargin=72, leftMargin=72,
-                           topMargin=72, bottomMargin=18)
-    
+
+    soffice_candidates = ['libreoffice', 'soffice']
+    for soffice in soffice_candidates:
+        try:
+            out_dir = os.path.dirname(pdf_path) or '.'
+            subprocess.run(
+                [soffice, '--headless', '--norestore', '--nologo', '--convert-to', 'pdf',
+                 '--outdir', out_dir, word_path],
+                check=True, timeout=180,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+            converted = os.path.join(out_dir, os.path.splitext(os.path.basename(word_path))[0] + '.pdf')
+            if os.path.exists(converted) and os.path.abspath(converted) != os.path.abspath(pdf_path):
+                if os.path.exists(pdf_path):
+                    os.remove(pdf_path)
+                os.rename(converted, pdf_path)
+            if os.path.exists(pdf_path):
+                return pdf_path
+        except Exception:
+            continue
+
+    return _render_pdf_fallback(word_path, pdf_path)
+
+
+def _safe_text(v) -> str:
+    if v is None:
+        return ''
+    if isinstance(v, (dict, list)):
+        try:
+            return json.dumps(v, ensure_ascii=False)
+        except Exception:
+            return str(v)
+    return str(v)
+
+
+def _render_pdf_fallback(word_path: str, pdf_path: str) -> str:
+    """libreoffice 不可用时, 用 reportlab 渲染包含中文正文的 PDF."""
+    font = _register_cjk_font()
+
+    try:
+        from docx import Document as DocxDocument
+        doc = DocxDocument(word_path)
+    except Exception:
+        doc = None
+
+    reportlab_doc = SimpleDocTemplate(pdf_path, pagesize=A4,
+                                     rightMargin=2 * cm, leftMargin=2 * cm,
+                                     topMargin=2 * cm, bottomMargin=2 * cm)
+
     styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'],
+                                fontName=font, fontSize=20, alignment=1, spaceAfter=16)
+    h1_style = ParagraphStyle('H1', parent=styles['Heading2'],
+                              fontName=font, fontSize=16, alignment=0, spaceBefore=10, spaceAfter=8)
+    h2_style = ParagraphStyle('H2', parent=styles['Heading3'],
+                              fontName=font, fontSize=13, alignment=0, spaceBefore=8, spaceAfter=6)
+    body_style = ParagraphStyle('Body', parent=styles['Normal'],
+                                fontName=font, fontSize=11, leading=16)
+
     story = []
-    
-    # 标题
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=18,
-        alignment=1,  # 居中
-        spaceAfter=30,
-    )
-    
-    story.append(Paragraph("报告PDF导出", title_style))
-    story.append(Spacer(1, 20))
-    story.append(Paragraph("Word报告已生成，请下载查看完整内容。", styles['Normal']))
-    story.append(Spacer(1, 20))
-    story.append(Paragraph(f"Word文件路径: {word_path}", styles['Normal']))
-    
-    doc.build(story)
+    story.append(Paragraph("智慧低空应急运输路径规划报告", title_style))
+    story.append(Paragraph(f"Word源文件: {os.path.basename(word_path)}",
+                           ParagraphStyle('Muted', parent=body_style, textColor=colors.grey, fontSize=9)))
+    story.append(Spacer(1, 12))
+
+    if doc is not None:
+        for para in doc.paragraphs:
+            txt = _safe_text(para.text).strip()
+            if not txt:
+                continue
+            style = body_style
+            lvl = para.style.name if para.style else ''
+            if 'Heading 1' in lvl or lvl == 'Title':
+                style = h1_style
+            elif 'Heading 2' in lvl:
+                style = h2_style
+            story.append(Paragraph(txt.replace('\n', '<br/>'), style))
+
+        if doc.tables:
+            for ti, table in enumerate(doc.tables):
+                story.append(Paragraph(f"表 {ti + 1}", h2_style))
+                data = []
+                for ri, row in enumerate(table.rows):
+                    data.append([Paragraph(_safe_text(c.text).strip().replace('\n', ' '),
+                                          ParagraphStyle('TC', parent=body_style, fontSize=10))
+                                 for c in row.cells])
+                if data:
+                    t = Table(data, repeatRows=1)
+                    t.setStyle(TableStyle([
+                        ('FONTNAME', (0, 0), (-1, -1), font),
+                        ('FONTSIZE', (0, 0), (-1, -1), 10),
+                        ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e8f1ff')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ]))
+                    story.append(Spacer(1, 4))
+                    story.append(t)
+                    story.append(Spacer(1, 10))
+    else:
+        story.append(Paragraph("（无法解析Word文件，请尝试用 libreoffice 转换）", body_style))
+
+    reportlab_doc.build(story)
     return pdf_path
 
 
@@ -463,7 +574,7 @@ def generate_report(task: dict, solution: dict, diagnosis: dict = None,
     
     # 生成文件名
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    project_name = report_data['project_name'].replace(' ', '_')
+    project_name = _sanitize_filename(report_data['project_name'].replace(' ', '_'))
     base_name = f"{project_name}_{timestamp}"
     
     # 生成Word

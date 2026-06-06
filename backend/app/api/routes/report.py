@@ -1,7 +1,9 @@
 """模块六：方案优出 API 路由"""
 import json
 import os
+import re
 import shutil
+import urllib.parse
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
@@ -104,6 +106,13 @@ def generate_report_endpoint(req: GenerateReportRequest):
         raise HTTPException(status_code=500, detail=error_detail)
 
 
+def _safe_fname(name: str, ext: str) -> str:
+    clean = re.sub(r'[\\/:*?"<>|\s]+', '_', name).strip('_') or 'report'
+    try:
+        return urllib.parse.quote(f"{clean}.pdf".encode('utf-8'))
+    except Exception:
+        return f"{clean}.pdf"
+
 @router.get("/download/{report_id}/word")
 def download_word(report_id: int):
     """下载Word报告"""
@@ -111,17 +120,26 @@ def download_word(report_id: int):
         db = SessionLocal()
         record = db.query(ReportRecord).filter(ReportRecord.id == report_id).first()
         db.close()
-        
+
         if not record:
             raise HTTPException(status_code=404, detail="报告不存在")
-        
+
         if not os.path.exists(record.word_path):
             raise HTTPException(status_code=404, detail="Word文件不存在")
-        
+
+        base = record.filename or 'report'
+        fname_ascii = re.sub(r'[\\/:*?"<>|\s]+', '_', base).strip('_') or 'report'
+        headers = {
+            'Content-Disposition': (
+                f'attachment; filename="{fname_ascii}.docx"; '
+                f"filename*=UTF-8''{_safe_fname(base, 'docx').replace('.pdf','.docx')}"
+            )
+        }
         return FileResponse(
             record.word_path,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            filename=f"{record.filename}.docx"
+            filename=f"{fname_ascii}.docx",
+            headers=headers,
         )
     except HTTPException:
         raise
@@ -136,17 +154,29 @@ def download_pdf(report_id: int):
         db = SessionLocal()
         record = db.query(ReportRecord).filter(ReportRecord.id == report_id).first()
         db.close()
-        
+
         if not record:
             raise HTTPException(status_code=404, detail="报告不存在")
-        
+
         if not os.path.exists(record.pdf_path):
             raise HTTPException(status_code=404, detail="PDF文件不存在")
-        
+
+        base = record.filename or 'report'
+        fname_ascii = re.sub(r'[\\/:*?"<>|\s]+', '_', base).strip('_') or 'report'
+        headers = {
+            'Content-Disposition': (
+                f'attachment; filename="{fname_ascii}.pdf"; '
+                f"filename*=UTF-8''{_safe_fname(base, 'pdf')}"
+            ),
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+        }
         return FileResponse(
             record.pdf_path,
-            media_type="application/pdf",
-            filename=f"{record.filename}.pdf"
+            media_type="application/pdf; charset=utf-8",
+            filename=f"{fname_ascii}.pdf",
+            headers=headers,
         )
     except HTTPException:
         raise

@@ -4,8 +4,23 @@ from openai import OpenAI
 from app.core.config import settings
 
 # Agent 和 LLM 配置文件目录
-AGENT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Agent")
-CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "LLM")
+AGENT_DIR_CANDIDATES = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "Agent"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "LLM"),
+    os.path.join(os.getcwd(), "Agent"),
+    os.path.join(os.getcwd(), "LLM"),
+    os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Agent")),
+    os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "LLM")),
+]
+
+def _find_agent_dir():
+    for d in AGENT_DIR_CANDIDATES:
+        if os.path.isdir(d):
+            return d
+    return AGENT_DIR_CANDIDATES[0]
+
+AGENT_DIR = _find_agent_dir()
+CONFIG_DIR = AGENT_DIR if AGENT_DIR.endswith("LLM") else AGENT_DIR_CANDIDATES[1]
 
 
 def get_client():
@@ -65,12 +80,21 @@ def load_agent_prompt(agent_filename: str) -> str:
 
     参数:
         agent_filename: agent 文件名，如 "uavSEA.md"
+
+    若文件不存在则返回兜底 prompt, 避免 AI 选型直接崩。
     """
-    filepath = os.path.join(AGENT_DIR, agent_filename)
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"Agent 文件不存在: {filepath}")
-    with open(filepath, "r", encoding="utf-8") as f:
-        return f.read()
+    for d in AGENT_DIR_CANDIDATES:
+        filepath = os.path.join(d, agent_filename)
+        if os.path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as f:
+                return f.read()
+    fallback = (
+        "你是智慧低空应急运输教学平台的无人机选型智能体。\n"
+        "用户将给出应急物资需求、起飞点、配送点等信息，请你推荐合适的无人机型号、数量与趟次方案。\n"
+        "输出 JSON，字段参考平台接口约定: {\"uav_model\":\"...\",\"count\":N,\"per_payload\":N,\"reason\":\"...\"}。"
+    )
+    print(f"[LLM] Agent 文件 {agent_filename} 未找到 (已搜索 {AGENT_DIR_CANDIDATES})，使用兜底 prompt")
+    return fallback
 
 
 def load_config_content(config_filename: str = "任务配置信息.md") -> str:
