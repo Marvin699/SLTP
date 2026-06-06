@@ -3,20 +3,27 @@
     <!-- 悬浮球按钮 -->
     <div
       class="float-button"
-      :class="{ 'is-open': isOpen, 'is-thinking': thinking, 'has-badge': hasUnread }"
+      :class="{ 'is-open': isOpen, 'thinking': thinking }"
       @click="togglePanel"
     >
-      <div class="float-avatar">
-        <img
-          src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20blue%20futuristic%20AI%20robot%20mascot%20character%20with%20wings%20and%20antenna%2C%20friendly%20smile%2C%20high%20quality%20digital%20art%2C%203D%20render%2C%20clean%20background%2C%20simple%20PNG%20icon%2C%20front%20view&image_size=square_hd"
-          alt="小翼"
-          @error="onAvatarError"
-        />
-        <div class="avatar-glow"></div>
-        <div v-if="thinking" class="thinking-ring"></div>
+      <!-- CSS动画形象 -->
+      <div class="mini-avatar" :class="{ thinking: thinking }">
+        <div class="mini-glow"></div>
+        <div class="mini-head">
+          <div class="mini-face">
+            <div class="mini-eyes">
+              <div class="mini-eye"><div class="mini-pupil"></div></div>
+              <div class="mini-eye"><div class="mini-pupil"></div></div>
+            </div>
+            <div class="mini-mouth"><div class="mini-mouth-shape"></div></div>
+          </div>
+          <div class="mini-antenna">
+            <div class="mini-antenna-line"></div>
+            <div class="mini-antenna-dot"></div>
+          </div>
+        </div>
       </div>
       <span class="float-label">小翼</span>
-      <div class="float-badge" v-if="hasUnread">1</div>
     </div>
 
     <!-- 对话面板 -->
@@ -24,7 +31,7 @@
       <div v-if="isOpen" class="float-panel">
         <div class="panel-header">
           <div class="panel-title">
-            <span class="panel-avatar">翼</span>
+            <div class="panel-avatar">翼</div>
             <span class="panel-name">小翼 · AI智能助教</span>
             <el-tag type="success" size="small" effect="dark">在线</el-tag>
           </div>
@@ -104,7 +111,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Minus, FullScreen, Promotion } from '@element-plus/icons-vue'
 import axios from 'axios'
@@ -116,7 +123,6 @@ const thinking = ref(false)
 const chatInput = ref('')
 const chatLoading = ref(false)
 const messagesRef = ref(null)
-const hasUnread = ref(false)
 
 const quickQs = [
   '什么是低空应急运输？',
@@ -128,19 +134,13 @@ const quickQs = [
 const chatMessages = ref([
   {
     role: 'assistant',
-    content: '你好！我是小翼 🛩️，你的AI智能助教。点击下方问我问题吧～',
+    content: '你好！我是小翼，你的AI智能助教。点击下方问我问题吧～',
     time: formatTime(new Date())
   }
 ])
 
 function togglePanel() {
   isOpen.value = !isOpen.value
-  if (isOpen.value) hasUnread.value = false
-}
-
-function onAvatarError(e) {
-  const img = e.target
-  img.style.display = 'none'
 }
 
 function openFull() {
@@ -248,53 +248,162 @@ function scrollBottom() {
   pointer-events: none;
 }
 
-.float-avatar {
+/* ===== CSS动画形象（小翼缩小版） ===== */
+.mini-avatar {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%);
-  box-shadow: 0 6px 24px rgba(14, 165, 233, 0.45), 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5), 0 2px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
+  animation: miniFloat 3s ease-in-out infinite;
 }
 
-.float-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
+@keyframes miniFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
-.avatar-glow {
+.mini-avatar.thinking {
+  animation: miniThinkingFloat 0.6s ease-in-out infinite;
+}
+@keyframes miniThinkingFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.05); }
+}
+
+.mini-glow {
   position: absolute;
-  inset: -4px;
+  inset: -6px;
   border-radius: 50%;
   background: linear-gradient(135deg, #0ea5e9, #14b8a6, #0ea5e9);
-  z-index: -1;
-  animation: glowPulse 2.8s ease-in-out infinite;
-  filter: blur(8px);
-  opacity: 0.7;
+  z-index: 0;
+  animation: miniGlow 2.8s ease-in-out infinite;
+  filter: blur(6px);
+  opacity: 0.6;
 }
 
-@keyframes glowPulse {
+@keyframes miniGlow {
   0%, 100% { transform: scale(1); opacity: 0.5; }
   50% { transform: scale(1.15); opacity: 0.9; }
 }
 
-.thinking-ring {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  border-top-color: #0ea5e9;
-  animation: spin 0.9s linear infinite;
+.mini-avatar.thinking .mini-glow {
+  animation: miniGlowThinking 0.8s ease-in-out infinite;
+}
+@keyframes miniGlowThinking {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.mini-head {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(145deg, #e0f7ff 0%, #b3e5fc 100%);
+  border-radius: 45% 45% 42% 42%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-shadow: inset 0 -2px 4px rgba(14, 165, 233, 0.2);
+}
+
+.mini-face {
+  position: relative;
+  width: 28px;
+  height: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.mini-eyes {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.mini-eye {
+  width: 8px;
+  height: 9px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.mini-pupil {
+  width: 4px;
+  height: 4px;
+  background: #0c4a6e;
+  border-radius: 50%;
+}
+
+.mini-mouth {
+  margin-top: 1px;
+}
+
+.mini-mouth-shape {
+  width: 10px;
+  height: 4px;
+  border-bottom: 2px solid #0c4a6e;
+  border-radius: 0 0 10px 10px;
+}
+
+.mini-avatar.thinking .mini-mouth-shape {
+  width: 6px;
+  height: 6px;
+  border: 2px solid #0c4a6e;
+  border-radius: 50%;
+}
+
+.mini-antenna {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.mini-antenna-line {
+  width: 1.5px;
+  height: 8px;
+  background: linear-gradient(to top, #0ea5e9, #06b6d4);
+}
+
+.mini-antenna-dot {
+  width: 4px;
+  height: 4px;
+  background: #06b6d4;
+  border-radius: 50%;
+  margin-top: -1px;
+  animation: miniBlink 2s ease-in-out infinite;
+  box-shadow: 0 0 4px #06b6d4;
+}
+
+@keyframes miniBlink {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.mini-avatar.thinking .mini-antenna-dot {
+  animation: miniBlinkThinking 0.5s ease-in-out infinite;
+}
+@keyframes miniBlinkThinking {
+  0%, 100% { transform: scale(1); background: #f97316; }
+  50% { transform: scale(1.5); background: #ef4444; }
 }
 
 .float-label {
@@ -310,30 +419,6 @@ function scrollBottom() {
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   white-space: nowrap;
-}
-
-.float-badge {
-  position: absolute;
-  top: -2px;
-  right: 0;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
-  background: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-  animation: bounce 0.5s ease;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
 }
 
 /* ===== 对话面板 ===== */
