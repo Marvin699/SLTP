@@ -178,7 +178,9 @@ async function onProjectChange(projectId) {
 async function loadSections() {
   try {
     const res = await fetchSections()
-    sections.value = Array.isArray(res.data) ? res.data : FALLBACK_SECTIONS
+    const backendSections = Array.isArray(res.data) ? res.data : []
+    const hasSection4 = backendSections.some(s => s.id === 'task4')
+    sections.value = hasSection4 ? backendSections : [...backendSections, ...FALLBACK_SECTIONS.filter(f => f.id === 'task4')]
   } catch {
     sections.value = FALLBACK_SECTIONS
   }
