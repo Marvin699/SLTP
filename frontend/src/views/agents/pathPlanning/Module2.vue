@@ -72,7 +72,7 @@ watch(
 
 async function loadFromWorkspace() {
   try {
-    const response = await fetch('/api/workspace/load/module2')
+    const response = await fetch('/api/path-planning/workspace/load/module2')
     const result = await response.json()
     if (result.success && result.data?.assignments) {
       const newAssignments = { ...matStore.assignments }
@@ -151,7 +151,7 @@ async function handleSaveModule2() {
   }
   
   try {
-    const response = await fetch('/api/workspace/save/module2', {
+    const response = await fetch('/api/path-planning/workspace/save/module2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(module2Data),

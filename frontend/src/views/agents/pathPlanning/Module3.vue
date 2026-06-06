@@ -126,7 +126,7 @@ async function handleSaveModule3() {
   }
   
   try {
-    const response = await fetch('/api/workspace/save/module3', {
+    const response = await fetch('/api/path-planning/workspace/save/module3', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(module3Data),

@@ -95,7 +95,7 @@ async function handleSearch() {
   searchError.value = ''
   searchResults.value = []
   try {
-    const res = await fetch(`/api/points/geocode/search?keyword=${encodeURIComponent(searchQuery.value)}`)
+    const res = await fetch(`/api/path-planning/points/geocode/search?keyword=${encodeURIComponent(searchQuery.value)}`)
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       searchError.value = err.detail || '搜索失败'
@@ -201,7 +201,7 @@ async function handleSaveModule1() {
   }
   
   try {
-    const response = await fetch('/api/workspace/save/module1', {
+    const response = await fetch('/api/path-planning/workspace/save/module1', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(module1Data),

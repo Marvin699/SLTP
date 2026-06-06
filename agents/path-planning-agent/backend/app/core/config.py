@@ -1,11 +1,15 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 import json
+import os
+
+_ENV_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".env")
+_ENV_FILE = os.path.abspath(_ENV_FILE)
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./app.db"
-    CORS_ORIGINS: str = '["http://localhost:5173","http://127.0.0.1:5173"]'
+    DATABASE_URL: str = "sqlite:///./path_planning_data.db"
+    CORS_ORIGINS: str = '["*"]'
 
     # LLM 大模型配置（OpenAI 兼容接口）
     LLM_API_KEY: str = ""
@@ -17,11 +21,18 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> List[str]:
-        return json.loads(self.CORS_ORIGINS)
+        try:
+            return json.loads(self.CORS_ORIGINS)
+        except Exception:
+            return ["*"]
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()
+print(f"[config] 加载 .env: {_ENV_FILE} (exists={os.path.exists(_ENV_FILE)})")
+print(f"[config] AMAP_KEY={'已配置(' + str(len(settings.AMAP_KEY)) + ' chars)' if settings.AMAP_KEY else '未配置'}")
