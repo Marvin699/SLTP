@@ -38,7 +38,8 @@ async def upload_chunk(
         shutil.copyfileobj(chunk.file, f)
 
     if seq >= total - 1:
-        merged_path = session_dir / f"{group_name or GROUP_VILLAGES.get(group_id, 'group')}_{int(time.time())}.webm"
+        merged_name = f"g{group_id}_{group_name or GROUP_VILLAGES.get(group_id, 'group')}_{int(time.time())}.webm"
+        merged_path = MEDIA_DIR / merged_name
         merged = open(merged_path, "wb")
         for i in range(total):
             p = session_dir / f"part_{i:05d}{suffix}"

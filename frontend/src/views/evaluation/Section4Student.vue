@@ -34,15 +34,18 @@
           <div v-if="group.detections.length" class="stu-detections">
             <div v-for="(d, i) in group.detections" :key="i" class="det-tag" :style="d.style">{{ d.label }}</div>
           </div>
-          <div v-if="cameraReady" style="color:#42d39c;padding:6px 10px;background:rgba(66,211,156,0.08);border-radius:6px;font-size:12px;margin:6px 0">✅ 摄像头已开启 · AI 识别运行中 · 点击下方按钮手动触发 AI 检查</div>
-          <div v-if="cameraErrHint" style="color:#f87171;padding:8px 12px;background:#450a0a;border-radius:6px;margin:8px 0">⚠️ {{ cameraErrHint }}</div>
-          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-            <button class="el-button el-button--primary el-button--small is-plain" @click="triggerAiCheck">
-              <span>🔍 AI检查</span>
-            </button>
-          </div>
         </div>
 
+        <div class="stu-control-row">
+          <div v-if="cameraReady" class="camera-hint camera-hint--ok">✅ 摄像头已开启 · AI 识别运行中</div>
+          <div v-if="cameraErrHint" class="camera-hint camera-hint--err">⚠️ {{ cameraErrHint }}</div>
+          <div class="ai-check-row">
+            <el-button size="small" type="warning" plain @click="() => triggerAiCheck('yellow')">⚠ 一般</el-button>
+            <el-button size="small" type="danger" plain @click="() => triggerAiCheck('orange')">⚡ 严重</el-button>
+            <el-button size="small" type="danger" @click="() => triggerAiCheck('red')">🔴 致命</el-button>
+            <el-button size="small" plain @click="triggerAiCheck()">🔍 AI检查(随机)</el-button>
+          </div>
+        </div>
         <div class="stu-score">
           <div class="score-ring">
             <svg viewBox="0 0 100 100">
@@ -485,7 +488,8 @@ function studentDetColor(label) {
   return STUDENT_GROUP_COLORS[gid] || '#6be6a1'
 }
 
-const studentTrackers = []
+let overlayCtx = null
+let studentTrackers = []
 let studentLastTick = 0
 
 function studentSeedTrackers() {
@@ -643,6 +647,8 @@ function startUploader(g, stream) {
   lastUploadSeq = -1
   const mime = pickMime()
   if (!mime) { console.warn('没有可用的 MediaRecorder mime'); return }
+  const groupNameEnc = encodeURIComponent(g.name || '')
+  const sidEnc = encodeURIComponent(g.studentSessionId || 'anon')
   let mr
   try { mr = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_000_000 }) }
   catch (e) { mr = new MediaRecorder(stream); if (!mr) return }
@@ -650,28 +656,20 @@ function startUploader(g, stream) {
     if (!ev.data || ev.data.size === 0) return
     recSeq++
     const seq = recSeq
+    const url = `/api/calls/upload?group_id=${g.id}&group_name=${groupNameEnc}&student_id=${sidEnc}&seq=${seq}&total=999`
     const form = new FormData()
     form.append('chunk', ev.data, `part_${String(seq).padStart(5,'0')}.webm`)
-    form.append('group_id', String(g.id))
-    form.append('group_name', String(g.name))
-    form.append('student_id', String(g.studentSessionId || 'anon'))
-    form.append('seq', String(seq))
-    form.append('total', '999')
     try {
-      await fetch('/api/calls/upload', { method: 'POST', body: form })
+      await fetch(url, { method: 'POST', body: form })
       lastUploadSeq = seq
     } catch (_) {}
   }
   mr.onstop = async () => {
+    const url = `/api/calls/upload?group_id=${g.id}&group_name=${groupNameEnc}&student_id=${sidEnc}&seq=${recSeq}&total=${recSeq}`
     const form = new FormData()
     const emptyBlob = new Blob([], { type: 'video/webm' })
     form.append('chunk', emptyBlob, `part_${String(recSeq).padStart(5,'0')}.webm`)
-    form.append('group_id', String(g.id))
-    form.append('group_name', String(g.name))
-    form.append('student_id', String(g.studentSessionId || 'anon'))
-    form.append('seq', String(recSeq))
-    form.append('total', String(recSeq))
-    try { await fetch('/api/calls/upload', { method: 'POST', body: form }) } catch (_) {}
+    try { await fetch(url, { method: 'POST', body: form }) } catch (_) {}
   }
   mr.start(REC_SLICE_MS)
   g.recorder = mr
@@ -723,24 +721,35 @@ async function startCamera(g) {
   }
 }
 
-function triggerAiCheck() {
+function triggerAiCheck(forceLevel = null) {
   const lib = GROUP_LIBRARY.find(x => x.id === group.id)
-  const presets = lib ? (lib.aiPresets || lib.presets || []) : []
+  const aiList = lib ? (lib.aiKeys || lib.aiPresets || []) : []
   let pick = null
-  if (presets && presets.length) {
-    pick = presets[Math.floor(Math.random() * presets.length)]
-  } else {
+  let pickLevel = forceLevel
+  if (forceLevel) {
+    const byLevel = aiList.filter(k => k.level === forceLevel)
+    if (byLevel.length) pick = byLevel[Math.floor(Math.random() * byLevel.length)]
+  }
+  if (!pick && aiList.length) {
+    pick = aiList[Math.floor(Math.random() * aiList.length)]
+    if (pick.level) pickLevel = pick.level
+  }
+  if (!pick) {
     const withAi = group.checklist.filter(c => c.aiText)
-    if (withAi.length) pick = withAi[Math.floor(Math.random() * withAi.length)]
+    if (withAi.length) {
+      pick = withAi[Math.floor(Math.random() * withAi.length)]
+      pickLevel = forceLevel || 'orange'
+    }
   }
   let text = ''
   if (pick) {
     if (pick.text) text = pick.text
-    else if (pick.checkIdx != null && group.checklist[pick.checkIdx]?.aiText) text = group.checklist[pick.checkIdx].aiText
     else if (pick.aiText) text = pick.aiText
+    else if (pick.checkIdx != null && group.checklist[pick.checkIdx]?.aiText) text = group.checklist[pick.checkIdx].aiText
   }
   if (!text) { ElMessage.info('本组暂无预设 AI 事件'); return }
-  emit(pick?.level || 'yellow', String(text), 'AI智能体')
+  emit(pickLevel || 'yellow', String(text), 'AI智能体')
+  speak(`${group.name}，${text}`)
 }
 
 function onOverlayRef(el) {
@@ -871,12 +880,18 @@ onUnmounted(() => {
 .stu-video-wrap.has-alert { border-color: #ff4757; animation: pulse 1.2s infinite; }
 @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.5); } 50% { box-shadow: 0 0 0 8px rgba(255,71,87,0); } }
 .stu-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.stu-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.stu-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
 .video-overlay { z-index: 2; }
-.video-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 8px; color: #9fb3c8; }
+.video-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 8px; color: #9fb3c8; z-index: 1; }
 .video-placeholder .vp-icon { font-size: 44px; }
 .stu-detections { position: absolute; bottom: 6px; left: 6px; display: flex; gap: 4px; flex-wrap: wrap; z-index: 3; }
 .det-tag { font-size: 11px; padding: 2px 6px; background: rgba(0,0,0,0.45); border-radius: 3px; }
+
+.stu-control-row { display: flex; flex-direction: column; gap: 6px; }
+.camera-hint { padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+.camera-hint--ok { color: #42d39c; background: rgba(66,211,156,0.08); }
+.camera-hint--err { color: #f87171; background: #450a0a; }
+.ai-check-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .stu-score { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 14px; }
 .stu-score .score-ring { width: 64px; height: 64px; position: relative; flex-shrink: 0; }
