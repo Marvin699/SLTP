@@ -685,16 +685,19 @@ const streamTimers = {}
 
 async function pollGroupStream(g) {
   try {
-    const r = await fetch(`/api/calls/latest?group_id=${g.id}`)
+    const r = await fetch(`/api/calls/latest?group_id=${g.id}&t=${Date.now()}`)
     const data = await r.json()
     if (data.ok && data.item) {
       const videoEl = document.querySelector(`.group-card[data-gid="${g.id}"] video`)
-      if (videoEl && videoEl.src !== location.origin + data.item.url) {
-        videoEl.src = data.item.url
-        videoEl.muted = false
-        videoEl.playsInline = true
-        g.stream = true
-        videoEl.play().catch(() => {})
+      if (videoEl) {
+        const newSrc = data.item.url + `?t=${Date.now()}`
+        if (!videoEl.src || !videoEl.src.includes(data.item.name) || videoEl.ended) {
+          videoEl.src = newSrc
+          videoEl.muted = true
+          videoEl.playsInline = true
+          g.stream = true
+          try { await videoEl.play() } catch (_) {}
+        }
       }
     }
   } catch (e) {}
