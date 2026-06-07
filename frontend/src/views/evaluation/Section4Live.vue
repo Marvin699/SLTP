@@ -36,8 +36,11 @@
     <div class="s4-grid">
       <div v-for="g in groups" :key="g.id"
         class="group-card"
-        :class="{ 'has-red': groupHasLevel(g, 'red'), 'has-orange': groupHasLevel(g, 'orange'), 'has-yellow': groupHasLevel(g, 'yellow'), 'focused': focusedGroup === g.id }"
+        :data-gid="g.id"
+        :class="{ 'has-red': groupHasLevel(g, 'red'), 'has-orange': groupHasLevel(g, 'orange'), 'has-yellow': groupHasLevel(g, 'yellow'), 'focused': focusedGroup === g.id, 'gc-card--expanded': expandedGroupId === g.id, 'gc-card--hidden': expandedGroupId !== null && expandedGroupId !== g.id }"
         @click="focusedGroup = g.id">
+
+        <button v-if="expandedGroupId === g.id" class="el-button el-button--primary el-button--small gc-collapse-btn" @click="collapseGroup"><span>← 返回总览</span></button>
 
         <div class="gc-head">
           <div class="gc-badge" :style="{ background: g.color }">{{ g.id }}</div>
@@ -61,10 +64,11 @@
 
         <div class="gc-body">
           <div class="gc-video">
-            <video v-show="g.stream" :ref="el => setVideoRef(g.id, el)" autoplay muted playsinline></video>
-            <div v-if="!g.stream" class="video-placeholder">
-              <span>📷 等待摄像头</span>
-              <el-button size="small" plain @click="startCamera(g)">开启</el-button>
+            <video :src="''" autoplay muted playsinline :ref="el => setVideoRef(g.id, el)"></video>
+            <div class="stream-tip" style="font-size:12px;color:#94a3b8;padding:4px 8px 8px">📷 等待学生端推流…</div>
+            <div class="video-placeholder">
+              <span>📷 等待学生端推流…</span>
+              <el-button size="small" plain @click="pollGroupStream(g)">🔄 刷新</el-button>
             </div>
             <canvas class="video-overlay" :ref="el => setOverlayRef(g.id, el)"></canvas>
             <div v-if="g.detections.length" class="gc-detections">
@@ -116,6 +120,7 @@
         </div>
 
         <div class="gc-quick">
+          <button class="el-button el-button--small is-plain" @click="expandGroup(g.id)"><span>🔎 放大</span></button>
           <el-dropdown trigger="click" @command="c => emitAI(g.id, c)" style="display:inline-block">
             <el-button size="small" type="primary" plain>🔍 AI检查</el-button>
             <template #dropdown>
@@ -129,9 +134,16 @@
           <el-button size="small" type="danger" @click="trigger(g.id, 'red')">🔴 致命</el-button>
           <el-button size="small" @click="markGood(g.id)">✓ 确认合规</el-button>
           <el-button size="small" plain @click="simulateRfid(g.id)">📡 RFID</el-button>
-          <el-button size="small" plain @click="startCamera(g)">📷 {{ g.stream ? '切' : '开' }}</el-button>
+          <el-button size="small" plain @click="pollGroupStream(g)">📷 🔄</el-button>
         </div>
       </div>
+    </div>
+
+    <div class="dvr-bar" style="display:flex;gap:12px;align-items:center;padding:12px 20px;background:#0f172a;border-top:1px solid #1e293b">
+      <div style="font-weight:600;color:#f1f5f9">📼 大屏控制</div>
+      <button class="el-button el-button--primary el-button--small" @click="recordAll"><span>⏺ 开始总录屏</span></button>
+      <button class="el-button el-button--danger el-button--small" @click="stopRecordAll" v-if="recordingAll"><span>⏹ 停止总录屏</span></button>
+      <span v-if="recordingAll" style="color:#f87171">● 录制中...</span>
     </div>
 
     <div class="s4-control">
@@ -241,7 +253,7 @@ const mk = (label, warn = false, done = false) => ({ label, warn, done })
 
 const groups = reactive([
   {
-    id: 1, name: '逐日组', village: '旧州村', task: '2-8℃ 冷链疫苗', color: '#5b8def', stage: 1,
+    id: 1, name: '逐日组', village: '怀渠村', task: '2-8℃ 冷链疫苗', color: '#5b8def', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '黄小懿' },
@@ -273,7 +285,7 @@ const groups = reactive([
     stream: null, detections: [], events: [], score: 88, scoreColor: '#42d39c',
   },
   {
-    id: 2, name: '揽星组', village: '弄贴村', task: '-20℃ 深冷血浆', color: '#c77dff', stage: 1,
+    id: 2, name: '揽星组', village: '塘麻村', task: '-20℃ 深冷血浆', color: '#c77dff', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '蔡林宏' },
@@ -305,7 +317,7 @@ const groups = reactive([
     stream: null, detections: [], events: [], score: 92, scoreColor: '#42d39c',
   },
   {
-    id: 3, name: '驭风组', village: '新靖村', task: '避光防潮抗生素', color: '#6be6a1', stage: 1,
+    id: 3, name: '驭风组', village: '坡乐村', task: '避光防潮抗生素', color: '#6be6a1', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '王艳' },
@@ -336,7 +348,7 @@ const groups = reactive([
     stream: null, detections: [], events: [], score: 95, scoreColor: '#42d39c',
   },
   {
-    id: 4, name: '长空组', village: '化峒村', task: '易碎防震注射液', color: '#ff9f43', stage: 1,
+    id: 4, name: '长空组', village: '东风村', task: '易碎防震注射液', color: '#ff9f43', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '徐阳扬' },
@@ -368,7 +380,7 @@ const groups = reactive([
     stream: null, detections: [], events: [], score: 85, scoreColor: '#ffa94d',
   },
   {
-    id: 5, name: '凌云组', village: '同德村', task: '易燃危险品消毒品', color: '#ff6b81', stage: 1,
+    id: 5, name: '凌云组', village: '古桥村', task: '易燃危险品消毒品', color: '#ff6b81', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '黄怀理' },
@@ -399,7 +411,7 @@ const groups = reactive([
     stream: null, detections: [], events: [], score: 90, scoreColor: '#42d39c',
   },
   {
-    id: 6, name: '巡天组', village: '安宁村', task: '多品类综合药品', color: '#74b9ff', stage: 1,
+    id: 6, name: '巡天组', village: '新和村', task: '多品类综合药品', color: '#74b9ff', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '施金晓' },
@@ -665,19 +677,57 @@ function simulateRfid(groupId) {
 }
 
 async function startCamera(g) {
+  console.log('[大屏] 学生端摄像头由前端轮流拉取，无需本地开启', g.id)
+}
+
+const STREAM_POLL_MS = 1500
+const streamTimers = {}
+
+async function pollGroupStream(g) {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 480, height: 360, facingMode: 'environment' }, audio: false,
-    })
-    g.stream = stream
-    await nextTick()
-    const v = videoRefs[g.id]
-    if (v) { v.srcObject = stream; v.play() }
-    startFakeDetection(g)
-  } catch (e) {
-    ElMessage.warning('无法开启摄像头，将使用模拟画面')
-    startFakeDetection(g, true)
-  }
+    const r = await fetch(`/api/calls/latest?group_id=${g.id}`)
+    const data = await r.json()
+    if (data.ok && data.item) {
+      const videoEl = document.querySelector(`.group-card[data-gid="${g.id}"] video`)
+      if (videoEl && videoEl.src !== location.origin + data.item.url) {
+        videoEl.src = data.item.url
+        videoEl.muted = false
+        videoEl.playsInline = true
+        g.stream = true
+        videoEl.play().catch(() => {})
+      }
+    }
+  } catch (e) {}
+}
+
+function startStreamPolling() {
+  groups.forEach(g => {
+    if (streamTimers[g.id]) clearInterval(streamTimers[g.id])
+    streamTimers[g.id] = setInterval(() => pollGroupStream(g), STREAM_POLL_MS)
+    pollGroupStream(g)
+  })
+}
+
+const expandedGroupId = ref(null)
+function expandGroup(id) { expandedGroupId.value = id }
+function collapseGroup() { expandedGroupId.value = null }
+
+const recordingAll = ref(false)
+async function recordAll() {
+  recordingAll.value = true
+  ElMessage.success('大屏已进入"总录屏"模式；每路最新录像将持续刷新')
+}
+async function stopRecordAll() {
+  recordingAll.value = false
+  const r = await fetch('/api/calls/list')
+  const data = await r.json()
+  const listText = (data.items || []).map(i => `${i.group_id || '?'} ${i.name || ''} ${i.url}`).join('\n')
+  const blob = new Blob([listText], { type: 'text/plain;charset=utf-8' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `task4_recordings_${Date.now()}.txt`
+  a.click()
+  ElMessage.success('已导出录像清单，请到"成果定格"中按组查看')
 }
 
 const DETECT_LIBRARY = {
@@ -963,12 +1013,14 @@ function resetAll() {
 onMounted(() => {
   groups.forEach(g => updateScoreColor(g))
   buildQRs()
+  startStreamPolling()
 })
 
 onUnmounted(() => {
+  Object.values(streamTimers).forEach(t => clearInterval(t))
   stopRun()
   groups.forEach(g => {
-    if (g.stream) g.stream.getTracks().forEach(t => t.stop())
+    if (g.stream && typeof g.stream.getTracks === 'function') g.stream.getTracks().forEach(t => t.stop())
   })
   try { window.speechSynthesis.cancel() } catch {}
 })
@@ -1077,4 +1129,13 @@ onUnmounted(() => {
 .stu-qr-actions { margin-top: 3px; display: flex; justify-content: center; gap: 6px; }
 .stu-qr-link { color: #f8c537; font-size: 11px; text-decoration: none; }
 .stu-qr-link:hover { text-decoration: underline; }
+
+.group-card.gc-card--expanded {
+  position: fixed !important; inset: 0 !important; z-index: 9999 !important;
+  width: 100vw !important; height: 100vh !important;
+  background: rgba(10,15,25,0.96);
+  display: flex !important; flex-direction: column;
+}
+.group-card.gc-card--hidden { display: none !important; }
+.gc-collapse-btn { position: absolute; top: 12px; right: 12px; z-index: 10; }
 </style>

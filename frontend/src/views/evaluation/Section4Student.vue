@@ -21,7 +21,7 @@
 
     <div class="stu-body">
       <div class="stu-left">
-        <div class="stu-video-wrap" :class="{ 'has-alert': hasAlert }">
+        <div class="stu-video-wrap" :class="{ 'has-alert': hasAlert }" :data-gid="group.id">
           <video v-show="group.stream" ref="videoEl" autoplay muted playsinline></video>
           <div v-if="!group.stream" class="video-placeholder">
             <div class="vp-icon">📷</div>
@@ -30,9 +30,15 @@
               点击开启摄像头
             </el-button>
           </div>
-          <canvas class="video-overlay" ref="overlayEl"></canvas>
+          <canvas class="video-overlay stu-overlay" ref="overlayEl"></canvas>
           <div v-if="group.detections.length" class="stu-detections">
             <div v-for="(d, i) in group.detections" :key="i" class="det-tag" :style="d.style">{{ d.label }}</div>
+          </div>
+          <div v-if="cameraErrHint" style="color:#f87171;padding:8px 12px;background:#450a0a;border-radius:6px;margin:8px 0">⚠️ {{ cameraErrHint }}</div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="el-button el-button--primary el-button--small is-plain" @click="triggerAiCheck">
+              <span>🔍 AI检查播报（模拟）</span>
+            </button>
           </div>
         </div>
 
@@ -120,7 +126,7 @@ const route = useRoute()
 
 const GROUP_LIBRARY = [
   {
-    id: 1, name: '逐日组', village: '旧州村', task: '2-8℃ 冷链疫苗', standardShort: 'T/CAEE 0001 第3.2条',
+    id: 1, name: '逐日组', village: '怀渠村', task: '2-8℃ 冷链疫苗', standardShort: 'T/CAEE 0001 第3.2条',
     color: '#5b8def',
     rfidItems: '重组乙型肝炎疫苗70支 · 破伤风抗毒素40支 · 30L保温箱 · 生物冰排6块 · EPE缓冲板2张 · 温度记录仪1台',
     rfidStandard: 'T/CAEE 0001—2026 第3.2条',
@@ -148,7 +154,7 @@ const GROUP_LIBRARY = [
     ],
   },
   {
-    id: 2, name: '揽星组', village: '弄贴村', task: '-20℃ 深冷血浆', standardShort: 'T/CAEE 0001 第3.3条',
+    id: 2, name: '揽星组', village: '塘麻村', task: '-20℃ 深冷血浆', standardShort: 'T/CAEE 0001 第3.3条',
     color: '#c77dff',
     rfidItems: '新鲜冰冻血浆12袋 · 20L干冰保温箱(带排气阀) · 干冰≥8kg · 加厚PE袋2个 · 泡沫缓冲块20块 · 低温温度记录仪1台',
     rfidStandard: 'T/CAEE 0001—2026 第3.3条',
@@ -176,7 +182,7 @@ const GROUP_LIBRARY = [
     ],
   },
   {
-    id: 3, name: '驭风组', village: '新靖村', task: '避光防潮抗生素', standardShort: 'WS/T823+T/CAEE',
+    id: 3, name: '驭风组', village: '坡乐村', task: '避光防潮抗生素', standardShort: 'WS/T823+T/CAEE',
     color: '#6be6a1',
     rfidItems: '头孢曲松钠60瓶 · 阿莫西林钠克拉维酸钾40瓶 · 铝箔袋100个 · 黑色避光纸10张 · 防水胶带1卷 · 30L周转箱',
     rfidStandard: 'WS/T823-2023 第4.2条 + T/CAEE 0001—2026',
@@ -203,7 +209,7 @@ const GROUP_LIBRARY = [
     ],
   },
   {
-    id: 4, name: '长空组', village: '化峒村', task: '易碎防震注射液', standardShort: 'T/CAEE 0001 第3.4条',
+    id: 4, name: '长空组', village: '东风村', task: '易碎防震注射液', standardShort: 'T/CAEE 0001 第3.4条',
     color: '#ff9f43',
     rfidItems: '盐酸肾上腺素注射液50支 · 盐酸多巴胺注射液40支 · 定制防震卡槽1个 · 气泡膜1卷 · EPE泡沫条50根 · 2cm泡沫缓冲板2张',
     rfidStandard: 'T/CAEE 0001—2026 第3.4条',
@@ -231,7 +237,7 @@ const GROUP_LIBRARY = [
     ],
   },
   {
-    id: 5, name: '凌云组', village: '同德村', task: '易燃危险品消毒品', standardShort: 'T/CAEE 0001 第3.5条',
+    id: 5, name: '凌云组', village: '古桥村', task: '易燃危险品消毒品', standardShort: 'T/CAEE 0001 第3.5条',
     color: '#ff6b81',
     rfidItems: '75%酒精12瓶 · 84消毒液12瓶 · 防火防爆箱(带隔板) · 防泄漏托盘2个 · 吸附棉4张 · 密封胶带1卷',
     rfidStandard: 'T/CAEE 0001—2026 第3.5条 + 《民用无人机安全规则》',
@@ -258,7 +264,7 @@ const GROUP_LIBRARY = [
     ],
   },
   {
-    id: 6, name: '巡天组', village: '安宁村', task: '多品类综合药品', standardShort: 'T/CAEE 0001 第3.6条',
+    id: 6, name: '巡天组', village: '新和村', task: '多品类综合药品', standardShort: 'T/CAEE 0001 第3.6条',
     color: '#74b9ff',
     rfidItems: '布洛芬片20瓶 · 氨酚烷胺30板 · 碘伏20瓶 · 纱布30卷 · 棉签40包 · 创可贴10盒 · 30L周转箱',
     rfidStandard: 'T/CAEE 0001—2026 第3.6条',
@@ -331,6 +337,13 @@ const timer = ref(null)
 const scoreWaveTimer = ref(null)
 const fakeDetectTimer = ref(null)
 const runTimers = ref([])
+const cameraErrHint = ref('')
+
+let recChunks = []
+let recGroupId = null
+let recSeq = 0
+const REC_SLICE_MS = 1000
+let lastUploadSeq = -1
 
 function levelLabel(lvl) {
   return ({ ok: '合规', yellow: '一般', orange: '严重', red: '致命' })[lvl] || '提醒'
@@ -591,6 +604,21 @@ function studentLoop() {
 }
 
 function startStudentDetection() {
+  let canvas = document.querySelector('.stu-video-wrap .stu-overlay')
+  if (!canvas) {
+    setTimeout(() => startStudentDetection(), 300)
+    return
+  }
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  overlayCtx = ctx
+  const v = document.querySelector('.stu-video-wrap video')
+  if (v) {
+    canvas.width = v.clientWidth || 480
+    canvas.height = v.clientHeight || 360
+  } else {
+    canvas.width = 480; canvas.height = 360
+  }
   studentSeedTrackers()
   if (!studentLoopRunning) {
     studentLoopRunning = true
@@ -598,54 +626,104 @@ function startStudentDetection() {
   }
 }
 
-async function startCamera() {
-  const isSecure = window.location.protocol === 'https:'
-  if (!isSecure) {
-    ElMessage({
-      type: 'error',
-      dangerouslyUseHTMLString: true,
-      message: '手机打不开摄像头 <b>因为当前是 HTTP 不是 HTTPS</b><br>请改用浏览器打开：<b>https://192.168.108.86:5175/</b><br>（浏览器会警告证书不安全，点高级 → 继续访问 即可）',
-      duration: 5000,
-    })
-    group.stream = null
-    startStudentDetection()
-    return
-  }
-  try {
-    let stream = null
+function pickMime() {
+  const cand = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
+  for (const m of cand) if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m
+  return 'video/webm'
+}
+
+function startUploader(g, stream) {
+  recGroupId = g.id
+  recChunks = []
+  recSeq = 0
+  lastUploadSeq = -1
+  const mime = pickMime()
+  if (!mime) { console.warn('没有可用的 MediaRecorder mime'); return }
+  let mr
+  try { mr = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_000_000 }) }
+  catch (e) { mr = new MediaRecorder(stream); if (!mr) return }
+  mr.ondataavailable = async (ev) => {
+    if (!ev.data || ev.data.size === 0) return
+    recSeq++
+    const seq = recSeq
+    const form = new FormData()
+    form.append('chunk', ev.data, `part_${String(seq).padStart(5,'0')}.webm`)
+    form.append('group_id', String(g.id))
+    form.append('group_name', String(g.name))
+    form.append('student_id', String(g.studentSessionId || 'anon'))
+    form.append('seq', String(seq))
+    form.append('total', '999')
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 480, height: 360, facingMode: { ideal: 'environment' } }, audio: false,
-      })
-    } catch (_) {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 480, height: 360 }, audio: false,
-      })
-    }
+      await fetch('/api/calls/upload', { method: 'POST', body: form })
+      lastUploadSeq = seq
+    } catch (_) {}
+  }
+  mr.onstop = async () => {
+    const form = new FormData()
+    const emptyBlob = new Blob([], { type: 'video/webm' })
+    form.append('chunk', emptyBlob, `part_${String(recSeq).padStart(5,'0')}.webm`)
+    form.append('group_id', String(g.id))
+    form.append('group_name', String(g.name))
+    form.append('student_id', String(g.studentSessionId || 'anon'))
+    form.append('seq', String(recSeq))
+    form.append('total', String(recSeq))
+    try { await fetch('/api/calls/upload', { method: 'POST', body: form }) } catch (_) {}
+  }
+  mr.start(REC_SLICE_MS)
+  g.recorder = mr
+}
+
+async function startCamera(g) {
+  cameraErrHint.value = ''
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 480, height: 360, facingMode: { ideal: 'environment' } },
+      audio: false,
+    })
+    g.stream = stream
     group.stream = stream
     const v = document.querySelector('.stu-video-wrap video')
     if (v) {
       v.srcObject = stream
+      v.muted = true
+      v.playsInline = true
       try { await v.play() } catch (_) {}
     }
+    await nextTick()
     startStudentDetection()
-    ElMessage.success('摄像头已开启 · 请对准装载台')
+    startUploader(g, stream)
   } catch (e) {
-    let reason = '未知错误'
-    if (e.name === 'NotAllowedError') reason = '权限被拒绝 · 请在浏览器/系统设置里允许摄像头'
-    else if (e.name === 'NotFoundError') reason = '未找到摄像头设备'
-    else if (e.name === 'NotReadableError') reason = '摄像头被其他应用占用'
-    else if (e.name === 'OverconstrainedError') reason = '摄像头不支持请求的分辨率'
-    else if (e.name === 'TypeError') reason = '浏览器不支持 getUserMedia'
-    ElMessage({
-      type: 'warning',
-      dangerouslyUseHTMLString: true,
-      message: `无法开启摄像头（${reason}）<br>将使用模拟画面演示 AI 智能体`,
-      duration: 4000,
-    })
-    group.stream = null
+    const name = e && e.name ? e.name : String(e)
+    const m = {
+      NotAllowedError: '未授予摄像头权限，请在浏览器地址栏左侧「🔒」授予权限后，重新点击"开启"',
+      NotFoundError: '找不到摄像头设备',
+      NotReadableError: '摄像头正被其他应用占用，请先关闭其他软件',
+      OverconstraintError: '摄像头参数请求过高（已自动降级）',
+      AbortError: '请求被中断',
+      TypeError: '当前页面协议不支持摄像头（必须 HTTPS 或 localhost）',
+    }
+    cameraErrHint.value = m[name] || ('摄像头开启失败：' + (e && e.message ? e.message : name))
+    ElMessage.error(cameraErrHint.value)
+    await nextTick()
     startStudentDetection()
   }
+}
+
+function triggerAiCheck() {
+  if (!group) return
+  const lib = GROUP_LIBRARY.find(x => x.id === group.id)
+  const presets = lib ? (lib.aiPresets || lib.presets || []) : []
+  let pick = null
+  if (presets && presets.length) {
+    pick = presets[Math.floor(Math.random() * presets.length)]
+  } else {
+    const withAi = group.checklist.filter(c => c.aiText)
+    if (withAi.length) pick = withAi[Math.floor(Math.random() * withAi.length)]
+  }
+  const text = pick ? (pick.aiText || pick.text || pick || '') : ''
+  if (!text) { ElMessage.info('本组暂无预设 AI 事件'); return }
+  speak(String(text))
+  emit(pick.level || 'yellow', String(text), 'AI智能体')
 }
 
 function onOverlayRef(el) {

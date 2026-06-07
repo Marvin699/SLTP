@@ -19,6 +19,7 @@ from app.api.routes.case_study import router as case_study_router
 from app.api.routes.course_graph import router as course_graph_router
 from app.api.routes.score_session import router as score_session_router
 from app.api.routes.ai_chat import router as ai_chat_router
+from app.api.routes.calls import router as calls_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -551,6 +552,7 @@ app.include_router(case_study_router)
 app.include_router(course_graph_router)
 app.include_router(score_session_router)
 app.include_router(ai_chat_router)
+app.include_router(calls_router)
 
 
 @app.get("/health", tags=["系统"])
