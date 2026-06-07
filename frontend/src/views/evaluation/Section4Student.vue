@@ -34,10 +34,11 @@
           <div v-if="group.detections.length" class="stu-detections">
             <div v-for="(d, i) in group.detections" :key="i" class="det-tag" :style="d.style">{{ d.label }}</div>
           </div>
+          <div v-if="cameraReady" style="color:#42d39c;padding:6px 10px;background:rgba(66,211,156,0.08);border-radius:6px;font-size:12px;margin:6px 0">✅ 摄像头已开启 · AI 识别运行中 · 点击下方按钮手动触发 AI 检查</div>
           <div v-if="cameraErrHint" style="color:#f87171;padding:8px 12px;background:#450a0a;border-radius:6px;margin:8px 0">⚠️ {{ cameraErrHint }}</div>
           <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
             <button class="el-button el-button--primary el-button--small is-plain" @click="triggerAiCheck">
-              <span>🔍 AI检查播报（模拟）</span>
+              <span>🔍 AI检查</span>
             </button>
           </div>
         </div>
@@ -338,6 +339,7 @@ const scoreWaveTimer = ref(null)
 const fakeDetectTimer = ref(null)
 const runTimers = ref([])
 const cameraErrHint = ref('')
+const cameraReady = ref(false)
 
 let recChunks = []
 let recGroupId = null
@@ -603,23 +605,25 @@ function studentLoop() {
   if (studentLoopRunning) requestAnimationFrame(studentLoop)
 }
 
-function startStudentDetection() {
-  let canvas = document.querySelector('.stu-video-wrap .stu-overlay')
+function startStudentDetection(cameraOn = false) {
+  const canvas = document.querySelector('.stu-video-wrap .stu-overlay')
   if (!canvas) {
-    setTimeout(() => startStudentDetection(), 300)
+    setTimeout(() => startStudentDetection(cameraOn), 300)
     return
   }
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   overlayCtx = ctx
   const v = document.querySelector('.stu-video-wrap video')
-  if (v) {
-    canvas.width = v.clientWidth || 480
-    canvas.height = v.clientHeight || 360
-  } else {
-    canvas.width = 480; canvas.height = 360
+  let w = 480, h = 360
+  if (v && v.clientWidth > 0 && v.clientHeight > 0) {
+    w = v.clientWidth; h = v.clientHeight
+  } else if (v && v.videoWidth > 0) {
+    w = v.videoWidth; h = v.videoHeight
   }
-  studentSeedTrackers()
+  if (canvas.width !== w) canvas.width = w
+  if (canvas.height !== h) canvas.height = h
+  if (studentTrackers.length === 0) studentSeedTrackers()
   if (!studentLoopRunning) {
     studentLoopRunning = true
     studentLoop()
@@ -675,6 +679,7 @@ function startUploader(g, stream) {
 
 async function startCamera(g) {
   cameraErrHint.value = ''
+  cameraReady.value = false
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: 480, height: 360, facingMode: { ideal: 'environment' } },
@@ -688,9 +693,18 @@ async function startCamera(g) {
       v.muted = true
       v.playsInline = true
       try { await v.play() } catch (_) {}
+      if (!v.videoWidth || v.videoWidth === 0) {
+        await new Promise(res => {
+          const h = () => { v.removeEventListener('loadedmetadata', h); res() }
+          v.addEventListener('loadedmetadata', h)
+          setTimeout(h, 2500)
+        })
+      }
     }
     await nextTick()
-    startStudentDetection()
+    await nextTick()
+    cameraReady.value = true
+    startStudentDetection(true)
     startUploader(g, stream)
   } catch (e) {
     const name = e && e.name ? e.name : String(e)
@@ -705,12 +719,11 @@ async function startCamera(g) {
     cameraErrHint.value = m[name] || ('摄像头开启失败：' + (e && e.message ? e.message : name))
     ElMessage.error(cameraErrHint.value)
     await nextTick()
-    startStudentDetection()
+    startStudentDetection(false)
   }
 }
 
 function triggerAiCheck() {
-  if (!group) return
   const lib = GROUP_LIBRARY.find(x => x.id === group.id)
   const presets = lib ? (lib.aiPresets || lib.presets || []) : []
   let pick = null
@@ -720,10 +733,14 @@ function triggerAiCheck() {
     const withAi = group.checklist.filter(c => c.aiText)
     if (withAi.length) pick = withAi[Math.floor(Math.random() * withAi.length)]
   }
-  const text = pick ? (pick.aiText || pick.text || pick || '') : ''
+  let text = ''
+  if (pick) {
+    if (pick.text) text = pick.text
+    else if (pick.checkIdx != null && group.checklist[pick.checkIdx]?.aiText) text = group.checklist[pick.checkIdx].aiText
+    else if (pick.aiText) text = pick.aiText
+  }
   if (!text) { ElMessage.info('本组暂无预设 AI 事件'); return }
-  speak(String(text))
-  emit(pick.level || 'yellow', String(text), 'AI智能体')
+  emit(pick?.level || 'yellow', String(text), 'AI智能体')
 }
 
 function onOverlayRef(el) {
