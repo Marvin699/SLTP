@@ -1,119 +1,89 @@
-"""工作空间API - 处理各模块数据的保存和加载"""
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from pathlib import Path
 import json
-from datetime import datetime
+import sqlite3
+import time
+from pathlib import Path
 
-router = APIRouter(prefix="/api/path-planning/workspace", tags=["workspace"])
+from fastapi import APIRouter, Request, HTTPException
 
-WORK_DIR = Path(__file__).parent.parent.parent.parent.parent / "work"
-WORK_DIR.mkdir(exist_ok=True)
+router = APIRouter(prefix="/api/path-planning/workspace", tags=["工作区持久化"])
 
-
-class Module1Data(BaseModel):
-    center: Optional[Dict[str, Any]] = None
-    demands: List[Dict[str, Any]] = []
-    distance_matrix: Optional[List[List[float]]] = None
-    saved_at: str = ""
+DB_PATH = Path(__file__).resolve().parent.parent.parent.parent / "path_planning_data.db"
 
 
-class Module2Data(BaseModel):
-    assignments: List[Dict[str, Any]] = []
-    saved_at: str = ""
+def _get_conn():
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
-class Module3Data(BaseModel):
-    all_models: List[Dict[str, Any]] = []
-    selected_uavs: List[Dict[str, Any]] = []
-    saved_at: str = ""
-
-
-@router.post("/save/module1")
-async def save_module1(data: Module1Data):
-    """保存模块一数据（配送中心、需求点、距离矩阵）"""
+def _ensure_table():
+    conn = _get_conn()
     try:
-        file_path = WORK_DIR / "module01.json"
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data.dict(), f, ensure_ascii=False, indent=2)
-        return {"success": True, "message": "模块一数据保存成功"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS workspace_snapshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                module TEXT UNIQUE NOT NULL,
+                data TEXT NOT NULL,
+                updated_at INTEGER NOT NULL
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
 
 
-@router.post("/save/module2")
-async def save_module2(data: Module2Data):
-    """保存模块二数据（物资需求、优先级、配送模式）"""
+_ensure_table()
+
+
+@router.post("/save/{module_id}")
+async def save_module(module_id: str, req: Request):
+    if module_id not in ("module1", "module2", "module3", "module4"):
+        raise HTTPException(400, "module_id 必须是 module1~module4")
+    payload = await req.json()
+    conn = _get_conn()
     try:
-        file_path = WORK_DIR / "module02.json"
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data.dict(), f, ensure_ascii=False, indent=2)
-        return {"success": True, "message": "模块二数据保存成功"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
+        conn.execute(
+            """INSERT INTO workspace_snapshots(module,data,updated_at) VALUES(?,?,?)
+               ON CONFLICT(module) DO UPDATE SET
+                 data=excluded.data,
+                 updated_at=excluded.updated_at""",
+            (module_id, json.dumps(payload, ensure_ascii=False), int(time.time())),
+        )
+        conn.commit()
+        return {"success": True, "module": module_id, "saved_at": int(time.time())}
+    finally:
+        conn.close()
 
 
-@router.post("/save/module3")
-async def save_module3(data: Module3Data):
-    """保存模块三数据（无人机配置、选择的无人机）"""
+@router.get("/load/{module_id}")
+async def load_module(module_id: str):
+    conn = _get_conn()
     try:
-        file_path = WORK_DIR / "module03.json"
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data.dict(), f, ensure_ascii=False, indent=2)
-        return {"success": True, "message": "模块三数据保存成功"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
+        row = conn.execute(
+            "SELECT data, updated_at FROM workspace_snapshots WHERE module=?", (module_id,)
+        ).fetchone()
+        if not row:
+            return {"success": True, "module": module_id, "data": None, "note": "尚无保存数据"}
+        return {
+            "success": True,
+            "module": module_id,
+            "data": json.loads(row["data"]),
+            "updated_at": row["updated_at"],
+        }
+    finally:
+        conn.close()
 
 
-@router.get("/load/module1")
-async def load_module1():
-    """加载模块一数据"""
+@router.get("/list")
+async def list_modules():
+    conn = _get_conn()
     try:
-        file_path = WORK_DIR / "module01.json"
-        if file_path.exists():
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return {"success": True, "data": data}
-        return {"success": False, "message": "文件不存在"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-
-@router.get("/load/module2")
-async def load_module2():
-    """加载模块二数据"""
-    try:
-        file_path = WORK_DIR / "module02.json"
-        if file_path.exists():
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return {"success": True, "data": data}
-        return {"success": False, "message": "文件不存在"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-
-@router.get("/load/module3")
-async def load_module3():
-    """加载模块三数据"""
-    try:
-        file_path = WORK_DIR / "module03.json"
-        if file_path.exists():
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return {"success": True, "data": data}
-        return {"success": False, "message": "文件不存在"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-
-@router.get("/status")
-async def get_workspace_status():
-    """获取工作空间状态"""
-    status = {
-        "module1_exists": (WORK_DIR / "module01.json").exists(),
-        "module2_exists": (WORK_DIR / "module02.json").exists(),
-        "module3_exists": (WORK_DIR / "module03.json").exists(),
-    }
-    return {"success": True, "status": status}
+        rows = conn.execute(
+            "SELECT module, updated_at FROM workspace_snapshots ORDER BY module"
+        ).fetchall()
+        return {
+            "success": True,
+            "items": [{"module": r["module"], "updated_at": r["updated_at"]} for r in rows],
+        }
+    finally:
+        conn.close()
