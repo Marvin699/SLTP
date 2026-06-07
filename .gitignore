@@ -45,3 +45,8 @@ backend/uploads/
 # Non-project files
 参考文件/
 服务器部署情况/
+
+# Local dev certs (never commit)
+frontend/.certs/
+*.pem
+*-key.pem
