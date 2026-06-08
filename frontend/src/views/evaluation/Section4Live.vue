@@ -19,8 +19,9 @@
       </div>
       <div class="h-right">
         <div class="timer-box">
-          <span class="timer-label">剩余时间</span>
-          <span class="timer-value">{{ formatTime(remainingSec) }}</span>
+          <span class="timer-label">倒计时(分钟)</span>
+          <el-input-number v-if="!running" v-model="selectedMinutes" :min="1" :max="180" size="small" style="width: 100px; margin-top: 2px;" />
+          <span v-else class="timer-value">{{ formatTime(remainingSec) }}</span>
         </div>
         <el-button v-if="!running" type="primary" size="large" @click="startRun">▶ 开始计时</el-button>
         <el-button v-else type="danger" size="large" plain @click="stopRun">■ 结束</el-button>
@@ -245,7 +246,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import QRCode from 'qrcode'
 
@@ -253,7 +254,7 @@ const mk = (label, warn = false, done = false) => ({ label, warn, done })
 
 const groups = reactive([
   {
-    id: 1, name: '逐日组', village: '怀渠村', task: '2-8℃ 冷链疫苗', color: '#5b8def', stage: 1,
+    id: 1, name: '逐日组', village: '怀渠村', task: '-20℃ 深冷血浆', color: '#5b8def', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '黄小懿' },
@@ -261,38 +262,6 @@ const groups = reactive([
       { role: '装载员', name: '吴榜明' },
       { role: '安全员', name: '熊丽雪' },
       { role: '数据员', name: '张心怡' },
-    ],
-    checklist: [
-      mk('冰排铺设均匀不留空隙'),
-      mk('EPE 2cm缓冲板隔离冰排与疫苗', true),
-      mk('疫苗竖直摆放，瓶身间隙1cm'),
-      mk('温度探头固定在箱体几何中心'),
-      mk('上层缓冲板+剩余冰排'),
-      mk('防水胶带密封所有缝隙'),
-      mk('RFID电子标签+轻拿轻放标识'),
-    ],
-    aiKeys: [
-      { label: '检查冰排与疫苗隔离', text: '冰排与疫苗之间必须有2cm EPE缓冲板隔离，防止疫苗直接接触冰排导致冻结失效' },
-      { label: '检查温度探头位置', text: '温度探头应固定在箱体几何中心的一支疫苗瓶身上，防止温度读数不准' },
-      { label: '检查密封与RFID', text: '保温箱密封条必须压实，RFID电子标签粘贴于侧面，轻拿轻放标识6面可见' },
-    ],
-    rfidDetails: {
-      items: '重组乙型肝炎疫苗70支 · 破伤风抗毒素40支 · 30L保温箱 · 生物冰排6块 · EPE缓冲板2张 · 温度记录仪1台',
-      standard: 'T/CAEE 0001—2026 第3.2条',
-      drone: '百色市消防救援支队无人机A1-01',
-      tagNo: 'UHF-RFID-SN20260718-01',
-    },
-    stream: null, detections: [], events: [], score: 88, scoreColor: '#42d39c',
-  },
-  {
-    id: 2, name: '揽星组', village: '塘麻村', task: '-20℃ 深冷血浆', color: '#c77dff', stage: 1,
-    rfid: null,
-    roles: [
-      { role: '物资管理员', name: '蔡林宏' },
-      { role: '包装员', name: '谭玉曼' },
-      { role: '装载员', name: '梁庆蝉' },
-      { role: '安全员', name: '刘华妮' },
-      { role: '数据员', name: '黄雅诗' },
     ],
     checklist: [
       mk('干冰铺设≥8kg并铺平', true),
@@ -311,10 +280,42 @@ const groups = reactive([
     rfidDetails: {
       items: '新鲜冰冻血浆12袋 · 20L干冰保温箱(带排气阀) · 干冰≥8kg · 加厚PE袋2个 · 泡沫缓冲块20块 · 低温温度记录仪1台',
       standard: 'T/CAEE 0001—2026 第3.3条',
+      drone: '百色市消防救援支队无人机A1-01',
+      tagNo: 'UHF-RFID-SN20260718-01',
+    },
+    stream: null, detections: [], events: [], score: 92, scoreColor: '#42d39c',
+  },
+  {
+    id: 2, name: '揽星组', village: '塘麻村', task: '2-8℃ 冷链疫苗', color: '#c77dff', stage: 1,
+    rfid: null,
+    roles: [
+      { role: '物资管理员', name: '蔡林宏' },
+      { role: '包装员', name: '谭玉曼' },
+      { role: '装载员', name: '梁庆蝉' },
+      { role: '安全员', name: '刘华妮' },
+      { role: '数据员', name: '黄雅诗' },
+    ],
+    checklist: [
+      mk('冰排铺设均匀不留空隙'),
+      mk('EPE 2cm缓冲板隔离冰排与疫苗', true),
+      mk('疫苗竖直摆放，瓶身间隙1cm'),
+      mk('温度探头固定在箱体几何中心'),
+      mk('上层缓冲板+剩余冰排'),
+      mk('防水胶带密封所有缝隙'),
+      mk('RFID电子标签+轻拿轻放标识'),
+    ],
+    aiKeys: [
+      { label: '检查冰排与疫苗隔离', text: '冰排与疫苗之间必须有2cm EPE缓冲板隔离，防止疫苗直接接触冰排导致冻结失效' },
+      { label: '检查温度探头位置', text: '温度探头应固定在箱体几何中心的一支疫苗瓶身上，防止温度读数不准' },
+      { label: '检查密封与RFID', text: '保温箱密封条必须压实，RFID电子标签粘贴于侧面，轻拿轻放标识6面可见' },
+    ],
+    rfidDetails: {
+      items: '重组乙型肝炎疫苗70支 · 破伤风抗毒素40支 · 30L保温箱 · 生物冰排6块 · EPE缓冲板2张 · 温度记录仪1台',
+      standard: 'T/CAEE 0001—2026 第3.2条',
       drone: '百色市消防救援支队无人机A1-02',
       tagNo: 'UHF-RFID-SN20260718-02',
     },
-    stream: null, detections: [], events: [], score: 92, scoreColor: '#42d39c',
+    stream: null, detections: [], events: [], score: 88, scoreColor: '#42d39c',
   },
   {
     id: 3, name: '驭风组', village: '坡乐村', task: '避光防潮抗生素', color: '#6be6a1', stage: 1,
@@ -446,17 +447,17 @@ const groups = reactive([
 const stages = ['待开始', '物资分拣', '包装装载', '固定贴标', '重心测量', '行前检查', '完成']
 
 const presets = [
-  { groupName: '逐日组', groups: [1], level: 'yellow',
-    text: '冰排与疫苗之间未放置2cm EPE缓冲板，疫苗直接接触冰排可能冻结失效，请立即铺设缓冲板隔离',
-  },
-  { groupName: '逐日组', groups: [1], level: 'yellow',
-    text: '温度探头未固定在箱体几何中心，请固定在中心位置的一支疫苗瓶身上，确保读数准确',
-  },
-  { groupName: '揽星组', groups: [2], level: 'orange',
+  { groupName: '逐日组', groups: [1], level: 'orange',
     text: '当前干冰重量 5.2kg，不足8kg。请补充干冰至8kg以上，-20℃以下是深冷血浆存储标准',
   },
-  { groupName: '揽星组', groups: [2], level: 'yellow',
+  { groupName: '逐日组', groups: [1], level: 'yellow',
     text: '干冰保温箱排气阀必须完全打开，盖子轻轻扣上不要拧紧，防止干冰升华箱内压力过大爆炸',
+  },
+  { groupName: '揽星组', groups: [2], level: 'yellow',
+    text: '冰排与疫苗之间未放置2cm EPE缓冲板，疫苗直接接触冰排可能冻结失效，请立即铺设缓冲板隔离',
+  },
+  { groupName: '揽星组', groups: [2], level: 'yellow',
+    text: '温度探头未固定在箱体几何中心，请固定在中心位置的一支疫苗瓶身上，确保读数准确',
   },
   { groupName: '驭风组', groups: [3], level: 'yellow',
     text: '包装正确 ✓ 但装箱时每层之间要铺黑色避光纸，最后箱子外面再包一层黑色塑料膜做双重避光',
@@ -479,8 +480,8 @@ const presets = [
 ]
 
 const achievementScores = reactive([
-  { id: 1, name: '逐日组', score: 88 },
-  { id: 2, name: '揽星组', score: 92 },
+  { id: 1, name: '逐日组', score: 92 },
+  { id: 2, name: '揽星组', score: 88 },
   { id: 3, name: '驭风组', score: 95 },
   { id: 4, name: '长空组', score: 85 },
   { id: 5, name: '凌云组', score: 90 },
@@ -488,7 +489,9 @@ const achievementScores = reactive([
 ])
 
 const running = ref(false)
-const remainingSec = ref(600)
+const selectedMinutes = ref(10)
+const remainingSec = computed(() => running.value ? _remainingSec.value : selectedMinutes.value * 60)
+const _remainingSec = ref(600)
 const exhibitionOn = ref(false)
 const focusedGroup = ref(1)
 const phase = ref(2)
@@ -1019,12 +1022,14 @@ function tickScoreWave() {
     updateScoreColor(g)
 
     if (running.value) {
-      const elapsed = 600 - remainingSec.value
-      if (elapsed > 40) g.stage = Math.min(6, Math.max(2, 3))
-      if (elapsed > 80) g.stage = Math.min(6, Math.max(3, 4))
-      if (elapsed > 200) g.stage = 5
-      if (elapsed > 360) g.stage = 6
-      if (elapsed > 500) g.stage = 6
+      const total = selectedMinutes.value * 60
+      const elapsed = total - _remainingSec.value
+      const base = total * 0.2
+      const mid = total * 0.5
+      const late = total * 0.8
+      if (elapsed > base) g.stage = Math.min(6, Math.max(2, 3))
+      if (elapsed > mid) g.stage = Math.min(6, Math.max(3, 4))
+      if (elapsed > late) g.stage = 5
     }
   })
 }
@@ -1032,7 +1037,7 @@ function tickScoreWave() {
 function startRun() {
   running.value = true
   achievementFrozen.value = false
-  remainingSec.value = 600
+  _remainingSec.value = selectedMinutes.value * 60
   groups.forEach(g => {
     g.stage = 1
     g.events = []
@@ -1042,9 +1047,9 @@ function startRun() {
     updateScoreColor(g)
   })
   phase.value = 2
-  emit(0, 'yellow', '计时开始！渠阳镇特大水灾，6组立即就位，10分钟内完成标准化包装装载', '指挥中心')
+  emit(0, 'yellow', `计时开始！渠阳镇特大水灾，6组立即就位，${selectedMinutes.value}分钟内完成标准化包装装载`, '指挥中心')
   runTimer = setInterval(() => {
-    if (remainingSec.value > 0) remainingSec.value--
+    if (_remainingSec.value > 0) _remainingSec.value--
     else { stopRun(); ElMessage.success('时间到！所有小组停止操作，请展示货盘') }
   }, 1000)
   scoreTick = setInterval(tickScoreWave, 400)
@@ -1056,7 +1061,7 @@ function startRun() {
 function freezeAchievement() {
   achievementFrozen.value = true
   phase.value = 3
-  remainingSec.value = 0
+  _remainingSec.value = 0
   groups.forEach(g => {
     const a = achievementScores.find(x => x.id === g.id)
     if (a) g.score = a.score
@@ -1080,7 +1085,7 @@ function resetAll() {
   stopRun()
   achievementFrozen.value = false
   phase.value = 2
-  remainingSec.value = 600
+  _remainingSec.value = selectedMinutes.value * 60
   groups.forEach(g => {
     g.events = []; g.score = 85; updateScoreColor(g); g.stage = 1; g.rfid = null
     g.checklist.forEach(c => { c.done = false; c.warn = false })
