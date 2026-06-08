@@ -32,13 +32,13 @@ const app = useAppStore()
 
 <style scoped>
 .topbar {
-  min-height: 50px;
-  height: 50px;
+  min-height: 62px;
+  height: 62px;
   background: var(--navy2);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 20px;
   gap: 16px;
   flex-shrink: 0;
   z-index: 100;
@@ -48,12 +48,12 @@ const app = useAppStore()
 .topbar-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .logo-icon {
-  font-size: 18px;
+  font-size: 22px;
   color: var(--teal);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -65,7 +65,7 @@ const app = useAppStore()
 
 .logo-text {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--teal);
   letter-spacing: 1px;
@@ -74,7 +74,7 @@ const app = useAppStore()
 
 .topbar-tabs {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   flex: 1;
   justify-content: center;
   overflow-x: auto;
@@ -83,14 +83,14 @@ const app = useAppStore()
 .tab-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 10px 16px;
   background: none;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text3);
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -98,21 +98,21 @@ const app = useAppStore()
 
 .tab-btn:hover {
   color: var(--text2);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab-btn.active {
-  background: rgba(0, 229, 255, 0.08);
+  background: rgba(0, 229, 255, 0.1);
   color: var(--teal);
-  border-color: rgba(0, 229, 255, 0.2);
+  border-color: rgba(0, 229, 255, 0.25);
 }
 
 .tab-icon {
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .tab-label {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .topbar-right {
@@ -121,11 +121,11 @@ const app = useAppStore()
 
 .ver-tag {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text3);
   border: 1px solid var(--border);
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 3px 10px;
+  border-radius: 4px;
   letter-spacing: 1px;
 }
 </style>

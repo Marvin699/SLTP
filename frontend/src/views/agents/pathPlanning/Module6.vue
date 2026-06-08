@@ -582,15 +582,15 @@ function generateCompareSummary() {
 .module6-container {
   display: flex;
   height: 100%;
-  gap: 16px;
-  padding: 16px;
+  gap: 18px;
+  padding: 18px;
 }
 
 .module-left {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   overflow-y: auto;
 }
 
@@ -614,7 +614,7 @@ function generateCompareSummary() {
 .config-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .config-label {
@@ -623,7 +623,7 @@ function generateCompareSummary() {
 }
 
 .config-input {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
@@ -632,11 +632,11 @@ function generateCompareSummary() {
 .action-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn {
-  padding: 8px 16px;
+  padding: 10px 18px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -680,7 +680,7 @@ function generateCompareSummary() {
 
 .error-msg {
   color: #f5222d;
-  padding: 8px;
+  padding: 10px;
   background: #fff1f0;
   border: 1px solid #ffa39e;
   border-radius: 4px;
@@ -700,11 +700,11 @@ function generateCompareSummary() {
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-item {
-  padding: 12px;
+  padding: 14px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   cursor: pointer;
@@ -729,8 +729,8 @@ function generateCompareSummary() {
 
 .history-meta {
   display: flex;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 13px;
   color: #666;
 }
 
@@ -757,12 +757,12 @@ function generateCompareSummary() {
 .empty-preview {
   text-align: center;
   color: #999;
-  padding: 40px;
+  padding: 42px;
 }
 
 /* 报告预览样式 */
 .report-preview {
-  padding: 20px;
+  padding: 22px;
   background: white;
 }
 
@@ -791,7 +791,7 @@ function generateCompareSummary() {
 
 .report-time {
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   margin: 0;
 }
 
@@ -821,14 +821,14 @@ function generateCompareSummary() {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
   margin-bottom: 16px;
 }
 
 .stat-item {
   display: flex;
   justify-content: space-between;
-  padding: 12px;
+  padding: 14px;
   background: #f5f5f5;
   border-radius: 4px;
 }
@@ -844,14 +844,14 @@ function generateCompareSummary() {
 .scores-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .score-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 14px;
   background: #f5f5f5;
   border-radius: 4px;
 }
@@ -862,7 +862,7 @@ function generateCompareSummary() {
 
 .score-value {
   font-weight: bold;
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 12px;
 }
 
@@ -885,13 +885,13 @@ function generateCompareSummary() {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 16px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .report-table th,
 .report-table td {
   border: 1px solid #e0e0e0;
-  padding: 8px;
+  padding: 10px;
   text-align: center;
 }
 
@@ -941,7 +941,7 @@ function generateCompareSummary() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 18px;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -957,7 +957,7 @@ function generateCompareSummary() {
 }
 
 .editor-body {
-  padding: 16px;
+  padding: 18px;
 }
 
 .editor-field {
@@ -972,7 +972,7 @@ function generateCompareSummary() {
 
 .editor-field input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
@@ -980,9 +980,9 @@ function generateCompareSummary() {
 
 .editor-footer {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: flex-end;
-  padding: 16px;
+  padding: 18px;
   border-top: 1px solid #e0e0e0;
 }
 
@@ -990,7 +990,7 @@ function generateCompareSummary() {
 .empty-text {
   text-align: center;
   color: #999;
-  padding: 24px;
+  padding: 26px;
 }
 
 /* 历史记录勾选 */
@@ -1004,7 +1004,7 @@ function generateCompareSummary() {
 .history-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-select {
@@ -1030,13 +1030,13 @@ function generateCompareSummary() {
 .btn-compare {
   background: #722ed1;
   color: white;
-  font-size: 12px;
-  padding: 6px 12px;
+  font-size: 13px;
+  padding: 8px 14px;
 }
 
 /* 对比样式 */
 .compare-container {
-  padding: 16px;
+  padding: 18px;
 }
 
 .compare-header {
@@ -1060,7 +1060,7 @@ function generateCompareSummary() {
 
 .compare-scheme {
   color: #666;
-  font-size: 12px;
+  font-size: 13px;
   margin: 0;
 }
 
@@ -1086,13 +1086,13 @@ function generateCompareSummary() {
 .compare-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .compare-table th,
 .compare-table td {
   border: 1px solid #e0e0e0;
-  padding: 10px;
+  padding: 12px;
   text-align: center;
 }
 
@@ -1118,18 +1118,18 @@ function generateCompareSummary() {
 .scores-compare {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .score-compare-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .compare-summary {
   margin-top: 24px;
-  padding: 16px;
+  padding: 18px;
   background: #f6ffed;
   border: 1px solid #b7eb8f;
   border-radius: 8px;
@@ -1142,6 +1142,6 @@ function generateCompareSummary() {
 
 .summary-text {
   line-height: 1.6;
-  font-size: 13px;
+  font-size: 14px;
 }
 </style>

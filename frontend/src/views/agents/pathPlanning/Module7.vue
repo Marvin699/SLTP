@@ -713,7 +713,7 @@ function parseCsvLine(line) {
 
 <style scoped>
 .module7-container {
-  padding: 16px;
+  padding: 18px;
 }
 
 .module-header {
@@ -727,13 +727,13 @@ function parseCsvLine(line) {
 
 .module-desc {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text3);
 }
 
 .action-bar {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
@@ -741,19 +741,19 @@ function parseCsvLine(line) {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 14px 18px;
 }
 
 .case-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .case-card {
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px;
   background: var(--navy2);
 }
 
@@ -770,16 +770,16 @@ function parseCsvLine(line) {
 }
 
 .case-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .default-badge {
-  font-size: 10px;
-  padding: 1px 6px;
+  font-size: 11px;
+  padding: 3px 8px;
   border-radius: 4px;
   background: var(--orange);
   color: white;
@@ -787,19 +787,19 @@ function parseCsvLine(line) {
 
 .case-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .case-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .info-row {
   display: flex;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 13px;
 }
 
 .info-label {
@@ -813,11 +813,11 @@ function parseCsvLine(line) {
 }
 
 .btn {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   transition: opacity 0.2s;
 }
 
@@ -851,8 +851,8 @@ function parseCsvLine(line) {
 }
 
 .btn-sm {
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 .btn-sm:disabled {
@@ -887,7 +887,7 @@ function parseCsvLine(line) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 18px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -905,14 +905,14 @@ function parseCsvLine(line) {
 }
 
 .modal-body {
-  padding: 16px;
+  padding: 18px;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 14px 18px;
   border-top: 1px solid var(--border);
 }
 
@@ -922,7 +922,7 @@ function parseCsvLine(line) {
 
 .form-group label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   margin-bottom: 4px;
   color: var(--text2);
 }
@@ -930,19 +930,19 @@ function parseCsvLine(line) {
 .form-group.checkbox label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--navy2);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   box-sizing: border-box;
 }
 
@@ -954,7 +954,7 @@ function parseCsvLine(line) {
 
 .form-row {
   display: flex;
-  gap: 12px;
+  gap: 14px;
 }
 
 .form-row .form-group {
@@ -964,7 +964,7 @@ function parseCsvLine(line) {
 .form-row .form-group.action-group {
   flex: 0 0 auto;
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .form-section {
@@ -986,7 +986,7 @@ function parseCsvLine(line) {
 
 .section-header-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .btn-outline {
@@ -1002,17 +1002,17 @@ function parseCsvLine(line) {
 
 .section-header h4 {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .demand-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .demand-item {
-  padding: 12px;
+  padding: 14px;
   background: var(--navy2);
   border-radius: 6px;
 }
@@ -1034,7 +1034,7 @@ function parseCsvLine(line) {
 
 .material-panel {
   margin-top: 12px;
-  padding: 12px;
+  padding: 14px;
   background: var(--navy);
   border-radius: 4px;
   border: 1px solid var(--border2);
@@ -1050,15 +1050,15 @@ function parseCsvLine(line) {
 }
 
 .panel-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--teal);
 }
 
 .panel-summary {
   display: flex;
-  gap: 12px;
-  font-size: 11px;
+  gap: 14px;
+  font-size: 13px;
 }
 
 .summary-item {
@@ -1075,8 +1075,8 @@ function parseCsvLine(line) {
   border: 1px solid var(--border2);
   border-radius: 3px;
   color: var(--text);
-  padding: 2px 6px;
-  font-size: 11px;
+  padding: 4px 8px;
+  font-size: 13px;
   outline: none;
 }
 
@@ -1085,7 +1085,7 @@ function parseCsvLine(line) {
 }
 
 .section-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text3);
   margin-bottom: 6px;
@@ -1094,18 +1094,18 @@ function parseCsvLine(line) {
 .cat-grid-small {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cat-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 6px 10px;
   border: 1px solid var(--border2);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   background: var(--navy2);
 }
 
@@ -1119,7 +1119,7 @@ function parseCsvLine(line) {
 }
 
 .cat-icon {
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .cat-name {
@@ -1133,20 +1133,20 @@ function parseCsvLine(line) {
 .items-table-small {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .items-table-small th {
   background: var(--navy2);
   color: var(--text3);
-  padding: 4px 8px;
+  padding: 6px 10px;
   text-align: left;
   font-weight: 500;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .items-table-small td {
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(22, 37, 64, 0.5);
 }
 
@@ -1156,8 +1156,8 @@ function parseCsvLine(line) {
   border: 1px solid var(--border2);
   border-radius: 3px;
   color: var(--text);
-  padding: 3px 6px;
-  font-size: 11px;
+  padding: 5px 8px;
+  font-size: 13px;
   outline: none;
 }
 
@@ -1174,7 +1174,7 @@ function parseCsvLine(line) {
   border: none;
   color: var(--red);
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   opacity: 0.6;
 }
 
@@ -1188,8 +1188,8 @@ function parseCsvLine(line) {
   border: 1px dashed rgba(0, 229, 255, 0.3);
   border-radius: 4px;
   color: var(--teal);
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 13px;
   cursor: pointer;
   width: 100%;
 }
@@ -1203,9 +1203,9 @@ function parseCsvLine(line) {
   padding-top: 8px;
   border-top: 1px dashed var(--border);
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .preview-label {
@@ -1224,9 +1224,9 @@ function parseCsvLine(line) {
 
 .empty-hint {
   text-align: center;
-  padding: 16px;
+  padding: 18px;
   color: var(--text3);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .required {
@@ -1236,9 +1236,9 @@ function parseCsvLine(line) {
 .loading-text,
 .empty-text {
   text-align: center;
-  padding: 24px;
+  padding: 26px;
   color: var(--text3);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .mono {

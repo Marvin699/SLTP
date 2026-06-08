@@ -255,7 +255,7 @@ function maskKey(key) {
 
 <style scoped>
 .module8-container {
-  padding: 16px;
+  padding: 18px;
 }
 
 .module-header {
@@ -269,7 +269,7 @@ function maskKey(key) {
 
 .module-desc {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text3);
 }
 
@@ -278,12 +278,12 @@ function maskKey(key) {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 14px 18px;
   margin-bottom: 16px;
 }
 
 .active-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text3);
   margin-bottom: 8px;
 }
@@ -291,12 +291,12 @@ function maskKey(key) {
 .active-model {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .active-model.empty {
   color: var(--text3);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .model-name {
@@ -305,14 +305,14 @@ function maskKey(key) {
 }
 
 .model-id {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text3);
   font-family: var(--mono);
 }
 
 .model-badge {
-  font-size: 10px;
-  padding: 2px 8px;
+  font-size: 11px;
+  padding: 4px 10px;
   border-radius: 10px;
   background: var(--teal);
   color: var(--navy);
@@ -323,7 +323,7 @@ function maskKey(key) {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 14px 18px;
 }
 
 .section-header {
@@ -341,13 +341,13 @@ function maskKey(key) {
 .llm-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .llm-card {
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px;
   background: var(--navy2);
 }
 
@@ -364,24 +364,24 @@ function maskKey(key) {
 }
 
 .llm-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .default-badge {
-  font-size: 10px;
-  padding: 1px 6px;
+  font-size: 11px;
+  padding: 3px 8px;
   border-radius: 4px;
   background: var(--orange);
   color: white;
 }
 
 .active-badge {
-  font-size: 10px;
-  padding: 1px 6px;
+  font-size: 11px;
+  padding: 3px 8px;
   border-radius: 4px;
   background: var(--teal);
   color: var(--navy);
@@ -389,19 +389,19 @@ function maskKey(key) {
 
 .llm-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .llm-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .info-row {
   display: flex;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 13px;
 }
 
 .info-label {
@@ -417,11 +417,11 @@ function maskKey(key) {
 
 /* 按钮 */
 .btn {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   transition: opacity 0.2s;
 }
 
@@ -460,8 +460,8 @@ function maskKey(key) {
 }
 
 .btn-sm {
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 /* 弹窗 */
@@ -488,7 +488,7 @@ function maskKey(key) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 18px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -506,14 +506,14 @@ function maskKey(key) {
 }
 
 .modal-body {
-  padding: 16px;
+  padding: 18px;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 14px 18px;
   border-top: 1px solid var(--border);
 }
 
@@ -524,7 +524,7 @@ function maskKey(key) {
 
 .form-group label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   margin-bottom: 4px;
   color: var(--text2);
 }
@@ -532,19 +532,19 @@ function maskKey(key) {
 .form-group.checkbox label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--navy2);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   box-sizing: border-box;
 }
 
@@ -561,9 +561,9 @@ function maskKey(key) {
 /* 测试结果 */
 .test-result {
   margin-top: 12px;
-  padding: 10px;
+  padding: 12px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .test-result.success {
@@ -590,15 +590,15 @@ function maskKey(key) {
   padding-top: 4px;
   border-top: 1px solid var(--border);
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* 空状态 */
 .loading-text,
 .empty-text {
   text-align: center;
-  padding: 24px;
+  padding: 26px;
   color: var(--text3);
-  font-size: 12px;
+  font-size: 13px;
 }
 </style>

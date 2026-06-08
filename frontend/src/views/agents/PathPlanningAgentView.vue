@@ -252,14 +252,14 @@ onMounted(() => {
 }
 
 .agent-top-header {
-  min-height: 48px;
-  height: 48px;
+  min-height: 52px;
+  height: 52px;
   background: var(--navy2);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 20px;
   flex-shrink: 0;
   z-index: 200;
   position: relative;
@@ -268,7 +268,7 @@ onMounted(() => {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .header-right {
@@ -291,10 +291,11 @@ onMounted(() => {
 }
 
 .page-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--teal);
   margin: 0;
+  letter-spacing: 0.5px;
 }
 
 .main-area {
@@ -305,7 +306,7 @@ onMounted(() => {
 
 /* Left side panel */
 .side-panel {
-  width: 380px;
+  width: 420px;
   flex-shrink: 0;
   background: var(--navy2);
   border-right: 1px solid var(--border);
@@ -317,7 +318,7 @@ onMounted(() => {
 .panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: 14px 18px;
 }
 
 /* Placeholder module */

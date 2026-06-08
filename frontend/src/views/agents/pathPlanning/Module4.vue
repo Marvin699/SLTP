@@ -547,13 +547,13 @@ async function deleteHistory(recordId) {
 .module4 {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mod-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
@@ -563,18 +563,18 @@ async function deleteHistory(recordId) {
 .mod-icon { font-size: 18px; }
 
 /* 任务概览 */
-.task-overview { display: flex; gap: 8px; }
+.task-overview { display: flex; gap: 10px; }
 
 .stat-item {
   flex: 1;
   background: var(--navy3);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 8px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .stat-value {
@@ -585,13 +585,13 @@ async function deleteHistory(recordId) {
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
 }
 
 /* 操作按钮 */
-.action-row { display: flex; gap: 8px; }
+.action-row { display: flex; gap: 10px; }
 
 .btn-primary {
   flex: 1;
@@ -600,7 +600,7 @@ async function deleteHistory(recordId) {
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--mono);
   cursor: pointer;
@@ -616,7 +616,7 @@ async function deleteHistory(recordId) {
   color: var(--text2);
   border: 1px solid var(--border2);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -628,9 +628,9 @@ async function deleteHistory(recordId) {
   background: rgba(255, 71, 87, 0.1);
   border: 1px solid rgba(255, 71, 87, 0.3);
   color: #ff4757;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 4px;
 }
 
@@ -662,38 +662,38 @@ async function deleteHistory(recordId) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--navy3);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text2);
   font-family: var(--mono);
   cursor: pointer;
   user-select: none;
 }
-.chevron { transition: transform 0.2s; font-size: 10px; color: var(--text3); }
+.chevron { transition: transform 0.2s; font-size: 11px; color: var(--text3); }
 .chevron.open { transform: rotate(90deg); }
 .badge {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--teal);
   background: rgba(0, 229, 255, 0.1);
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
 }
-.section-body { padding: 10px 12px; }
+.section-body { padding: 12px 14px; }
 
 /* 参数网格 */
-.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.param-item { display: flex; flex-direction: column; gap: 4px; }
-.param-name { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.param-item { display: flex; flex-direction: column; gap: 6px; }
+.param-name { font-size: 11px; color: var(--text3); font-family: var(--mono); }
 .param-input {
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   font-family: var(--mono);
-  padding: 5px 8px;
+  padding: 7px 10px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -703,18 +703,18 @@ async function deleteHistory(recordId) {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 10px;
 }
 .sum-card {
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 8px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 .sum-val {
   font-size: 18px;
@@ -724,18 +724,18 @@ async function deleteHistory(recordId) {
 }
 .sum-val.good { color: #2ed573; }
 .sum-val.bad { color: #ff4757; }
-.sum-unit { font-size: 10px; color: var(--text3); font-family: var(--mono); }
-.sum-label { font-size: 9px; color: var(--text3); font-family: var(--mono); }
+.sum-unit { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.sum-label { font-size: 10px; color: var(--text3); font-family: var(--mono); }
 
 .btn-detail {
   width: 100%;
   margin-top: 8px;
-  padding: 8px;
+  padding: 10px;
   background: rgba(0, 229, 255, 0.08);
   border: 1px solid rgba(0, 229, 255, 0.2);
   border-radius: 4px;
   color: var(--teal);
-  font-size: 12px;
+  font-size: 13px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -744,28 +744,28 @@ async function deleteHistory(recordId) {
 
 .run-info {
   display: flex;
-  gap: 16px;
-  font-size: 10px;
+  gap: 18px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
-  padding: 4px 0;
+  padding: 6px 0;
 }
 
 /* ─── Right Panel ─── */
 .rp-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .btn-excel {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: rgba(46, 213, 115, 0.1);
   border: 1px solid rgba(46, 213, 115, 0.3);
   border-radius: 6px;
   color: #2ed573;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--mono);
   cursor: pointer;
@@ -776,18 +776,18 @@ async function deleteHistory(recordId) {
 /* Tabs */
 .rp-tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 .rp-tab {
   flex: 1;
-  padding: 8px 4px;
+  padding: 10px 6px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -808,7 +808,7 @@ async function deleteHistory(recordId) {
 .rp-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
   white-space: nowrap;
 }
@@ -816,7 +816,7 @@ async function deleteHistory(recordId) {
   background: var(--navy3);
   color: var(--teal);
   font-weight: 700;
-  padding: 8px 10px;
+  padding: 10px 12px;
   text-align: center;
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -824,7 +824,7 @@ async function deleteHistory(recordId) {
   z-index: 1;
 }
 .rp-table td {
-  padding: 6px 10px;
+  padding: 8px 12px;
   text-align: center;
   border-bottom: 1px solid rgba(22, 37, 64, 0.5);
   color: var(--text2);
@@ -846,9 +846,9 @@ async function deleteHistory(recordId) {
 /* ─── 可行性校验 ─── */
 .feasibility-box {
   margin-top: 8px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
 }
 .feasibility-box.feasible {
@@ -862,7 +862,7 @@ async function deleteHistory(recordId) {
 .feasibility-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 6px;
 }
 .feasibility-icon {
@@ -872,7 +872,7 @@ async function deleteHistory(recordId) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 }
 .feasible .feasibility-icon {
@@ -891,13 +891,13 @@ async function deleteHistory(recordId) {
   margin-top: 6px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .issue-item, .warning-item {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  font-size: 10px;
+  gap: 8px;
+  font-size: 11px;
   color: var(--text3);
   line-height: 1.4;
 }
@@ -916,13 +916,13 @@ async function deleteHistory(recordId) {
 .rp-feasibility {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 .feas-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
+  gap: 12px;
+  padding: 14px;
   border-radius: 6px;
   font-family: var(--mono);
 }
@@ -953,24 +953,24 @@ async function deleteHistory(recordId) {
   color: #ff4757;
 }
 .feas-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text2);
 }
 .feas-stats {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 .feas-stat-item {
   flex: 1;
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 8px 6px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 .feas-stat-val {
   font-size: 16px;
@@ -981,17 +981,17 @@ async function deleteHistory(recordId) {
 .feas-stat-val.good { color: #2ed573; }
 .feas-stat-val.bad { color: #ff4757; }
 .feas-stat-label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   font-family: var(--mono);
 }
 .feas-issue-list, .feas-warn-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .feas-issue-title, .feas-warn-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--mono);
   color: var(--text2);
@@ -1001,8 +1001,8 @@ async function deleteHistory(recordId) {
 .feas-issue-item, .feas-warn-item {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  font-size: 11px;
+  gap: 10px;
+  font-size: 13px;
   color: var(--text3);
   font-family: var(--mono);
   line-height: 1.4;
@@ -1022,12 +1022,12 @@ async function deleteHistory(recordId) {
 
 /* 查看路线按钮 */
 .btn-view-route {
-  padding: 4px 10px;
+  padding: 6px 12px;
   background: rgba(0, 229, 255, 0.1);
   border: 1px solid rgba(0, 229, 255, 0.3);
   border-radius: 4px;
   color: var(--teal);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   font-family: var(--mono);
   cursor: pointer;
@@ -1046,23 +1046,23 @@ async function deleteHistory(recordId) {
 /* ─── 历史记录 ─── */
 .empty-hint {
   text-align: center;
-  padding: 20px;
+  padding: 22px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
 }
 
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1078,41 +1078,41 @@ async function deleteHistory(recordId) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .history-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-time {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
 }
 
 .history-stats {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text2);
   font-family: var(--mono);
 }
 
 .history-numbers {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-dist {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--teal);
   font-family: var(--mono);
   font-weight: 600;
 }
 
 .history-energy {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--amber);
   font-family: var(--mono);
   font-weight: 600;
@@ -1120,14 +1120,14 @@ async function deleteHistory(recordId) {
 
 .history-actions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
 }
 
@@ -1145,9 +1145,9 @@ async function deleteHistory(recordId) {
 
 .btn-history-view,
 .btn-history-del {
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;

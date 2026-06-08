@@ -687,7 +687,7 @@ function closeCaseDropdown() {
 }
 
 .section {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -696,21 +696,21 @@ function closeCaseDropdown() {
 }
 
 .section-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   letter-spacing: 0.5px;
 }
 
 /* Form */
 .form-row {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .form-row.cols-2 {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .input-sm {
@@ -719,8 +719,8 @@ function closeCaseDropdown() {
   border: 1px solid var(--border2);
   border-radius: 6px;
   color: var(--text);
-  padding: 7px 10px;
-  font-size: 12px;
+  padding: 9px 12px;
+  font-size: 13px;
   font-family: var(--sans);
   outline: none;
   transition: border-color 0.2s;
@@ -736,8 +736,8 @@ function closeCaseDropdown() {
   border: 1px solid var(--border2);
   border-radius: 6px;
   color: var(--text);
-  padding: 8px 10px;
-  font-size: 11px;
+  padding: 10px 12px;
+  font-size: 12px;
   font-family: var(--mono);
   line-height: 1.5;
   resize: vertical;
@@ -755,20 +755,20 @@ function closeCaseDropdown() {
 }
 
 .error-msg {
-  padding: 6px 8px;
+  padding: 7px 10px;
   background: rgba(255, 61, 87, 0.08);
   border: 1px solid rgba(255, 61, 87, 0.2);
-  border-radius: 4px;
-  font-size: 10px;
+  border-radius: 5px;
+  font-size: 11px;
   color: var(--red);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 /* Buttons */
 .btn {
-  padding: 7px 12px;
+  padding: 9px 14px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--sans);
   font-weight: 600;
   cursor: pointer;
@@ -786,7 +786,7 @@ function closeCaseDropdown() {
   background: var(--navy3);
   color: var(--text2);
   border: 1px solid var(--border2);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .btn-block:hover:not(:disabled) {
@@ -796,13 +796,13 @@ function closeCaseDropdown() {
 
 .btn-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .btn-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .btn-primary {
@@ -833,7 +833,8 @@ function closeCaseDropdown() {
   color: var(--text2);
   border: 1px solid var(--border2);
   text-align: left;
-  padding: 9px 12px;
+  padding: 11px 14px;
+  font-size: 13px;
 }
 
 .btn-action:hover:not(:disabled) {
@@ -853,13 +854,13 @@ function closeCaseDropdown() {
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px 10px;
   text-align: center;
 }
 
 .stat-num {
   font-family: var(--mono);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   display: block;
 }
@@ -873,7 +874,7 @@ function closeCaseDropdown() {
 }
 
 .stat-label {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text3);
   letter-spacing: 0.5px;
 }
@@ -881,7 +882,7 @@ function closeCaseDropdown() {
 /* Search */
 .search-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .btn-search {
@@ -889,8 +890,8 @@ function closeCaseDropdown() {
   background: var(--navy3);
   color: var(--text2);
   border: 1px solid var(--border2);
-  padding: 7px 10px;
-  font-size: 11px;
+  padding: 9px 12px;
+  font-size: 13px;
 }
 
 .btn-search:hover:not(:disabled) {
@@ -899,7 +900,7 @@ function closeCaseDropdown() {
 }
 
 .search-results {
-  margin-top: 6px;
+  margin-top: 8px;
   max-height: 160px;
   overflow-y: auto;
   border: 1px solid var(--border2);
@@ -908,7 +909,7 @@ function closeCaseDropdown() {
 }
 
 .search-item {
-  padding: 8px 10px;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -917,26 +918,26 @@ function closeCaseDropdown() {
 }
 
 .search-item-name {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .search-item-coord {
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
   color: var(--text3);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .search-item-actions {
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
 .btn-sm {
-  padding: 3px 8px;
-  font-size: 10px;
+  padding: 4px 10px;
+  font-size: 11px;
   border-radius: 4px;
   border: 1px solid var(--border2);
   background: var(--navy2);
@@ -969,8 +970,8 @@ function closeCaseDropdown() {
   background: var(--navy);
   color: var(--text3);
   border: 1px solid var(--border2);
-  font-size: 10px;
-  padding: 7px 10px;
+  font-size: 12px;
+  padding: 9px 12px;
 }
 
 .btn-map-pick:hover {
@@ -986,7 +987,7 @@ function closeCaseDropdown() {
 
 /* Point edit */
 .demand-list {
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1003,18 +1004,18 @@ function closeCaseDropdown() {
 .point-edit-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 10px;
+  padding: 8px 10px;
 }
 
 .point-tag {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
   font-family: var(--mono);
@@ -1033,7 +1034,7 @@ function closeCaseDropdown() {
 }
 
 .point-edit-name {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
   flex: 1;
@@ -1044,7 +1045,7 @@ function closeCaseDropdown() {
 }
 
 .point-edit-coord {
-  font-size: 9px;
+  font-size: 10px;
   font-family: var(--mono);
   color: var(--text3);
   flex-shrink: 0;
@@ -1056,8 +1057,8 @@ function closeCaseDropdown() {
   border-radius: 4px;
   color: var(--text3);
   cursor: pointer;
-  padding: 2px 6px;
-  font-size: 11px;
+  padding: 3px 8px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
@@ -1073,22 +1074,22 @@ function closeCaseDropdown() {
 
 /* Edit form */
 .edit-form {
-  padding: 8px;
+  padding: 10px;
   background: var(--navy);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .edit-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .btn-save-sm {
   flex: 1;
-  padding: 5px 10px;
-  font-size: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
   border-radius: 5px;
   border: none;
   background: linear-gradient(135deg, var(--teal), var(--teal2));
@@ -1100,8 +1101,8 @@ function closeCaseDropdown() {
 
 .btn-cancel-sm {
   flex: 1;
-  padding: 5px 10px;
-  font-size: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
   border-radius: 5px;
   border: 1px solid var(--border2);
   background: var(--navy2);

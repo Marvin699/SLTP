@@ -572,7 +572,7 @@ const maxDistance = computed(() => {
 }
 
 .section {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -588,22 +588,22 @@ const maxDistance = computed(() => {
 }
 
 .section-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--teal);
   margin-bottom: 8px;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
 }
 
 .section-desc {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text3);
 }
 
 /* Stat row */
 .stat-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .stat-item {
@@ -611,8 +611,8 @@ const maxDistance = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 4px;
+  gap: 4px;
+  padding: 10px 6px;
   background: var(--navy);
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -630,7 +630,7 @@ const maxDistance = computed(() => {
 .stat-num.red { color: var(--red); }
 
 .stat-label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   letter-spacing: 0.5px;
 }
@@ -643,8 +643,8 @@ const maxDistance = computed(() => {
 .brand-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 10px;
+  padding: 10px 12px;
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -657,32 +657,32 @@ const maxDistance = computed(() => {
 }
 
 .brand-icon {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   width: 14px;
   text-align: center;
 }
 
 .brand-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   flex: 1;
 }
 
 .brand-count {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   background: var(--navy3);
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 10px;
 }
 
 .brand-models {
-  padding: 6px 0 6px 10px;
+  padding: 8px 0 6px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* Model cards */
@@ -690,7 +690,7 @@ const maxDistance = computed(() => {
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
   transition: all 0.2s;
 }
 
@@ -711,18 +711,18 @@ const maxDistance = computed(() => {
 }
 
 .model-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .model-qty {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .qty-btn {
@@ -755,7 +755,7 @@ const maxDistance = computed(() => {
 }
 
 .model-desc {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   margin-bottom: 8px;
   line-height: 1.4;
@@ -764,7 +764,7 @@ const maxDistance = computed(() => {
 .model-specs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 8px;
 }
 
@@ -772,18 +772,18 @@ const maxDistance = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 4px;
+  padding: 6px;
   background: var(--navy2);
   border-radius: 4px;
 }
 
 .spec-label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
 }
 
 .spec-value {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text2);
   font-family: var(--mono);
@@ -791,13 +791,13 @@ const maxDistance = computed(() => {
 
 .model-tags {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .tag {
-  font-size: 9px;
-  padding: 2px 6px;
+  font-size: 10px;
+  padding: 4px 8px;
   border-radius: 3px;
   background: rgba(0, 229, 255, 0.08);
   color: var(--teal);
@@ -808,25 +808,25 @@ const maxDistance = computed(() => {
 .selected-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .selected-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: 10px;
+  padding: 8px 12px;
   background: var(--navy);
   border: 1px solid var(--teal);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .sel-brand {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   background: var(--navy3);
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
@@ -844,7 +844,7 @@ const maxDistance = computed(() => {
 
 .sel-payload {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
 }
 
@@ -852,8 +852,8 @@ const maxDistance = computed(() => {
 .llm-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 10px;
+  gap: 8px;
+  font-size: 11px;
   color: var(--text3);
   margin-bottom: 6px;
 }
@@ -875,9 +875,9 @@ const maxDistance = computed(() => {
 
 /* Buttons */
 .btn {
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -937,18 +937,18 @@ const maxDistance = computed(() => {
 
 .btn-sm {
   margin-top: 6px;
-  padding: 5px 12px;
-  font-size: 10px;
+  padding: 7px 14px;
+  font-size: 11px;
 }
 
 /* Error */
 .error-msg {
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: rgba(255, 61, 87, 0.08);
   border: 1px solid rgba(255, 61, 87, 0.2);
   border-radius: 6px;
   color: var(--red);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* ─── Edit button on model card ─── */
@@ -957,9 +957,9 @@ const maxDistance = computed(() => {
   border: 1px solid var(--border2);
   border-radius: 4px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 1px 5px;
+  padding: 3px 7px;
   transition: all 0.2s;
   line-height: 1;
 }
@@ -977,7 +977,7 @@ const maxDistance = computed(() => {
 }
 
 .rp-section {
-  padding: 12px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -986,7 +986,7 @@ const maxDistance = computed(() => {
 }
 
 .rp-section-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--teal);
   margin-bottom: 8px;
@@ -996,15 +996,15 @@ const maxDistance = computed(() => {
 .rp-model-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
 .rp-brand-tag {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   background: var(--navy3);
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
 }
 
@@ -1015,7 +1015,7 @@ const maxDistance = computed(() => {
 }
 
 .rp-model-id {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
 }
@@ -1023,18 +1023,18 @@ const maxDistance = computed(() => {
 .rp-form-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .rp-field {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .rp-field label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
   white-space: nowrap;
   min-width: 100px;
@@ -1046,8 +1046,8 @@ const maxDistance = computed(() => {
   border: 1px solid var(--border2);
   border-radius: 6px;
   color: var(--text);
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
   font-family: var(--mono);
   outline: none;
   transition: border-color 0.2s;
@@ -1064,8 +1064,8 @@ const maxDistance = computed(() => {
   border: 1px solid var(--border2);
   border-radius: 6px;
   color: var(--text);
-  padding: 8px 10px;
-  font-size: 11px;
+  padding: 10px 12px;
+  font-size: 13px;
   font-family: var(--sans);
   outline: none;
   resize: vertical;
@@ -1077,11 +1077,11 @@ const maxDistance = computed(() => {
 }
 
 .rp-raw {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   line-height: 1.6;
   background: var(--navy);
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: 6px;
   white-space: pre-wrap;
 }
@@ -1089,12 +1089,12 @@ const maxDistance = computed(() => {
 .rp-actions {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* ─── Right Panel: Assessment ─── */
 .assess-summary {
-  padding: 12px;
+  padding: 14px;
   border-radius: 8px;
 }
 
@@ -1118,7 +1118,7 @@ const maxDistance = computed(() => {
 .infeasible .summary-status { color: var(--red); }
 
 .summary-detail {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
 }
@@ -1127,7 +1127,7 @@ const maxDistance = computed(() => {
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px;
 }
 
 .assess-header {
@@ -1138,7 +1138,7 @@ const maxDistance = computed(() => {
 }
 
 .assess-model {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
 }
@@ -1153,16 +1153,16 @@ const maxDistance = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
+  padding: 6px 0;
 }
 
 .check-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
 }
 
 .check-status {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--mono);
 }
@@ -1172,9 +1172,9 @@ const maxDistance = computed(() => {
 .check-status.red { color: var(--red); }
 
 .check-detail {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
-  padding: 2px 0 8px 0;
+  padding: 4px 0 8px 0;
   line-height: 1.4;
   border-bottom: 1px solid var(--border);
 }
@@ -1185,7 +1185,7 @@ const maxDistance = computed(() => {
 }
 
 .fit-issue {
-  padding: 2px 0;
+  padding: 4px 0;
   color: var(--amber);
 }
 
@@ -1196,11 +1196,11 @@ const maxDistance = computed(() => {
 
 .suggestion-item {
   display: flex;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 6px;
   margin-bottom: 4px;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -1232,11 +1232,11 @@ const maxDistance = computed(() => {
 
 /* AI output */
 .ai-badge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 400;
   color: var(--text3);
   background: var(--navy3);
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
@@ -1244,21 +1244,21 @@ const maxDistance = computed(() => {
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 18px;
 }
 
 /* AI history */
 .ai-history-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .ai-history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
+  padding: 8px 12px;
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1273,20 +1273,20 @@ const maxDistance = computed(() => {
 .ai-history-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ai-history-time {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
   font-family: var(--mono);
 }
 
 .ai-history-duration {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   background: var(--navy3);
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
@@ -1294,9 +1294,9 @@ const maxDistance = computed(() => {
   background: none;
   border: none;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 4px 6px;
   opacity: 0.5;
   transition: all 0.2s;
 }
@@ -1308,7 +1308,7 @@ const maxDistance = computed(() => {
 
 /* Markdown body */
 .markdown-body {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
   line-height: 1.7;
   font-family: var(--sans);
@@ -1331,14 +1331,14 @@ const maxDistance = computed(() => {
 }
 
 .markdown-body :deep(h3) {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text2);
   margin: 12px 0 4px;
 }
 
 .markdown-body :deep(h4) {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text2);
   margin: 10px 0 4px;
@@ -1362,21 +1362,21 @@ const maxDistance = computed(() => {
   width: 100%;
   border-collapse: collapse;
   margin: 8px 0;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .markdown-body :deep(th) {
   background: var(--navy2);
   color: var(--text3);
-  padding: 6px 8px;
+  padding: 8px 10px;
   text-align: left;
   font-weight: 600;
   border-bottom: 1px solid var(--border);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .markdown-body :deep(td) {
-  padding: 5px 8px;
+  padding: 7px 10px;
   border-bottom: 1px solid rgba(22, 37, 64, 0.5);
   color: var(--text2);
 }
@@ -1388,9 +1388,9 @@ const maxDistance = computed(() => {
 .markdown-body :deep(code) {
   background: var(--navy2);
   color: var(--teal);
-  padding: 1px 5px;
+  padding: 3px 7px;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
 }
 
@@ -1398,7 +1398,7 @@ const maxDistance = computed(() => {
   background: var(--navy2);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   overflow-x: auto;
   margin: 8px 0;
 }
@@ -1406,7 +1406,7 @@ const maxDistance = computed(() => {
 .markdown-body :deep(pre code) {
   background: none;
   padding: 0;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -1434,17 +1434,17 @@ const maxDistance = computed(() => {
 
 /* History panel */
 .rp-empty {
-  padding: 40px 20px;
+  padding: 42px 22px;
   text-align: center;
   color: var(--text3);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .history-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 12px 14px;
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1471,7 +1471,7 @@ const maxDistance = computed(() => {
 .history-card-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-index {
@@ -1481,7 +1481,7 @@ const maxDistance = computed(() => {
   background: rgba(0, 229, 255, 0.15);
   border: 1px solid rgba(0, 229, 255, 0.3);
   color: var(--teal);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -1490,7 +1490,7 @@ const maxDistance = computed(() => {
 }
 
 .history-date {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
   font-family: var(--mono);
@@ -1500,19 +1500,19 @@ const maxDistance = computed(() => {
 .history-card-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .history-duration {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   background: var(--navy3);
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
 .history-arrow {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text3);
 }
 
@@ -1521,8 +1521,8 @@ const maxDistance = computed(() => {
   border: 1px solid var(--border2);
   border-radius: 4px;
   color: var(--text3);
-  font-size: 10px;
-  padding: 2px 8px;
+  font-size: 11px;
+  padding: 4px 10px;
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;

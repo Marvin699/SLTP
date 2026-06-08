@@ -548,11 +548,11 @@ function toggleCaseDropdown() {
 .module2 {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .section {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -561,7 +561,7 @@ function toggleCaseDropdown() {
 }
 
 .section-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 6px;
@@ -569,7 +569,7 @@ function toggleCaseDropdown() {
 }
 
 .section-desc {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   margin-bottom: 4px;
 }
@@ -577,7 +577,7 @@ function toggleCaseDropdown() {
 /* Stats */
 .stat-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .stat-item {
@@ -585,7 +585,7 @@ function toggleCaseDropdown() {
   background: var(--navy);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px;
+  padding: 10px;
   text-align: center;
 }
 
@@ -601,16 +601,16 @@ function toggleCaseDropdown() {
 .stat-num.green { color: var(--green); }
 
 .stat-label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   letter-spacing: 0.5px;
 }
 
 /* Button */
 .btn {
-  padding: 7px 12px;
+  padding: 9px 14px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--sans);
   font-weight: 600;
   cursor: pointer;
@@ -660,10 +660,10 @@ function toggleCaseDropdown() {
 
 /* Empty */
 .empty-hint {
-  padding: 20px;
+  padding: 22px;
   text-align: center;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* Point Card */
@@ -689,13 +689,13 @@ function toggleCaseDropdown() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px 14px;
 }
 
 .card-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
@@ -707,7 +707,7 @@ function toggleCaseDropdown() {
   background: rgba(0, 229, 255, 0.15);
   border: 1px solid rgba(0, 229, 255, 0.3);
   color: var(--teal);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -717,7 +717,7 @@ function toggleCaseDropdown() {
 }
 
 .point-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -726,51 +726,51 @@ function toggleCaseDropdown() {
 }
 
 .assigned-tag {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--teal);
   background: rgba(0, 229, 255, 0.08);
   border: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 3px;
   white-space: nowrap;
 }
 
 .unassigned-tag {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
 .card-summary {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .summary-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .summary-weight {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--teal);
   font-weight: 600;
 }
 
 .summary-priority {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 
 .edit-icon {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text3);
   opacity: 0.5;
   transition: all 0.2s;
@@ -789,7 +789,7 @@ function toggleCaseDropdown() {
 }
 
 .rp-section {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -798,7 +798,7 @@ function toggleCaseDropdown() {
 }
 
 .rp-section-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--teal);
   margin-bottom: 8px;
@@ -810,30 +810,30 @@ function toggleCaseDropdown() {
 }
 
 .rp-empty {
-  padding: 40px 20px;
+  padding: 42px 22px;
   text-align: center;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* Category Grid */
 .cat-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cat-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
+  gap: 6px;
+  padding: 7px 12px;
   border: 1px solid var(--border2);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   background: var(--navy2);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .cat-item:hover {
@@ -853,7 +853,7 @@ function toggleCaseDropdown() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--teal);
 }
 
@@ -862,7 +862,7 @@ function toggleCaseDropdown() {
   background: rgba(0, 229, 255, 0.15);
 }
 
-.cat-icon { font-size: 13px; }
+.cat-icon { font-size: 14px; }
 
 .cat-name { color: var(--text2); }
 
@@ -880,8 +880,8 @@ function toggleCaseDropdown() {
   border: 1px solid rgba(0, 229, 255, 0.3);
   border-radius: 5px;
   color: var(--teal);
-  padding: 4px 10px;
-  font-size: 10px;
+  padding: 6px 12px;
+  font-size: 11px;
   cursor: pointer;
   font-family: var(--sans);
 }
@@ -895,21 +895,21 @@ function toggleCaseDropdown() {
 .items-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .items-table th {
   background: var(--navy2);
   color: var(--text3);
-  padding: 4px 8px;
+  padding: 6px 10px;
   text-align: left;
   font-weight: 500;
-  font-size: 9px;
+  font-size: 10px;
   border-bottom: 1px solid var(--border);
 }
 
 .items-table td {
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(22, 37, 64, 0.5);
   color: var(--text2);
 }
@@ -920,7 +920,7 @@ function toggleCaseDropdown() {
 
 /* Editable table */
 .items-table.editable td {
-  padding: 3px 4px;
+  padding: 5px 6px;
 }
 
 .cell-input {
@@ -929,8 +929,8 @@ function toggleCaseDropdown() {
   border: 1px solid var(--border2);
   border-radius: 4px;
   color: var(--text);
-  padding: 4px 6px;
-  font-size: 10px;
+  padding: 6px 8px;
+  font-size: 11px;
   font-family: var(--sans);
   outline: none;
   transition: border-color 0.2s;
@@ -949,8 +949,8 @@ function toggleCaseDropdown() {
   border: none;
   color: var(--red);
   cursor: pointer;
-  font-size: 11px;
-  padding: 2px 4px;
+  font-size: 13px;
+  padding: 4px 6px;
   opacity: 0.6;
 }
 
@@ -964,8 +964,8 @@ function toggleCaseDropdown() {
   border: 1px dashed rgba(0, 229, 255, 0.3);
   border-radius: 5px;
   color: var(--teal);
-  padding: 5px 10px;
-  font-size: 10px;
+  padding: 7px 12px;
+  font-size: 11px;
   cursor: pointer;
   font-family: var(--sans);
   width: 100%;
@@ -979,14 +979,14 @@ function toggleCaseDropdown() {
 .info-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .info-item {
   flex: 0 0 calc(50% - 4px);
   background: var(--navy);
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 10px 12px;
 }
 
 .info-item.full {
@@ -995,13 +995,13 @@ function toggleCaseDropdown() {
 
 .info-label {
   display: block;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   margin-bottom: 2px;
 }
 
 .info-value {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
 }
@@ -1018,8 +1018,8 @@ function toggleCaseDropdown() {
   border: 1px solid var(--border2);
   border-radius: 4px;
   color: var(--text);
-  padding: 4px 6px;
-  font-size: 12px;
+  padding: 6px 8px;
+  font-size: 13px;
   font-weight: 600;
   font-family: var(--sans);
   outline: none;
@@ -1034,15 +1034,15 @@ function toggleCaseDropdown() {
 .priority-select option {
   background: var(--navy);
   color: var(--text);
-  font-size: 12px;
-  padding: 4px;
+  font-size: 13px;
+  padding: 6px;
 }
 
 /* Risk */
 .risk-item {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--amber);
-  padding: 4px 8px;
+  padding: 6px 10px;
   background: rgba(255, 179, 0, 0.06);
   border-radius: 4px;
   margin-bottom: 4px;
@@ -1080,7 +1080,7 @@ function toggleCaseDropdown() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 10px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--border);
   transition: background 0.2s;
@@ -1095,7 +1095,7 @@ function toggleCaseDropdown() {
 }
 
 .case-dropdown-item .case-name {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
 }
 
@@ -1104,17 +1104,17 @@ function toggleCaseDropdown() {
 }
 
 .case-default {
-  font-size: 9px;
-  padding: 1px 5px;
+  font-size: 10px;
+  padding: 3px 7px;
   border-radius: 3px;
   background: rgba(255, 107, 53, 0.15);
   color: #ff6b35;
 }
 
 .case-dropdown-empty {
-  padding: 12px;
+  padding: 14px;
   text-align: center;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text3);
 }
 </style>

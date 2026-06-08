@@ -676,13 +676,13 @@ const aiSuggestions = computed(() => {
 .module5 {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mod-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
@@ -691,18 +691,18 @@ const aiSuggestions = computed(() => {
 
 .mod-icon { font-size: 18px; }
 
-.task-overview { display: flex; gap: 8px; }
+.task-overview { display: flex; gap: 10px; }
 
 .stat-item {
   flex: 1;
   background: var(--navy3);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 8px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .stat-value {
@@ -713,12 +713,12 @@ const aiSuggestions = computed(() => {
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
 }
 
-.action-row { display: flex; gap: 8px; }
+.action-row { display: flex; gap: 10px; }
 
 .btn-primary {
   flex: 1;
@@ -727,7 +727,7 @@ const aiSuggestions = computed(() => {
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--mono);
   cursor: pointer;
@@ -743,7 +743,7 @@ const aiSuggestions = computed(() => {
   color: var(--text2);
   border: 1px solid var(--border2);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -765,9 +765,9 @@ const aiSuggestions = computed(() => {
   background: rgba(255, 71, 87, 0.1);
   border: 1px solid rgba(255, 71, 87, 0.3);
   color: #ff4757;
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 4px;
 }
 
@@ -793,11 +793,11 @@ const aiSuggestions = computed(() => {
   background: rgba(0, 229, 255, 0.08);
   border: 1px solid rgba(0, 229, 255, 0.2);
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
+  gap: 10px;
+  font-size: 13px;
   color: var(--text2);
   font-family: var(--mono);
 }
@@ -812,28 +812,28 @@ const aiSuggestions = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--navy3);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text2);
   font-family: var(--mono);
 }
 .badge {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--teal);
   background: rgba(0, 229, 255, 0.1);
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
 }
-.section-body { padding: 12px; }
+.section-body { padding: 14px; }
 
 .result-header { margin-bottom: 12px; }
 .feasibility-badge {
   display: inline-block;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--mono);
 }
@@ -851,18 +851,18 @@ const aiSuggestions = computed(() => {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 12px;
 }
 .sum-card {
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 8px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 .sum-val {
   font-size: 18px;
@@ -873,39 +873,39 @@ const aiSuggestions = computed(() => {
 .sum-val.good { color: #2ed573; }
 .sum-val.warning { color: #ffb300; }
 .sum-val.bad { color: #ff4757; }
-.sum-unit { font-size: 10px; color: var(--text3); font-family: var(--mono); }
-.sum-label { font-size: 9px; color: var(--text3); font-family: var(--mono); }
+.sum-unit { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.sum-label { font-size: 10px; color: var(--text3); font-family: var(--mono); }
 
 /* 四维评分卡片 */
 .four-d-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 12px;
 }
 .four-d-card {
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .four-d-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .four-d-icon { font-size: 16px; }
 .four-d-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text);
   font-family: var(--mono);
 }
 .four-d-weight {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   font-family: var(--mono);
   margin-left: auto;
@@ -916,7 +916,7 @@ const aiSuggestions = computed(() => {
   display: flex;
   justify-content: center;
   margin-bottom: 12px;
-  padding: 12px;
+  padding: 14px;
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -955,7 +955,7 @@ const aiSuggestions = computed(() => {
   fill: var(--teal);
 }
 .radar-label {
-  font-size: 10px;
+  font-size: 11px;
   fill: var(--text2);
   font-family: var(--mono);
 }
@@ -970,25 +970,25 @@ const aiSuggestions = computed(() => {
 .four-d-score.warning { color: #ffb300; }
 .four-d-score.bad { color: #ff4757; }
 .four-d-score-unit {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   font-family: var(--mono);
   margin-left: 2px;
 }
 .four-d-desc {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
   font-family: var(--mono);
 }
 
 .btn-detail {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   background: rgba(0, 229, 255, 0.08);
   border: 1px solid rgba(0, 229, 255, 0.2);
   border-radius: 4px;
   color: var(--teal);
-  font-size: 12px;
+  font-size: 13px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -998,13 +998,13 @@ const aiSuggestions = computed(() => {
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .history-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
+  gap: 12px;
+  padding: 10px;
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -1029,15 +1029,15 @@ const aiSuggestions = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 .history-meta {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
   font-family: var(--mono);
 }
 .history-time {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
 }
 
@@ -1045,19 +1045,19 @@ const aiSuggestions = computed(() => {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .history-actions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .btn-history-view,
 .btn-history-del {
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -1087,25 +1087,25 @@ const aiSuggestions = computed(() => {
 .rp-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   max-height: calc(100vh - 200px);
   overflow-y: auto;
 }
 
 .rp-tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 .rp-tab {
   flex: 1;
-  padding: 8px 4px;
+  padding: 10px 6px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--mono);
   cursor: pointer;
   transition: all 0.2s;
@@ -1120,7 +1120,7 @@ const aiSuggestions = computed(() => {
 .rule-report {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* 四维诊断详情 */
@@ -1128,61 +1128,61 @@ const aiSuggestions = computed(() => {
   background: var(--navy1);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 12px 14px;
 }
 .dim-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .dim-icon { font-size: 14px; }
 .dim-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text2);
   font-family: var(--mono);
   flex: 1;
 }
 .dim-weight {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   background: var(--navy3);
-  padding: 1px 5px;
+  padding: 3px 7px;
   border-radius: 3px;
 }
 .dim-score {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   font-family: var(--mono);
 }
 .dim-desc {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   margin: 4px 0 6px 20px;
 }
 .dim-findings {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 5px;
   margin-left: 20px;
 }
 .finding-item {
   display: flex;
   align-items: flex-start;
-  gap: 5px;
-  font-size: 11px;
+  gap: 7px;
+  font-size: 13px;
   line-height: 1.4;
 }
 .finding-item.good { color: var(--green); }
 .finding-item.bad { color: var(--red, #ff4757); }
 .finding-item.warn { color: var(--orange, #ffa502); }
-.finding-icon { font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+.finding-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
 
 .report-section.pass { border-color: rgba(0, 200, 83, 0.3); }
 .report-section.fail { border-color: rgba(255, 71, 87, 0.3); }
 
 .no-finding {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text3);
   margin: 0;
   font-style: italic;
@@ -1201,10 +1201,10 @@ const aiSuggestions = computed(() => {
 .report-section-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 12px 14px;
   background: var(--navy3);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text2);
   font-family: var(--mono);
@@ -1212,8 +1212,8 @@ const aiSuggestions = computed(() => {
 .report-section-icon { font-size: 14px; }
 
 .report-section-body {
-  padding: 10px 12px;
-  font-size: 11px;
+  padding: 12px 14px;
+  font-size: 13px;
   color: var(--text2);
   font-family: var(--mono);
   line-height: 1.5;
@@ -1225,12 +1225,12 @@ const aiSuggestions = computed(() => {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .issue-item, .warning-item, .suggestion-item {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .issue-bullet { color: #ff4757; }
@@ -1240,18 +1240,18 @@ const aiSuggestions = computed(() => {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 .summary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 8px;
+  padding: 8px 10px;
   background: var(--navy3);
   border-radius: 4px;
 }
 .summary-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text3);
   font-family: var(--mono);
 }
@@ -1267,13 +1267,13 @@ const aiSuggestions = computed(() => {
 }
 .ai-content {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.6;
   color: var(--text2);
 }
 .ai-content h1 { font-size: 16px; color: var(--teal); margin: 0 0 12px 0; }
-.ai-content h2 { font-size: 13px; color: var(--text); margin: 12px 0 8px 0; }
-.ai-content h3 { font-size: 12px; color: var(--text2); margin: 8px 0 6px 0; }
+.ai-content h2 { font-size: 14px; color: var(--text); margin: 12px 0 8px 0; }
+.ai-content h3 { font-size: 13px; color: var(--text2); margin: 8px 0 6px 0; }
 .ai-content ul, .ai-content ol { padding-left: 20px; margin: 6px 0; }
 .ai-content li { margin: 4px 0; }
 .ai-content p { margin: 6px 0; }
@@ -1284,39 +1284,39 @@ const aiSuggestions = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 42px 22px;
   text-align: center;
 }
 .empty-icon { font-size: 40px; margin-bottom: 12px; }
 .ai-empty p {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text2);
   font-family: var(--mono);
   margin: 4px 0;
 }
 .empty-hint {
-  font-size: 10px !important;
+  font-size: 11px !important;
   color: var(--text3) !important;
 }
 
 .ai-structured {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .ai-overview {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
   background: var(--navy3);
   border: 1px solid var(--border);
   border-radius: 6px;
 }
 
 .ai-score-badge {
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 4px;
   font-size: 16px;
   font-weight: 800;
@@ -1352,9 +1352,9 @@ const aiSuggestions = computed(() => {
 }
 
 .raw-report summary {
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--navy3);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text3);
   cursor: pointer;
   font-family: var(--mono);
@@ -1365,9 +1365,9 @@ const aiSuggestions = computed(() => {
 }
 
 .raw-content {
-  padding: 12px;
+  padding: 14px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.6;
   color: var(--text2);
   max-height: 300px;
@@ -1375,8 +1375,8 @@ const aiSuggestions = computed(() => {
 }
 
 .raw-content h1 { font-size: 16px; color: var(--teal); margin: 0 0 12px 0; }
-.raw-content h2 { font-size: 13px; color: var(--text); margin: 12px 0 8px 0; }
-.raw-content h3 { font-size: 12px; color: var(--text2); margin: 8px 0 6px 0; }
+.raw-content h2 { font-size: 14px; color: var(--text); margin: 12px 0 8px 0; }
+.raw-content h3 { font-size: 13px; color: var(--text2); margin: 8px 0 6px 0; }
 .raw-content ul, .raw-content ol { padding-left: 20px; margin: 6px 0; }
 .raw-content li { margin: 4px 0; }
 .raw-content p { margin: 6px 0; }
