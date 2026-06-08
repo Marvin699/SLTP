@@ -127,6 +127,12 @@ const routes = [
     name: 'ScorePage',
     component: () => import('../views/score/ScorePage.vue'),
     meta: { title: '评分', public: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/login/index.vue'),
+    meta: { title: '404', public: true }
   }
 ]
 
@@ -137,6 +143,11 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
+  if (to.path && (to.path.startsWith('/hybridaction') || to.path.startsWith('/zyb') || to.path.startsWith('/brush'))) {
+    next('/home')
+    return
+  }
+
   // 设置页面标题
   if (to.meta.title) {
     document.title = `${to.meta.title} - 智慧低空应急运输教学平台`

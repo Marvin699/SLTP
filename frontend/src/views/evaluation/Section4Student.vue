@@ -639,6 +639,11 @@ function pickMime() {
   for (const m of cand) if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m
   return 'video/webm'
 }
+function extFromMime(mime) {
+  if (mime.includes('mp4')) return '.mp4'
+  if (mime.includes('webm')) return '.webm'
+  return '.webm'
+}
 
 function startUploader(g, stream) {
   recGroupId = g.id
@@ -646,7 +651,9 @@ function startUploader(g, stream) {
   recSeq = 0
   lastUploadSeq = -1
   const mime = pickMime()
+  const ext = extFromMime(mime)
   if (!mime) { console.warn('没有可用的 MediaRecorder mime'); return }
+  console.log('[uploader] 使用 mimeType:', mime, 'ext:', ext)
   const groupNameEnc = encodeURIComponent(g.name || '')
   const sidEnc = encodeURIComponent(g.studentSessionId || 'anon')
   let mr
@@ -658,21 +665,81 @@ function startUploader(g, stream) {
     const seq = recSeq
     const url = `/api/calls/upload?group_id=${g.id}&group_name=${groupNameEnc}&student_id=${sidEnc}&seq=${seq}&total=999`
     const form = new FormData()
-    form.append('chunk', ev.data, `part_${String(seq).padStart(5,'0')}.webm`)
+    form.append('chunk', ev.data, `part_${String(seq).padStart(5,'0')}${ext}`)
+    form.append('mime', mime)
     try {
       await fetch(url, { method: 'POST', body: form })
       lastUploadSeq = seq
+      console.log('[uploader] 已上传 seq:', seq, 'bytes:', ev.data.size)
     } catch (_) {}
   }
   mr.onstop = async () => {
-    const url = `/api/calls/upload?group_id=${g.id}&group_name=${groupNameEnc}&student_id=${sidEnc}&seq=${recSeq}&total=${recSeq}`
-    const form = new FormData()
-    const emptyBlob = new Blob([], { type: 'video/webm' })
-    form.append('chunk', emptyBlob, `part_${String(recSeq).padStart(5,'0')}.webm`)
-    try { await fetch(url, { method: 'POST', body: form }) } catch (_) {}
+    console.log('[uploader] MediaRecorder stopped, total chunks:', recSeq)
   }
   mr.start(REC_SLICE_MS)
   g.recorder = mr
+}
+
+function studentWsUrl() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+  return `${proto}://${location.host}/api/calls/ws`
+}
+
+let studentFrameWs = null
+let studentFrameTimer = null
+
+function startFrameStream(g, videoEl) {
+  try {
+    const ws = new WebSocket(studentWsUrl())
+    studentFrameWs = ws
+    ws.addEventListener('open', () => {
+      ws.send(JSON.stringify({ role: 'student', group_id: g.id }))
+      console.log('[frame] WS connected for group', g.id)
+    })
+    ws.addEventListener('close', () => {
+      studentFrameWs = null
+      if (studentFrameTimer) { clearInterval(studentFrameTimer); studentFrameTimer = null }
+      setTimeout(() => startFrameStream(g, videoEl), 2000)
+    })
+    ws.addEventListener('error', () => {})
+
+    const hiddenCanvas = document.createElement('canvas')
+    hiddenCanvas.width = 480
+    hiddenCanvas.height = 360
+    const hctx = hiddenCanvas.getContext('2d')
+
+    studentFrameTimer = setInterval(() => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return
+      if (!videoEl || !overlayCtx) return
+      try {
+        if (videoEl.videoWidth > 0 && !isNaN(videoEl.videoWidth)) {
+          if (hiddenCanvas.width !== videoEl.videoWidth) hiddenCanvas.width = videoEl.videoWidth
+          if (hiddenCanvas.height !== videoEl.videoHeight) hiddenCanvas.height = videoEl.videoHeight
+        }
+        hctx.drawImage(videoEl, 0, 0, hiddenCanvas.width, hiddenCanvas.height)
+        const srcCanvas = overlayCtx.canvas
+        if (srcCanvas && srcCanvas.width > 0) {
+          hctx.drawImage(srcCanvas, 0, 0, hiddenCanvas.width, hiddenCanvas.height)
+        }
+        hiddenCanvas.toBlob(async (blob) => {
+          if (!blob || blob.size === 0) return
+          try {
+            const buf = await blob.arrayBuffer()
+            const bytes = new Uint8Array(buf)
+            let binary = ''
+            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+            const b64 = btoa(binary)
+            ws.send(JSON.stringify({ type: 'frame', group_id: g.id, data: b64 }))
+          } catch (_) {}
+        }, 'image/jpeg', 0.5)
+      } catch (_) {}
+    }, 150)
+  } catch (_) {}
+}
+
+function stopFrameStream() {
+  if (studentFrameTimer) { clearInterval(studentFrameTimer); studentFrameTimer = null }
+  if (studentFrameWs) { try { studentFrameWs.close() } catch (_) {}; studentFrameWs = null }
 }
 
 async function startCamera(g) {
@@ -704,6 +771,7 @@ async function startCamera(g) {
     cameraReady.value = true
     startStudentDetection(true)
     startUploader(g, stream)
+    startFrameStream(g, v)
   } catch (e) {
     const name = e && e.name ? e.name : String(e)
     const m = {
@@ -763,6 +831,7 @@ function onOverlayRef(el) {
 
 onUnmounted(() => {
   studentLoopRunning = false
+  stopFrameStream()
   if (group.stream) { group.stream.getTracks().forEach(t => t.stop()); group.stream = null }
   stopRun()
   try { window.speechSynthesis.cancel() } catch {}

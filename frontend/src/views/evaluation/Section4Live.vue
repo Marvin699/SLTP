@@ -64,11 +64,11 @@
 
         <div class="gc-body">
           <div class="gc-video">
-            <video :src="''" autoplay muted playsinline :ref="el => setVideoRef(g.id, el)"></video>
+            <img v-if="groupStreamImgs[g.id]" :src="groupStreamImgs[g.id]" class="stream-img" />
+            <video v-else :src="groupVideoSrcs[g.id] || ''" autoplay muted playsinline loop :ref="el => setVideoRef(g.id, el)"></video>
             <div class="stream-tip" style="font-size:12px;color:#94a3b8;padding:4px 8px 8px">📷 等待学生端推流…</div>
             <div class="video-placeholder">
               <span>📷 等待学生端推流…</span>
-              <el-button size="small" plain @click="pollGroupStream(g)">🔄 刷新</el-button>
             </div>
             <canvas class="video-overlay" :ref="el => setOverlayRef(g.id, el)"></canvas>
             <div v-if="g.detections.length" class="gc-detections">
@@ -503,6 +503,45 @@ const rfidGroup = ref(null)
 const eventLogRefs = reactive({})
 const videoRefs = reactive({})
 const overlayRefs = reactive({})
+const groupVideoSrcs = reactive({})
+const groupStreamImgs = reactive({})
+const groupPrevImgUrls = reactive({})
+
+const groupWs = reactive({})
+
+function liveWsUrl() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+  return `${proto}://${location.host}/api/calls/ws`
+}
+
+function connectLiveWs(g) {
+  try {
+    const ws = new WebSocket(liveWsUrl())
+    ws.addEventListener('open', () => {
+      ws.send(JSON.stringify({ role: 'live', group_id: g.id }))
+    })
+    ws.addEventListener('message', (ev) => {
+      try {
+        const j = JSON.parse(ev.data)
+        if (j.type === 'frame' && j.data) {
+          const dataUrl = `data:image/jpeg;base64,${j.data}`
+          if (groupPrevImgUrls[g.id]) {
+            try { URL.revokeObjectURL(groupPrevImgUrls[g.id]) } catch (_) {}
+          }
+          groupPrevImgUrls[g.id] = dataUrl
+          g.stream = true
+          groupStreamImgs[g.id] = dataUrl
+        }
+      } catch (_) {}
+    })
+    ws.addEventListener('close', () => {
+      groupWs[g.id] = null
+      setTimeout(() => connectLiveWs(g), 2000)
+    })
+    ws.addEventListener('error', () => {})
+    groupWs[g.id] = ws
+  } catch (_) {}
+}
 
 let runTimer = null
 let scoreTick = null
@@ -524,8 +563,33 @@ function groupWarnCount(g) { return g.events.filter(e => e.level === 'orange' ||
 function levelLabel(lv) { return lv === 'yellow' ? '一般' : lv === 'orange' ? '严重' : '致命' }
 function levelTagType(lv) { return lv === 'yellow' ? 'warning' : lv === 'orange' ? 'danger' : 'danger' }
 
+function stuHost() {
+  const h = location.hostname
+  if (h === 'localhost' || h === '127.0.0.1') {
+    const lan = window.__ifaceIPs && window.__ifaceIPs.find(ip => ip.startsWith('192.168.'))
+    if (lan) return `${location.protocol}//${lan}:${location.port}`
+  }
+  return location.origin
+}
+
 function stuLink(g) {
-  return `${location.origin}/evaluation/task4/student?group=${encodeURIComponent(g.name)}`
+  return `${stuHost()}/evaluation/task4/student?group=${g.id}`
+}
+
+function copyStuLink(g) {
+  const u = stuLink(g)
+  navigator.clipboard.writeText(u).then(() => {
+    ElMessage.success(`${g.name} 链接已复制`)
+  }).catch(() => { ElMessage.info(u) })
+}
+
+async function loadLanIPs() {
+  try {
+    const r = await fetch('/__lan_ips')
+    window.__ifaceIPs = await r.json()
+  } catch (e) {
+    window.__ifaceIPs = []
+  }
 }
 
 const qrImages = reactive({})
@@ -535,13 +599,6 @@ async function buildQRs() {
       qrImages[g.id] = await QRCode.toDataURL(stuLink(g), { margin: 1, scale: 3, width: 160 })
     } catch { qrImages[g.id] = '' }
   }
-}
-
-function copyStuLink(g) {
-  const u = stuLink(g)
-  navigator.clipboard.writeText(u).then(() => {
-    ElMessage.success(`${g.name} 链接已复制`)
-  }).catch(() => { ElMessage.info(u) })
 }
 
 function setVideoRef(id, el) { if (el) videoRefs[id] = el }
@@ -683,19 +740,37 @@ async function startCamera(g) {
 const STREAM_POLL_MS = 1500
 const streamTimers = {}
 
+const groupVideoLatestName = reactive({})
+const groupVideoBlobUrl = reactive({})
+
 async function pollGroupStream(g) {
   try {
     const r = await fetch(`/api/calls/latest?group_id=${g.id}&t=${Date.now()}`)
     const data = await r.json()
     if (data.ok && data.item) {
-      const videoEl = document.querySelector(`.group-card[data-gid="${g.id}"] video`)
-      if (videoEl) {
-        const newSrc = data.item.url + `?t=${Date.now()}`
-        if (!videoEl.src || !videoEl.src.includes(data.item.name) || videoEl.ended) {
-          videoEl.src = newSrc
-          videoEl.muted = true
-          videoEl.playsInline = true
-          g.stream = true
+      const prevName = groupVideoLatestName[g.id]
+      const videoEl = videoRefs[g.id]
+      g.stream = true
+      if (prevName !== data.item.name) {
+        groupVideoLatestName[g.id] = data.item.name
+        if (groupVideoBlobUrl[g.id]) {
+          try { URL.revokeObjectURL(groupVideoBlobUrl[g.id]) } catch (_) {}
+        }
+        try {
+          const resp = await fetch(data.item.url + `?t=${Date.now()}`)
+          const blob = await resp.blob()
+          const burl = URL.createObjectURL(blob)
+          groupVideoBlobUrl[g.id] = burl
+          groupVideoSrcs[g.id] = burl
+        } catch (_) {
+          groupVideoSrcs[g.id] = data.item.url + `?t=${Date.now()}`
+        }
+      }
+      if (videoEl && groupVideoSrcs[g.id]) {
+        videoEl.muted = true
+        videoEl.playsInline = true
+        videoEl.loop = true
+        if (videoEl.paused || videoEl.ended) {
           try { await videoEl.play() } catch (_) {}
         }
       }
@@ -1013,14 +1088,17 @@ function resetAll() {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadLanIPs()
   groups.forEach(g => updateScoreColor(g))
-  buildQRs()
-  startStreamPolling()
+  await buildQRs()
+  groups.forEach(g => connectLiveWs(g))
 })
 
 onUnmounted(() => {
   Object.values(streamTimers).forEach(t => clearInterval(t))
+  Object.values(groupWs).forEach(ws => { try { ws.close() } catch (_) {} })
+  Object.values(groupPrevImgUrls).forEach(u => { try { URL.revokeObjectURL(u) } catch (_) {} })
   stopRun()
   groups.forEach(g => {
     if (g.stream && typeof g.stream.getTracks === 'function') g.stream.getTracks().forEach(t => t.stop())
@@ -1067,6 +1145,7 @@ onUnmounted(() => {
 .gc-body { display: grid; grid-template-columns: 1fr 80px; gap: 8px; }
 .gc-video { position: relative; background: #000; border-radius: 8px; aspect-ratio: 4/3; overflow: hidden; min-height: 110px; }
 .gc-video video { width: 100%; height: 100%; object-fit: cover; }
+.gc-video .stream-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .video-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 12px; opacity: 0.6; }
 .video-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .gc-detections { position: absolute; top: 4px; left: 4px; display: flex; flex-direction: column; gap: 2px; }
