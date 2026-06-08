@@ -26,6 +26,20 @@
       </div>
     </div>
 
+    <!-- 任务8大屏入口 -->
+    <div class="task8-entry" @click="$router.push('/evaluation/task8')">
+      <div class="task8-entry-left">
+        <div class="task8-entry-icon">📺</div>
+        <div class="task8-entry-text">
+          <div class="task8-entry-title">任务8 · 方案优化与应急模拟演练</div>
+          <div class="task8-entry-sub">实时数据大屏 · 六维能力图谱 · 课堂小结</div>
+        </div>
+      </div>
+      <div class="task8-entry-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24"><path fill="currentColor" d="M489.664 512 339.264 357.12a30.59 30.59 0 0 1 0-42.688 29.12 29.12 0 0 1 41.728 0l170.368 175.36a32 32 0 0 1 0 44.672L380.992 709.632a29.12 29.12 0 0 1-41.728 0 30.59 30.59 0 0 1 0-42.752L489.664 512Z"/></svg>
+      </div>
+    </div>
+
     <!-- 三环节卡片 -->
     <div class="section-cards">
       <div v-for="sec in sections" :key="sec.id" class="section-card">
@@ -297,6 +311,43 @@ onMounted(async () => {
 :deep(.el-select .el-input__suffix) {
   color: rgba(255,255,255,0.4);
 }
+
+/* 任务8大屏入口 */
+.task8-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0a2a4d 0%, #0f3a6b 50%, #0d2a52 100%);
+  border: 1px solid rgba(0,168,255,0.35);
+  box-shadow: 0 4px 20px rgba(0,80,180,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.task8-entry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,100,220,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-color: rgba(0,220,180,0.6);
+}
+.task8-entry-left { display: flex; align-items: center; gap: 16px; }
+.task8-entry-icon {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: linear-gradient(135deg, #00a8ff, #00dc82);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; box-shadow: 0 0 18px rgba(0,220,130,0.5);
+}
+.task8-entry-title { font-size: 17px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; }
+.task8-entry-sub { font-size: 12px; color: #7ab8e0; margin-top: 4px; }
+.task8-entry-arrow {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(0,168,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  color: #00dc82; border: 1px solid rgba(0,220,180,0.3);
+  transition: transform 0.25s;
+}
+.task8-entry:hover .task8-entry-arrow { transform: translateX(4px); }
 
 /* 环节卡片 */
 .section-cards {

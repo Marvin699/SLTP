@@ -67,6 +67,18 @@ const routes = [
         meta: { title: '任务4 · AI智能体子系统' }
       },
       {
+        path: 'evaluation/task8',
+        name: 'Task8Dashboard',
+        component: () => import('../views/evaluation/Task8Dashboard.vue'),
+        meta: { title: '任务8大屏 · 方案优化与应急模拟演练' }
+      },
+      {
+        path: 'evaluation/task8/heatmap',
+        name: 'Task8Heatmap',
+        component: () => import('../views/evaluation/Task8Heatmap.vue'),
+        meta: { title: '任务8 · 班级热力图' }
+      },
+      {
         path: 'resources',
         name: 'Resources',
         component: () => import('../views/resources/index.vue'),
