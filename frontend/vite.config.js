@@ -51,7 +51,7 @@ export default defineConfig({
   server: {
     port: 5175,
     host: true,
-    https: {
+    https: process.env.VITE_HTTP === 'true' ? false : {
       cert: fs.readFileSync(path.join(sslDir, 'cert.pem')),
       key: fs.readFileSync(path.join(sslDir, 'key.pem')),
     },
