@@ -4,7 +4,6 @@
       <div class="header-left">
         <div class="logo-icon">翼</div>
         <div>
-          <h1>智慧低空应急运输教学平台</h1>
           <span class="header-sub">任务8 · 方案优化与应急模拟演练 · 实时数据大屏</span>
         </div>
       </div>
@@ -130,19 +129,123 @@
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">🤖</span>AI 数据采集日志</div><div class="ai-log"><div v-for="(line,i) in aiLogs" :key="i" class="ai-log-line"><span class="ai-log-time">{{ line.time }}</span><span class="ai-log-text">{{ line.text }}</span></div></div></div>
         </div>
 
-        <div v-if="phase===2" class="content-grid phase2-grid">
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">📈</span>各环节能力趋势</div><div id="p2Trend" class="chart-box"></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">⚖️</span>各组权重得分对比</div><div id="p2Bar" class="chart-box"></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">🎮</span>应急推演·各组工单三要素</div><div class="progress-list"><div class="progress-item" v-for="p in drillProgress" :key="p.label"><span class="progress-label">{{ p.label }}</span><div class="progress-track"><div class="progress-fill cap-bar-green" :style="{width:p.v+'%'}"></div></div><span class="progress-value">{{ p.v }}%</span></div></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">🔧</span>环节三·裁判组实时评分</div><div class="judge-list"><div class="judge-item" v-for="j in judges" :key="j.name"><div><div class="judge-name">{{ j.name }}（裁判）</div><div class="judge-obj">评分对象：{{ j.group }}</div></div><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="ts-tag" v-for="d in j.dims" :key="d.label">{{ d.label }} {{ d.val }}</span></div></div></div></div>
-          <div class="glass chart-panel row-full"><div class="panel-title"><span class="icon">🎤</span>教师/企业导师点评 · 实时采集</div><div class="teacher-comment-grid">
-              <div class="teacher-comment" v-for="(c,i) in teacherComments" :key="i">
-                <div class="tc-header"><span class="tc-name" :style="{color:c.color}">{{ c.name }}</span><span class="tc-tag">{{ c.role }}</span><span class="tc-time">{{ c.time }}</span></div>
-                <div class="tc-group">@{{ c.group }}</div>
-                <div class="tc-text">{{ c.text }}</div>
-                <div class="tc-tags"><span class="ts-tag" v-for="t in c.tags" :key="t">{{ t }}</span></div>
+        <div v-if="phase===2" class="phase2-wrap">
+          <div class="phase2-topbar">
+            <div class="phase2-topbar-left">
+              <div class="phase2-topbar-logo">🤖</div>
+              <div>
+                <div class="phase2-topbar-title">AI助教 · 应急工单评价大屏</div>
+                <div class="phase2-topbar-sub">任务8 · 工单完整性检查与风险识别 · 六组数据实时分析</div>
               </div>
-            </div></div>
+            </div>
+            <div class="phase2-topbar-right">
+              <span class="phase2-engine-chip"><span class="dot-pulse ok"></span>AI分析引擎运行中</span>
+              <span class="phase2-return">← 返回数据大屏</span>
+            </div>
+          </div>
+
+          <div class="phase2-cards">
+            <div class="phase2-group-card"
+                 v-for="(g,i) in phase2Groups"
+                 :key="g.name"
+                 :style="{boxShadow:'0 0 20px '+phase2RankShadow(i)+', inset 0 0 20px rgba(0,168,255,0.03)'}">
+              <div class="phase2-group-head">
+                <span class="phase2-group-name">{{ g.name }}</span>
+                <span class="phase2-group-rank" :style="{background:phase2RankColor(i)}">#{{ i+1 }}</span>
+              </div>
+              <div class="phase2-group-checks">
+                <div class="phase2-group-check" :class="{ok:g.cordOk}">
+                  <span class="phase2-cick">{{ g.cordOk?'✅':'⬜' }}</span>决策坐标
+                </div>
+                <div class="phase2-group-check" :class="{ok:g.basisOk}">
+                  <span class="phase2-cick">{{ g.basisOk?'✅':'⬜' }}</span>决策依据
+                </div>
+                <div class="phase2-group-check" :class="{ok:g.riskOk}">
+                  <span class="phase2-cick">{{ g.riskOk?'✅':'⬜' }}</span>风险对冲
+                </div>
+              </div>
+              <div class="phase2-group-bars">
+                <div class="phase2-bar-row">
+                  <span class="phase2-bar-label">决策依据</span>
+                  <div class="phase2-bar-track"><div class="phase2-bar-fill basis-bar" :style="{width:g.basisPct+'%'}"></div></div>
+                  <span class="phase2-bar-num">{{ g.basisCount }}</span>
+                </div>
+                <div class="phase2-bar-row">
+                  <span class="phase2-bar-label">风险对冲</span>
+                  <div class="phase2-bar-track"><div class="phase2-bar-fill risk-bar" :style="{width:g.riskPct+'%'}"></div></div>
+                  <span class="phase2-bar-num">{{ g.riskCount }}</span>
+                </div>
+              </div>
+              <div class="phase2-group-footer">
+                <span class="phase2-group-score" :style="{color:phase2ScoreColor(g.score)}">{{ g.score }}</span>
+                <span class="phase2-group-score-label">综合质量分</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase2-body">
+            <div class="phase2-col">
+              <div class="glass chart-panel phase2-panel">
+                <div class="panel-title"><span class="icon">📊</span>各组决策依据 &amp; 风险对冲对比</div>
+                <div class="phase2-legend">
+                  <span class="phase2-legend-item"><span class="phase2-legend-dot" style="background:#00a8ff"></span>决策依据</span>
+                  <span class="phase2-legend-item"><span class="phase2-legend-dot" style="background:#ffaa3a"></span>风险对冲</span>
+                </div>
+                <div id="p2CompareBar" class="chart-box" style="min-height:260px"></div>
+              </div>
+              <div class="glass chart-panel phase2-panel">
+                <div class="panel-title"><span class="icon">🎯</span>工单质量综合雷达图（TOP3）</div>
+                <div id="p2Radar" class="chart-box" style="min-height:260px"></div>
+              </div>
+            </div>
+            <div class="phase2-col">
+              <div class="glass chart-panel phase2-panel">
+                <div class="panel-title"><span class="icon">📝</span>AI助教工单分析日志</div>
+                <div class="phase2-triad">
+                  <div class="phase2-triad-item">
+                    <div class="phase2-triad-icon">📍</div>
+                    <div class="phase2-triad-label">决策坐标</div>
+                    <div class="phase2-triad-status ok">✔ 6/6 完整</div>
+                    <div class="phase2-triad-hint">全部小组均提供</div>
+                  </div>
+                  <div class="phase2-triad-item">
+                    <div class="phase2-triad-icon">📋</div>
+                    <div class="phase2-triad-label">决策依据</div>
+                    <div class="phase2-triad-status ok">✔ 6/6 完整</div>
+                    <div class="phase2-triad-hint">依据条数 2~4 条</div>
+                  </div>
+                  <div class="phase2-triad-item">
+                    <div class="phase2-triad-icon">🛡️</div>
+                    <div class="phase2-triad-label">风险对冲</div>
+                    <div class="phase2-triad-status warn">⚠ 4/6 需加强</div>
+                    <div class="phase2-triad-hint">策略条数 2~4 条</div>
+                  </div>
+                </div>
+                <div class="phase2-log">
+                  <div v-for="(l,i) in phase2Logs" :key="i" class="phase2-log-line">
+                    <span class="phase2-log-time">{{ l.time }}</span>
+                    <span class="phase2-log-text">{{ l.text }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="glass chart-panel phase2-panel">
+                <div class="panel-title"><span class="icon">🏆</span>工单质量综合排行榜</div>
+                <div class="phase2-rank-list">
+                  <div v-for="(g,i) in phase2Sorted" :key="g.name" class="phase2-rank-row">
+                    <div class="phase2-rank-name">{{ g.name }}</div>
+                    <div class="phase2-rank-bar-track">
+                      <div class="phase2-rank-bar-fill"
+                           :style="{width:g.score+'%', background:phase2RankBarColor(i)}"></div>
+                    </div>
+                    <div class="phase2-rank-score">
+                      {{ g.score }}分
+                      <span v-if="i===0" class="phase2-rank-crown">👑</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-if="phase===3" class="content-grid">
@@ -160,37 +263,17 @@
                 <button class="rate-meta-btn" @click="refreshRateQr">🔄 更新二维码</button>
                 <button class="rate-meta-btn rate-clear-btn" @click="resetAllRatings">🗑️ 清零所有评分</button>
               </div>
-              <div class="rq-stats">
-                <div class="rq-stat" v-for="gid in RATE_GIDS" :key="gid">
-                  <div class="rq-stat-name">{{ GROUP_KEYS[gid] }}</div>
-                  <div class="rq-stat-num">{{ rateLatest[gid].total || '—' }}<span v-if="rateLatest[gid].total">分</span></div>
-                  <div class="rq-stat-meta">{{ rateLatest[gid].count || 0 }} 人 · 电子评量表</div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
         <div v-if="phase===4" class="content-grid phase4-grid">
-          <div class="glass chart-panel big-qr-panel">
-            <div class="panel-title"><span class="icon">📱</span>扫码获取个人能力报告</div>
-            <div class="big-qr-wrap">
-              <div class="big-qr-box">
-                <div class="qr-inner" style="grid-template-columns:repeat(30,3.33px);grid-template-rows:repeat(30,3.33px);" v-for="(row,y) in 30" :key="'r'+y"><template v-for="(on,x) in 30" :key="'c'+x"><div class="qr-cell" :class="{on:qrSeed[y*30+x] || (x<3&&y<3)||(x>26&&y<3)||(x<3&&y>26)||(x>26&&y>26)}"></div></template></div>
-                <div class="qr-finder tl"></div><div class="qr-finder tr"></div><div class="qr-finder bl"></div>
-              </div>
-              <div class="big-qr-info">
-                <div class="bqr-title">扫码查看您的个人报告</div>
-                <div class="bqr-sub">包含六维能力评分、雷达图、AI改进建议、教师点评</div>
-                <div class="bqr-stats"><div><div class="bqr-num">24</div><div>学生</div></div><div><div class="bqr-num">6</div><div>小组</div></div><div><div class="bqr-num">8</div><div>环节</div></div><div><div class="bqr-num">76.4</div><div>班级均分</div></div></div>
-              </div>
-            </div>
-          </div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">🗺️</span>最终班级能力达成度热力图</div><div id="p4Heatmap" class="chart-box" style="min-height:220px;"></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">📝</span>改进承诺墙</div><div class="promise-input-row"><input class="promise-input" v-model="promiseText" placeholder="输入改进承诺..." @keyup.enter="addPromise" /><button class="promise-btn" @click="addPromise">添加承诺</button></div><div class="promise-list"><div class="promise-item" v-for="(p,i) in promises" :key="i"><span class="pi-group">{{ p.group }}</span><span class="pi-text">{{ p.text }}</span></div></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">🎯</span>能力成长轨迹</div><div class="trajectory-wrap"><div><div class="traj-label">课前</div><div id="p4RadarBefore" class="traj-radar"></div></div><div class="arrow">→</div><div><div class="traj-label">课后</div><div id="p4RadarAfter" class="traj-radar"></div></div></div></div>
+          <div class="glass chart-panel"><div class="panel-title"><span class="icon">📝</span>改进承诺墙</div><div class="promise-input-row"><select class="promise-select" v-model="promiseGroup"><option v-for="g in groups" :key="g" :value="g">{{ g }}</option></select><input class="promise-input" v-model="promiseText" placeholder="输入改进承诺..." @keyup.enter="addPromise" /><button class="promise-btn" @click="addPromise">添加承诺</button></div><div class="promise-list"><div class="promise-item" v-for="(p,i) in promises" :key="i"><span class="pi-group" :style="{color:groupColor(p.group)}">{{ p.group }}</span><span class="pi-text">{{ p.text }}</span></div></div></div>
+          <div class="glass chart-panel"><div class="panel-title"><span class="icon">🎯</span>能力成长轨迹</div><div class="trajectory-wrap"><div><div class="traj-label">课前</div><div id="p4RadarBefore" class="traj-radar"></div></div><div class="traj-arrow"><div class="arrow-line"></div><div class="arrow-badge">+{{ avgGrowth }}分</div></div><div><div class="traj-label">课后</div><div id="p4RadarAfter" class="traj-radar"></div></div></div></div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">👤</span>个人能力画像</div><div class="personal-radar-grid" id="personalRadarGrid"></div></div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">🏅</span>本堂课荣誉榜单</div><div class="awards-row"><div class="award-card" v-for="aw in awards" :key="aw.key" @click="showPersonalRadarModal(aw.group)"><div class="award-shine"></div><div class="award-icon">{{ aw.icon }}</div><div class="award-title" :style="{color:aw.color}">{{ aw.title }}</div><div class="award-group">{{ aw.group }}</div><div class="award-reason">{{ aw.reason }}</div></div></div></div>
+          <div class="glass chart-panel"><div class="panel-title"><span class="icon">📊</span>课堂数据一览</div><div class="class-summary-grid"><div class="cs-item"><div class="cs-num">{{ classAvg }}</div><div class="cs-label">班级均分</div></div><div class="cs-item"><div class="cs-num">{{ topGroup }}</div><div class="cs-label">最佳小组</div></div><div class="cs-item"><div class="cs-num">{{ maxImprove }}%</div><div class="cs-label">最大进步</div></div><div class="cs-item"><div class="cs-num">{{ promiseCount }}</div><div class="cs-label">改进承诺</div></div></div></div>
         </div>
       </main>
     </div>
@@ -324,7 +407,11 @@ function resetDemo(p) {
     literacyPoints.forEach(l => { l.score = 0 })
   }
   if (p === 2 || p === undefined) {
-    drillProgress.value = drillProgress.value.map(d => ({ ...d, v:0 }))
+    phase2Groups.forEach(g=>{ g.score = 0; g.basisPct = 0; g.riskPct = 0; g.basisCount = 0; g.riskCount = 0 })
+    phase2Logs.value = []
+    _disposePhase2Charts()
+    const barEl = document.getElementById('p2CompareBar'); if (barEl) barEl.innerHTML = ''
+    const radarEl = document.getElementById('p2Radar'); if (radarEl) radarEl.innerHTML = ''
     demo2Done.value = false
     demo2Running.value = false
   }
@@ -334,7 +421,7 @@ function resetDemo(p) {
     judges.forEach(j => { j.dims.forEach(d => { d.val = 0 }) })
     RATE_GIDS.forEach(gid => { rateLatest[gid].total = 0; rateLatest[gid].count = 0 })
   }
-  renderPhaseCharts()
+  if (p !== 2) renderPhaseCharts()
 }
 
 function runDemo(p) {
@@ -358,21 +445,8 @@ function runDemo(p) {
     if (demo2Running.value) return
     _clearAnim()
     demo2Running.value = true
-    drillProgress.value = drillProgress.value.map(d => ({ ...d, v:0 }))
-    renderPhaseCharts()
-    setTimeout(() => {
-const drillProgressTargets = [75, 88, 82, 93]
-      drillProgress.value.forEach((d, i) => {
-        const tgt = drillProgressTargets[i]
-        let step = 0, steps = 30
-        _animInterval(() => {
-          step++
-          d.v = Math.round(tgt * step / steps)
-          if (step >= steps) { d.v = tgt; renderPhaseCharts() }
-        }, 25)
-      })
-      setTimeout(() => { demo2Running.value = false; demo2Done.value = true }, 1600)
-    }, 2000)
+    demo2Done.value = false
+    animateDemo2()
   } else if (p === 3) {
     if (demo3Running.value) return
     _clearAnim()
@@ -384,49 +458,89 @@ const drillProgressTargets = [75, 88, 82, 93]
     const dimChart = chartInstances.find(c => c._phase3Type === 'dim')
     const totalChart = chartInstances.find(c => c._phase3Type === 'total')
     const colors3 = ['#00a8ff','#00dc82','#ffaa3a']
-    let step = 0, steps = 140
-    const tick = () => {
-      step++
-      const baseF = step / steps
-      const fluct = Math.sin(step * 0.35) * 0.08 + Math.cos(step * 0.17) * 0.05 + (Math.random() - 0.5) * 0.08
-      const f = Math.min(1, Math.max(0, baseF + fluct))
-      JUDGE_TARGETS.forEach((tgt, gi) => {
-        tgt.dims.forEach((td, di) => {
-          const cur = Math.round(td.val * f)
-          judges[gi].dims[di].val = Math.max(0, Math.min(td.val, cur))
+    const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+    // 每个维度独立配置：起评时间不同、评分速度不同
+    const dimConfs = []
+    JUDGE_TARGETS.forEach((tgt, gi) => {
+      tgt.dims.forEach((td, di) => {
+        dimConfs.push({
+          gi, di, target: td.val,
+          delay: Math.floor(Math.random() * 45) + 3,
+          duration: Math.floor(Math.random() * 80) + 45,
         })
       })
-      RATE_GIDS.forEach((gid, i) => {
-        const totalF = Math.min(1, Math.max(0, f + Math.sin(step * 0.4 + i) * 0.05))
-        rateLatest[gid].total = Math.round([87, 93, 86][i] * totalF)
-        rateLatest[gid].count = Math.round([5, 6, 4][i] * Math.min(1, f + Math.sin(step * 0.5 + i * 2) * 0.05))
+    })
+    // 三小组总分/人数独立配置
+    const rateConfs = [[87,5],[93,6],[86,4]].map(([t,c]) => ({
+      totalTarget: t, countTarget: c,
+      delay: Math.floor(Math.random() * 30) + 5,
+      duration: Math.floor(Math.random() * 60) + 50,
+    }))
+    // judge 索引 → gid 映射（揽星组=1, 巡天组=3, 长空组=6）
+    const judgeGidMap = [6, 1, 3]
+    let step = 0
+    const tick = () => {
+      step++
+      let allDone = true
+      dimConfs.forEach(cfg => {
+        const local = step - cfg.delay
+        if (local <= 0) { judges[cfg.gi].dims[cfg.di].val = 0; allDone = false; return }
+        const t = Math.min(1, local / cfg.duration)
+        judges[cfg.gi].dims[cfg.di].val = Math.round(cfg.target * easeInOutCubic(t))
+        if (t < 1) allDone = false
       })
+      // 电子评量表分数 = 对应裁判维度和
+      rateConfs.forEach((rc, i) => {
+        const local = step - rc.delay
+        if (local <= 0) { allDone = false; return }
+        const t = Math.min(1, local / rc.duration)
+        const gid = judgeGidMap[i]
+        rateLatest[gid].total = Math.round(rc.totalTarget * easeInOutCubic(t))
+        rateLatest[gid].count = Math.round(rc.countTarget * easeInOutCubic(t))
+        if (t < 1) allDone = false
+      })
+      // 刷新能力观测表（每个柱子直接读 judges 的当前值）
       if (dimChart) {
         dimChart.setOption({ series: JUDGE_TARGETS.map((tgt, idx) => ({
-          data: tgt.dims.map(d => Math.round(d.val * Math.min(1, Math.max(0, f + Math.sin(step * 0.45 + idx) * 0.05))))
+          name: tgt.group, type: 'bar',
+          data: judges[idx].dims.map(d => d.val)
         })) }, false)
       }
+      // 各组总分对比 = 各 judge dims 求和
       if (totalChart) {
         totalChart.setOption({ series:[{
+          type: 'bar',
           data: JUDGE_TARGETS.map((tgt, idx) => {
-            const dimsF = Math.min(1, Math.max(0, f + Math.sin(step * 0.4 + idx) * 0.05))
+            const total = judges[idx].dims.reduce((s, d) => s + d.val, 0)
             return {
-              value: Math.round(tgt.dims.reduce((s,d)=>s+d.val,0) * dimsF),
-              itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]}}
+              value: total,
+              itemStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: colors3[idx] }, { offset: 1, color: colors3[idx] }] } }
             }
-          })
+          }),
+          barWidth: 40,
+          label: { show: true, position: 'top', formatter: '{c}分', color: '#c8d4e0', fontSize: 14, fontWeight: 'bold' },
+          markLine: { silent: true, data: [{ type: 'average', name: '平均' }], lineStyle: { color: 'rgba(0,168,255,0.3)', type: 'dashed' }, label: { color: '#5a7a9a', fontSize: 10, formatter: '平均 {c}' } }
         }] }, false)
       }
-      if (step >= steps) {
+      if (allDone) {
         JUDGE_TARGETS.forEach((tgt, gi) => {
           tgt.dims.forEach((td, di) => { judges[gi].dims[di].val = td.val })
         })
-        RATE_GIDS.forEach((gid, i) => {
-          rateLatest[gid].total = [87, 93, 86][i]
-          rateLatest[gid].count = [5, 6, 4][i]
+        judgeGidMap.forEach((gid, i) => {
+          rateLatest[gid].total = [[87,5],[93,6],[86,4]][i][0]
+          rateLatest[gid].count = [[87,5],[93,6],[86,4]][i][1]
         })
-        if (dimChart) dimChart.setOption({ series: JUDGE_TARGETS.map(tgt => ({ data: tgt.dims.map(d => d.val) })) }, false)
-        if (totalChart) totalChart.setOption({ series:[{ data: JUDGE_TARGETS.map((tgt, idx) => ({ value: tgt.dims.reduce((s,d)=>s+d.val,0), itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]}} })) }] }, false)
+        if (dimChart) dimChart.setOption({ series: JUDGE_TARGETS.map(tgt => ({ name: tgt.group, type:'bar', data: tgt.dims.map(d => d.val) })) }, false)
+        if (totalChart) totalChart.setOption({ series:[{
+          type:'bar',
+          data: JUDGE_TARGETS.map((tgt, idx) => ({
+            value: tgt.dims.reduce((s,d)=>s+d.val,0),
+            itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]}}
+          })),
+          barWidth:40,
+          label:{show:true, position:'top', formatter:'{c}分', color:'#c8d4e0', fontSize:14, fontWeight:'bold'},
+          markLine:{silent:true, data:[{type:'average',name:'平均'}], lineStyle:{color:'rgba(0,168,255,0.3)',type:'dashed'},label:{color:'#5a7a9a',fontSize:10,formatter:'平均 {c}'}}
+        }] }, false)
         demo3Running.value = false
         demo3Done.value = true
       }
@@ -465,6 +579,121 @@ function animateGroups() {
     })
     renderPhaseCharts()
   }, 900)
+}
+
+function animateDemo2() {
+  phase2Logs.value = []
+  phase2Groups.forEach((g,i)=>{ g.score = 0; g.basisPct = 0; g.riskPct = 0; g.basisCount = 0; g.riskCount = 0; })
+  _renderPhase2Charts(true)
+  _animTimeout(()=>{
+    const steps = 22
+    let step = 0
+    _animInterval(()=>{
+      step++
+      phase2Groups.forEach(g=>{
+        g.basisCount = Math.round(g._basis * step / steps)
+        g.riskCount = Math.round(g._risk * step / steps)
+        g.basisPct = Math.round(100 * g.basisCount / Math.max(1, g._basis))
+        g.riskPct = Math.round(100 * g.riskCount / Math.max(1, g._risk))
+        g.score = Math.round(g._score * step / steps)
+      })
+      if (step >= steps) {
+        phase2Groups.forEach(g=>{
+          g.basisCount = g._basis; g.riskCount = g._risk
+          g.basisPct = Math.round(100 * g._basis / 4)
+          g.riskPct = Math.round(100 * g._risk / 4)
+          g.score = g._score
+        })
+        _renderPhase2Charts(false)
+        phase2LogsFull.forEach((l, idx)=>{
+          _animTimeout(()=>{
+            phase2Logs.value.push({ time:l.time, text:l.text })
+            if (idx === phase2LogsFull.length - 1) {
+              demo2Running.value = false; demo2Done.value = true
+            }
+          }, 260 * idx)
+        })
+      }
+    }, 42)
+  }, 300)
+}
+
+let _p2BarChart = null
+let _p2RadarChart = null
+function _renderPhase2Charts(isInit) {
+  const bar = document.getElementById('p2CompareBar')
+  const radar = document.getElementById('p2Radar')
+  const names = phase2Groups.map(g=>g.name)
+  const basisVals = phase2Groups.map(g=>g.basisCount)
+  const riskVals = phase2Groups.map(g=>g.riskCount)
+  if (bar) {
+    if (isInit || !_p2BarChart) {
+      if (_p2BarChart) try { _p2BarChart.dispose() } catch(e){}
+      _p2BarChart = echarts.init(bar)
+    }
+    _p2BarChart.setOption({
+      animationDuration: 900, animationEasing:'cubicOut',
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+      legend:{data:['决策依据','风险对冲'], textStyle:{color:'#6b8cae', fontSize:12}, top:0, right:10, itemWidth:22, itemHeight:14},
+      grid:{left:40,right:30,top:44,bottom:24},
+      xAxis:{type:'category', data:names, axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:11}},
+      yAxis:{type:'value', max:6, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#4a6a8a', fontSize:10}},
+      series:[
+        { name:'决策依据', type:'bar', data:basisVals, barWidth:18, barGap:'12%',
+          itemStyle:{color:'#00a8ff', borderRadius:[4,4,0,0]},
+          label:{show:true, position:'top', formatter:'{c}条', color:'#00a8ff', fontSize:11, fontWeight:'bold'} },
+        { name:'风险对冲', type:'bar', data:riskVals, barWidth:18,
+          itemStyle:{color:'#ffaa3a', borderRadius:[4,4,0,0]},
+          label:{show:true, position:'top', formatter:'{c}条', color:'#ffaa3a', fontSize:11, fontWeight:'bold'} }
+      ]
+    }, true)
+    _p2BarChart.resize()
+  }
+  if (radar) {
+    if (isInit || !_p2RadarChart) {
+      if (_p2RadarChart) try { _p2RadarChart.dispose() } catch(e){}
+      _p2RadarChart = echarts.init(radar)
+    }
+    const top3 = phase2Sorted.value.slice(0,3)
+    _p2RadarChart.setOption({
+      animationDuration: 1200, animationEasing:'cubicOut',
+      legend:{data:top3.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:12}, bottom:2, left:'center', itemWidth:18, itemHeight:10},
+      radar:{
+        indicator:[
+          {name:'决策坐标完整度', max:100},
+          {name:'决策依据充分性', max:100},
+          {name:'风险对冲强度', max:100},
+          {name:'三要素均衡度', max:100},
+          {name:'综合质量分', max:100}
+        ],
+        shape:'polygon', radius:'68%', center:['50%','42%'],
+        axisName:{color:'#e0f5ff', fontSize:11, fontWeight:'bold'},
+        splitArea:{areaStyle:{color:['rgba(0,168,255,0.04)','rgba(0,220,180,0.08)']}},
+        axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}},
+        splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}
+      },
+      series:[{ type:'radar', animationDuration:1400, data: top3.map((g)=>({
+        value:[
+          g.cordOk?100:60,
+          Math.round(g.basisPct),
+          Math.round(g.riskPct),
+          Math.round((g.basisPct+g.riskPct+(g.cordOk?100:0))/3),
+          g.score
+        ],
+        name:g.name,
+        lineStyle:{width:3},
+        areaStyle:{opacity:0.22},
+        itemStyle:{symbol:'circle', symbolSize:7}
+      })) }],
+      color:['#00dc82','#00a8ff','#ffaa3a']
+    }, true)
+    _p2RadarChart.resize()
+  }
+}
+
+function _disposePhase2Charts() {
+  if (_p2BarChart) { try { _p2BarChart.dispose() } catch(e){} _p2BarChart = null }
+  if (_p2RadarChart) { try { _p2RadarChart.dispose() } catch(e){} _p2RadarChart = null }
 }
 
 function animatePeer() {
@@ -569,8 +798,60 @@ const teacherComments = reactive([
   { name:'陈 · 飞行演练', role:'飞行教练', color:'#c870ff', time:'14:48', group:'逐日组', text:'跨部门沟通环节，逐日组主动承担了地面引导任务，团队协作加分！', tags:['协调沟通+9','团队协作','加分'] },
   { name:'刘 · 安全保障', role:'安全员', color:'#ffaa3a', time:'14:52', group:'御风组', text:'飞行演练的电量双控策略不错，但要注意低温环境下锂电池的放电倍率限制。', tags:['安全规范+6','风险提示','改进建议'] }
 ])
+const phase2Groups = reactive([
+  { name:'揽星组', cordOk:true, basisOk:true, riskOk:true, basisPct:0, riskPct:0, basisCount:0, riskCount:0, score:0, _score:100, _basis:4, _risk:4 },
+  { name:'长空组', cordOk:true, basisOk:true, riskOk:true, basisPct:0, riskPct:0, basisCount:0, riskCount:0, score:0, _score:100, _basis:4, _risk:4 },
+  { name:'凌云组', cordOk:true, basisOk:true, riskOk:true, basisPct:0, riskPct:0, basisCount:0, riskCount:0, score:0, _score:100, _basis:4, _risk:4 },
+  { name:'御风组', cordOk:true, basisOk:true, riskOk:true, basisPct:0, riskPct:0, basisCount:0, riskCount:0, score:0, _score:88,  _basis:4, _risk:3 },
+  { name:'逐日组', cordOk:true, basisOk:true, riskOk:true, basisPct:0, riskPct:0, basisCount:0, riskCount:0, score:0, _score:75,  _basis:3, _risk:2 },
+  { name:'巡天组', cordOk:true, basisOk:true, riskOk:true, basisPct:0, riskPct:0, basisCount:0, riskCount:0, score:0, _score:63,  _basis:3, _risk:2 },
+])
+const phase2Sorted = computed(() => {
+  const copy = phase2Groups.slice().sort((a,b)=>b.score-a.score)
+  return copy
+})
+const phase2Logs = ref([])
+const phase2LogsFull = [
+  { time:'14:36:02', text:'[揽星组] 决策坐标 · 配送中心+3需求点完整录入，经纬度校验通过' },
+  { time:'14:36:18', text:'[长空组] 决策依据 · 提交航线规划依据 4 条（载重/航程/风速/地形）' },
+  { time:'14:36:34', text:'[凌云组] 风险对冲 · 三备份策略填写：电量双控+气象+通信' },
+  { time:'14:37:05', text:'[御风组] 风险对冲条数偏少（3/4），AI建议补充备份航线预案' },
+  { time:'14:37:22', text:'[逐日组] 决策依据 3 条 · 缺少地形爬升损耗公式，建议加强' },
+  { time:'14:37:48', text:'[巡天组] 风险对冲 2 条 · 建议增加低温锂电池放电特性相关预案' },
+  { time:'14:38:10', text:'[AI引擎] 六组工单三要素完整性扫描完毕，正在生成综合质量分' },
+  { time:'14:38:32', text:'[AI引擎] TOP3 · 揽星/长空/凌云 三组综合质量 100 分' },
+]
+function phase2RankColor(i) {
+  return ['#00dc82','#00a8ff','#00a8ff','#ffaa3a','#ff8c5a','#ff6b50'][i] || '#00a8ff'
+}
+function phase2RankShadow(i) {
+  return ['rgba(0,220,130,0.4)','rgba(0,168,255,0.35)','rgba(0,168,255,0.3)','rgba(255,170,58,0.25)','rgba(255,140,90,0.2)','rgba(255,107,80,0.2)'][i] || 'transparent'
+}
+function phase2RankBarColor(i) {
+  return ['linear-gradient(90deg,#00dc82,#00a8ff)','linear-gradient(90deg,#00a8ff,#00dc82)','linear-gradient(90deg,#00a8ff,#00dc82)','linear-gradient(90deg,#00a8ff,#00a8ff)','linear-gradient(90deg,#00dc82,#00a8ff)','linear-gradient(90deg,#ffaa3a,#00a8ff)'][i] || 'linear-gradient(90deg,#00a8ff,#00dc82)'
+}
+function phase2ScoreColor(s) {
+  if (s >= 95) return '#00dc82'
+  if (s >= 85) return '#00a8ff'
+  if (s >= 70) return '#ffaa3a'
+  return '#ff6b50'
+}
+
 const classAvgScore = ref(76)
+const classAvg = computed(()=>classAvgScore.value)
+const topGroup = computed(()=>{
+  let best='', max=0
+  groups.forEach(g=>{ const s=personalRadar[g].reduce((a,b)=>a+b,0)/5; if(s>max){max=s;best=g} })
+  return best
+})
+const maxImprove = computed(()=>{
+  let max=0
+  groups.forEach(g=>{ const before=personalRadar[g].map(v=>Math.round(v*0.72)); const after=personalRadar[g]; const bAvg=before.reduce((a,v)=>a+v,0)/5; const aAvg=after.reduce((a,v)=>a+v,0)/5; const imp=bAvg>0?Math.round((aAvg-bAvg)/bAvg*100):0; if(imp>max)max=imp })
+  return max
+})
+const promiseCount = computed(()=>promises.length)
 const promiseText = ref('')
+const promiseGroup = ref('揽星组')
 const promises = reactive([
   { group:'揽星组', text:'我们会把地形爬升损耗公式纳入动态航程约束模型。' },
   { group:'御风组', text:'我们会把电量优先规则写进协同策略，并增加温控检查清单。' },
@@ -579,14 +860,27 @@ const promises = reactive([
   { group:'凌云组', text:'应急推演中补充极端天气备份航线预案，加入风阻补偿系数。' },
   { group:'长空组', text:'完善工单三要素的RFID校验步骤，避免标识漏项。' }
 ])
-function addPromise() { const t = promiseText.value.trim(); if (!t) { promiseText.value=''; return } promises.unshift({ group:'揽星组', text:t }); promiseText.value='' }
+function addPromise() { const t = promiseText.value.trim(); if (!t) { promiseText.value=''; return } promises.unshift({ group:promiseGroup.value, text:t }); promiseText.value='' }
+
+function groupColor(g) {
+  const map = {'揽星组':'#00dc82','长空组':'#00a8ff','凌云组':'#ffaa3a','御风组':'#c870ff','逐日组':'#ff6b6b','巡天组':'#ffd24d'}
+  return map[g] || '#8ab4d0'
+}
+const avgGrowth = computed(() => {
+  const before = [45,36,55,48,52,42,37,58,55,50,40,34,60,50,54,38,32,50,45,48,41,35,52,47,50,39,33,54,49,51]
+  const after = personalRadar
+  let total = 0, count = 0
+  for (const g of groups) { const b = after[g].map(v=>Math.round(v*0.72)); const a = after[g]; total += a.reduce((s,v,i)=>s+v-b[i],0); count += a.length }
+  return Math.round(total/count)
+})
 
 function dimsLabels() { return ['综合方案设计','成果汇报展示','演练组织指挥','跨部门协调沟通','持续改进优化'] }
 
 let chartInstances = []
 let _animTimers = []
-function _clearAnim() { _animTimers.forEach(t=>clearInterval(t)); _animTimers=[] }
+function _clearAnim() { _animTimers.forEach(t=>{ try{clearInterval(t)}catch(e){} try{clearTimeout(t)}catch(e){} }); _animTimers=[] }
 function _animInterval(fn, ms) { const t = setInterval(fn, ms); _animTimers.push(t); return t }
+function _animTimeout(fn, ms) { const t = setTimeout(fn, ms); _animTimers.push(t); return t }
 
 function renderPhaseCharts() {
   chartInstances.forEach(c=>{try{c.dispose()}catch(e){}}); chartInstances=[]
@@ -638,20 +932,64 @@ function renderPhaseCharts() {
       }
     }
   } else if (phase.value === 2) {
-    const tr = document.getElementById('p2Trend'); if (tr) {
-      const c = echarts.init(tr); chartInstances.push(c)
-      c.setOption({ tooltip:{trigger:'axis'}, legend:{data:capabilities.map(cp=>cp.name), textStyle:{color:'#6b8cae', fontSize:10}, top:0},
-        grid:{left:40,right:20,top:40,bottom:24},
-        xAxis:{type:'category', data:['课前','任务1-3','任务4-5','任务6-7','任务8'], axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#5a7a9a', fontSize:10}},
-        yAxis:{type:'value', max:100, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#4a6a8a', fontSize:10}},
-        series: capabilities.map(cp=>({ name:cp.name, type:'line', smooth:true, data:cp.trend, lineStyle:{width:2}, itemStyle:{symbol:'circle', symbolSize:4}, areaStyle:{opacity:0.08} })) })
+    const bar = document.getElementById('p2CompareBar')
+    if (bar) {
+      const c = echarts.init(bar); chartInstances.push(c)
+      const names = phase2Groups.map(g=>g.name)
+      const basisVals = phase2Groups.map(g=>g.basisCount)
+      const riskVals = phase2Groups.map(g=>g.riskCount)
+      c.setOption({
+        tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+        legend:{data:['决策依据','风险对冲'], textStyle:{color:'#6b8cae', fontSize:13}, top:2, right:10, itemWidth:22, itemHeight:14},
+        grid:{left:40,right:30,top:50,bottom:28},
+        xAxis:{type:'category', data:names, axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:12}},
+        yAxis:{type:'value', max:6, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#4a6a8a', fontSize:10}},
+        series:[
+          { name:'决策依据', type:'bar', data:basisVals, barWidth:20, barGap:'10%',
+            itemStyle:{color:'#00a8ff', borderRadius:[4,4,0,0]},
+            label:{show:true, position:'top', formatter:'{c}条', color:'#00a8ff', fontSize:12, fontWeight:'bold'} },
+          { name:'风险对冲', type:'bar', data:riskVals, barWidth:20,
+            itemStyle:{color:'#ffaa3a', borderRadius:[4,4,0,0]},
+            label:{show:true, position:'top', formatter:'{c}条', color:'#ffaa3a', fontSize:12, fontWeight:'bold'} }
+        ]
+      })
     }
-    const br = document.getElementById('p2Bar'); if (br) {
-      const c = echarts.init(br); chartInstances.push(c)
-      c.setOption({ tooltip:{trigger:'axis'}, grid:{left:50,right:20,top:20,bottom:30},
-        xAxis:{type:'category', data:groups, axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:11}},
-        yAxis:{type:'value', max:100, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#4a6a8a', fontSize:10}},
-        series:[{ type:'bar', data: groups.map(g=>({ value:Math.round(personalRadar[g].reduce((s,v,j)=>s+v+[25,20,25,15,15][j]/100,0)), itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#00a8ff'},{offset:1,color:'#00dc82'}]}, borderRadius:[4,4,0,0]} })), barWidth:28, label:{show:true, position:'top', formatter:'{c}', color:'#c8d4e0', fontSize:13, fontWeight:'bold'}, markLine:{silent:true, data:[{yAxis:70, lineStyle:{color:'rgba(255,100,60,0.5)',type:'dashed'}, label:{color:'#ff6b50', fontSize:10, formatter:'达标70'}}]} }] })
+    const r = document.getElementById('p2Radar')
+    if (r) {
+      const top3 = phase2Sorted.value.slice(0,3)
+      const c = echarts.init(r); chartInstances.push(c)
+      c.setOption({
+        animationDuration: 1500, animationEasing:'cubicOut',
+        legend:{data:top3.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:13}, bottom:2, left:'center', itemWidth:18, itemHeight:10},
+        radar:{
+          indicator:[
+            {name:'决策坐标完整度', max:100},
+            {name:'决策依据充分性', max:100},
+            {name:'风险对冲强度', max:100},
+            {name:'三要素均衡度', max:100},
+            {name:'综合质量分', max:100}
+          ],
+          shape:'polygon', radius:'70%', center:['50%','40%'],
+          axisName:{color:'#e0f5ff', fontSize:12, fontWeight:'bold'},
+          splitArea:{areaStyle:{color:['rgba(0,168,255,0.04)','rgba(0,220,180,0.08)']}},
+          axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}},
+          splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}
+        },
+        series:[{ type:'radar', animationDuration:2000, data: top3.map((g,i)=>({
+          value:[
+            g.cordOk?100:60,
+            Math.round(g.basisPct),
+            Math.round(g.riskPct),
+            Math.round((g.basisPct+g.riskPct+(g.cordOk?100:0))/3),
+            g.score
+          ],
+          name:g.name,
+          lineStyle:{width:3},
+          areaStyle:{opacity:0.22},
+          itemStyle:{symbol:'circle', symbolSize:7}
+        })) }],
+        color:['#00dc82','#00a8ff','#ffaa3a']
+      })
     }
   } else if (phase.value === 3) {
     const d3 = document.getElementById('p3DimChart'); if (d3) {
@@ -694,34 +1032,37 @@ function renderPhaseCharts() {
     const hm = document.getElementById('p4Heatmap')
     if (hm) {
       const c = echarts.init(hm); chartInstances.push(c)
-      const heatData = capabilities.map(cp => {
-        const isLow = cp.score < 70
-        const cs = isLow
-          ? {type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#ff4444'},{offset:1,color:'#ff8c5a'}]}
-          : {type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#00a8ff'},{offset:1,color:'#00dc82'}]}
-        return { value:cp.score, itemStyle:{ color:cs, borderRadius:[0,4,4,0] } }
+      const dims = dimsLabels()
+      const heatData = []
+      groups.forEach((g, gi) => {
+        const vals = personalRadar[g]
+        vals.forEach((v, di) => {
+          heatData.push([gi, di, v])
+        })
       })
       c.setOption({
-        tooltip:{trigger:'axis'},
-        grid:{left:130,right:100,top:10,bottom:10},
-        xAxis:{type:'value',max:100,axisLine:{show:false},splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}},axisLabel:{color:'#4a6a8a',fontSize:11,formatter:'{value}%'}},
-        yAxis:{type:'category',data:capabilities.map(c=>c.name),axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:12},inverse:true},
-        series:[{ type:'bar', data:heatData, barHeight:26,
-          markLine:{silent:true,data:[{xAxis:70,lineStyle:{color:'rgba(255,100,60,0.5)',type:'dashed'},label:{color:'#ff6b50',fontSize:10,formatter:'达标线70%'}}]} }]
+        tooltip:{position:'top', formatter:(p)=>`${groups[p.value[0]]}<br/>${dims[p.value[1]]}: <b>${p.value[2]}分</b>`},
+        grid:{left:90,right:30,top:20,bottom:30},
+        xAxis:{type:'category',data:groups,axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:11},splitArea:{show:true,areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.04)']}}},
+        yAxis:{type:'category',data:dims,axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:10},splitArea:{show:true,areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.04)']}}},
+        visualMap:{min:30,max:100,calculable:false,orient:'horizontal',left:'center',bottom:0,show:false,inRange:{color:['#0a1628','#0066cc','#00dc82','#ffd24d']}},
+        series:[{ type:'heatmap', data:heatData, label:{show:true,formatter:'{c}',color:'#e0f0ff',fontSize:11,fontWeight:'bold'}, emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,220,130,0.5)'}} }]
       })
     }
     const before = document.getElementById('p4RadarBefore'); if (before) {
       const c = echarts.init(before); chartInstances.push(c)
-      c.setOption({ radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#4a6a8a',fontSize:9}, splitArea:{areaStyle:{color:'rgba(0,168,255,0.02)'}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.1)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}} }, series:[{type:'radar',data:[{value:[0,0,0,0,0],name:'课前',lineStyle:{color:'rgba(0,168,255,0.2)',width:1,type:'dashed'},areaStyle:{color:'transparent'},symbol:'none'}]}] })
+      const beforeVals = personalRadar['揽星组'].map(v => Math.round(v * 0.72))
+      c.setOption({ radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#4a6a8a',fontSize:9}, splitArea:{areaStyle:{color:'rgba(0,168,255,0.02)'}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.1)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}} }, series:[{type:'radar',data:[{value:beforeVals,name:'课前',lineStyle:{color:'rgba(0,168,255,0.5)',width:1.5,type:'dashed'},areaStyle:{color:'rgba(0,168,255,0.08)'},itemStyle:{color:'rgba(0,168,255,0.5)'},symbol:'circle',symbolSize:4}]}] })
     }
     const after = document.getElementById('p4RadarAfter'); if (after) {
       const c = echarts.init(after); chartInstances.push(c)
-      c.setOption({ radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#8ab4d0',fontSize:9}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.05)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.15)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.12)'}} }, series:[{type:'radar',data:[{value:capabilities.map(c=>c.score),name:'课后',lineStyle:{color:'#00dc82',width:2},areaStyle:{color:'rgba(0,220,130,0.2)'},itemStyle:{color:'#00dc82'},symbol:'circle',symbolSize:5}]}] })
+      c.setOption({ radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#8ab4d0',fontSize:9}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.05)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.15)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.12)'}} }, series:[{type:'radar',data:[{value:personalRadar['揽星组'],name:'课后',lineStyle:{color:'#00dc82',width:2.5},areaStyle:{color:'rgba(0,220,130,0.25)'},itemStyle:{color:'#00dc82'},symbol:'circle',symbolSize:6}]}] })
     }
     const grid = document.getElementById('personalRadarGrid'); if (grid) {
-      grid.innerHTML = groups.map((g,i)=>`<div class="personal-card" data-g="${g}"><div class="pr-name">${g}</div><div id="miniRadar_${i}" style="width:100%;height:90px;"></div><div class="pr-sub">点击查看画像</div></div>`).join('')
+      const top3 = ['揽星组','御风组','巡天组']
+      grid.innerHTML = top3.map((g,i)=>`<div class="personal-card" data-g="${g}"><div class="pr-name">${g}</div><div id="miniRadar_${i}" style="width:100%;height:120px;"></div><div class="pr-score">${personalRadar[g].reduce((s,v)=>s+v,0)/5|0}分</div><div class="pr-sub">点击查看画像</div></div>`).join('')
       setTimeout(()=>{
-        groups.forEach((g,i)=>{ const el=document.getElementById(`miniRadar_${i}`); if(!el)return; const mc=echarts.init(el); chartInstances.push(mc); mc.setOption({ radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'55%', axisName:{show:false}, splitArea:{areaStyle:{color:'rgba(0,168,255,0.03)'}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.1)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.06)'}} }, series:[{type:'radar',data:[{value:personalRadar[g],name:g,lineStyle:{color:'#00dc82',width:1.5},areaStyle:{color:'rgba(0,220,130,0.15)'},itemStyle:{color:'#00dc82'},symbol:'circle',symbolSize:3}]}] }) })
+        top3.forEach((g,i)=>{ const el=document.getElementById(`miniRadar_${i}`); if(!el)return; const mc=echarts.init(el); chartInstances.push(mc); mc.setOption({ radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'75%', axisName:{show:false}, splitArea:{areaStyle:{color:'rgba(0,168,255,0.03)'}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.1)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.06)'}} }, series:[{type:'radar',data:[{value:personalRadar[g],name:g,lineStyle:{color:groupColor(g),width:2.5},areaStyle:{color:groupColor(g)+'40'},itemStyle:{color:groupColor(g)},symbol:'circle',symbolSize:5}]}] }) })
         document.querySelectorAll('.personal-card').forEach(card=>{ card.addEventListener('click', e=>showPersonalRadarModal(card.getAttribute('data-g'))) })
       }, 80)
     }
@@ -790,8 +1131,7 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .t8-header { height:90px; display:flex; align-items:center; justify-content:space-between; padding:0 32px; background:linear-gradient(180deg,rgba(0,20,40,0.95),rgba(6,13,31,0.98)); border-bottom:1px solid rgba(0,168,255,0.2); }
 .header-left { display:flex; align-items:center; gap:18px; }
 .logo-icon { width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg,#00a8ff,#00dc82); display:flex; align-items:center; justify-content:center; font-size:28px; color:#fff; font-weight:bold; }
-.t8-header h1 { font-size:32px; color:#e0f0ff; font-weight:600; letter-spacing:2px; animation:glow 3s ease-in-out infinite; margin:0; }
-.header-sub { color:#6b8cae; font-size:17px; margin-left:16px; letter-spacing:1px; }
+.header-sub { color:#e0f0ff; font-size:22px; font-weight:600; letter-spacing:2px; animation:glow 3s ease-in-out infinite; white-space:nowrap; }
 @keyframes glow { 0%,100%{text-shadow:0 0 10px rgba(0,168,255,0.5);} 50%{text-shadow:0 0 20px rgba(0,168,255,0.9),0 0 30px rgba(0,168,255,0.5);} }
 
 .phase-tabs { display:flex; gap:4px; }
@@ -884,7 +1224,7 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 
 .content { flex:1; display:flex; flex-direction:column; gap:10px; overflow:hidden; }
 .content-grid { flex:1; display:grid; gap:10px; overflow-y:auto; padding-right:4px; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; }
-.content-grid.phase4-grid { grid-template-columns:1fr 1fr; grid-template-rows:auto auto auto auto; }
+.content-grid.phase4-grid { grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr 1fr; }
 .row-full { grid-column:1 / -1; }
 .chart-panel { padding:20px; display:flex; flex-direction:column; animation:fadeIn 0.5s; }
 .panel-title { font-size:20px; color:#e0f0ff; font-weight:600; margin-bottom:16px; display:flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -962,7 +1302,7 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .promise-input:focus { border-color:rgba(0,168,255,0.5); }
 .promise-btn { padding:0 16px; border-radius:6px; background:linear-gradient(135deg,#00a8ff,#00dc82); color:#061628; font-weight:600; font-size:12px; border:none; cursor:pointer; }
 .promise-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,220,130,0.4); }
-.promise-list { display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; }
+.promise-list { display:flex; flex-direction:column; gap:5px; flex:1; overflow-y:auto; }
 .promise-item { display:flex; gap:8px; padding:6px 10px; border-radius:6px; background:rgba(0,168,255,0.04); border-left:2px solid rgba(0,168,255,0.3); font-size:11px; line-height:1.7; }
 .promise-item .pi-group { color:#00dc82; font-weight:600; white-space:nowrap; }
 .promise-item .pi-text { color:#9ab9d6; flex:1; }
@@ -973,10 +1313,11 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .arrow { font-size:20px; color:#00dc82; font-weight:bold; animation:pulse 1.5s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
-.personal-radar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.personal-card { padding:8px; border-radius:6px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.1); cursor:pointer; transition:all 0.3s; text-align:center; }
+.personal-radar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; flex:1; min-height:0; }
+.personal-card { padding:8px; border-radius:6px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.1); cursor:pointer; transition:all 0.3s; text-align:center; display:flex; flex-direction:column; }
 .personal-card:hover { background:rgba(0,168,255,0.1); border-color:rgba(0,168,255,0.3); transform:translateY(-2px); }
-.pr-name { font-size:11px; color:#00a8ff; font-weight:600; margin-bottom:2px; }
+.pr-name { font-size:12px; color:#00a8ff; font-weight:600; margin-bottom:2px; }
+.pr-score { font-size:14px; font-weight:700; color:#00dc82; margin:4px 0 2px; }
 .pr-sub { font-size:10px; color:#4a6a8a; margin-top:2px; }
 
 .awards-row { display:flex; gap:10px; flex-wrap:wrap; }
@@ -988,6 +1329,11 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .award-title { font-size:13px; font-weight:700; margin-bottom:2px; }
 .award-group { font-size:11px; color:#8ab4d0; margin-bottom:6px; }
 .award-reason { font-size:10px; color:#5a7a9a; line-height:1.5; text-align:left; }
+
+.class-summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1; align-content:center; }
+.cs-item { text-align:center; padding:12px 8px; border-radius:8px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.1); }
+.cs-num { font-size:28px; font-weight:800; color:#00dc82; line-height:1; }
+.cs-label { font-size:11px; color:#8ab4d0; margin-top:4px; }
 
 .ai-bar { height:46px; background:rgba(0,20,40,0.8); border-top:1px solid rgba(0,168,255,0.2); overflow:hidden; }
 .ai-marquee-wrap { height:100%; display:flex; align-items:center; white-space:nowrap; }
@@ -1067,4 +1413,68 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .rate-enlarge-mask { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:1000; }
 .rate-enlarge-mask .rate-qr-box { width:360px; height:360px; background:#fff; padding:16px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; }
 .rate-enlarge-mask .rate-qr-box img { width:100%; height:100%; }
+
+.phase2-wrap { display:flex; flex-direction:column; gap:10px; flex:1; min-height:0; padding:0; }
+.phase2-topbar { display:flex; align-items:center; justify-content:space-between; padding:8px 16px; background:linear-gradient(90deg,rgba(0,168,255,0.12),rgba(0,220,180,0.04)); border:1px solid rgba(0,168,255,0.2); border-radius:8px; flex-shrink:0; }
+.phase2-topbar-left { display:flex; align-items:center; gap:12px; }
+.phase2-topbar-logo { width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg,#00a8ff,#00dc82); display:flex; align-items:center; justify-content:center; font-size:22px; }
+.phase2-topbar-title { font-size:20px; font-weight:700; color:#e0f0ff; letter-spacing:1px; }
+.phase2-topbar-sub { font-size:12px; color:#6b8cae; letter-spacing:0.5px; margin-top:2px; }
+.phase2-topbar-right { display:flex; align-items:center; gap:14px; }
+.phase2-engine-chip { display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:16px; background:rgba(0,220,130,0.1); border:1px solid rgba(0,220,130,0.25); color:#00dc82; font-size:13px; }
+.phase2-return { font-size:13px; color:#6b8cae; cursor:pointer; padding:6px 10px; border-radius:6px; background:rgba(0,168,255,0.08); border:1px solid rgba(0,168,255,0.15); }
+.phase2-return:hover { color:#a0c8e8; background:rgba(0,168,255,0.18); }
+
+.phase2-cards { display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; flex-shrink:0; }
+.phase2-group-card { padding:10px 10px 8px; border-radius:8px; background:linear-gradient(135deg,rgba(0,168,255,0.08),rgba(0,220,180,0.03)); border:1px solid rgba(0,168,255,0.18); transition:all 0.3s; display:flex; flex-direction:column; min-height:140px; }
+.phase2-group-card:hover { transform:translateY(-2px); border-color:rgba(0,220,180,0.4); box-shadow:0 0 20px rgba(0,220,130,0.2); }
+.phase2-group-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.phase2-group-name { font-size:15px; font-weight:700; color:#e0f0ff; }
+.phase2-group-rank { font-size:10px; font-weight:700; color:#fff; padding:2px 8px; border-radius:10px; letter-spacing:1px; }
+.phase2-group-checks { display:flex; flex-direction:column; gap:2px; margin-bottom:6px; }
+.phase2-group-check { display:flex; align-items:center; gap:5px; font-size:11px; color:#6b8cae; }
+.phase2-group-check .phase2-cick { font-size:10px; width:14px; display:inline-block; text-align:center; }
+.phase2-group-check.ok { color:#00dc82; }
+.phase2-group-bars { display:flex; flex-direction:column; gap:4px; margin-bottom:6px; }
+.phase2-bar-row { display:flex; align-items:center; gap:6px; font-size:10px; }
+.phase2-bar-label { color:#5a7a9a; width:56px; flex-shrink:0; }
+.phase2-bar-track { flex:1; height:6px; background:rgba(122,154,184,0.15); border-radius:3px; overflow:hidden; }
+.phase2-bar-fill { height:100%; border-radius:3px; transition:width 1.2s ease; position:relative; }
+.phase2-bar-fill.basis-bar { background:linear-gradient(90deg,#00a8ff,#00dc82); }
+.phase2-bar-fill.risk-bar { background:linear-gradient(90deg,#ffaa3a,#ff8c5a); }
+.phase2-bar-num { color:#c8d4e0; font-size:11px; font-weight:600; width:18px; text-align:right; }
+.phase2-group-footer { display:flex; align-items:baseline; gap:6px; padding-top:4px; border-top:1px dashed rgba(0,168,255,0.15); margin-top:auto; }
+.phase2-group-score { font-size:22px; font-weight:700; color:#00dc82; text-shadow:0 0 10px currentColor; min-width:36px; }
+.phase2-group-score-label { font-size:9px; color:#5a7a9a; letter-spacing:0.5px; }
+
+.phase2-body { display:flex; gap:10px; flex:1; min-height:0; }
+.phase2-col { flex:1; display:flex; flex-direction:column; gap:10px; min-height:0; min-width:0; }
+.phase2-panel { flex:1; padding:8px 12px !important; min-height:0; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+.phase2-panel .panel-title { margin-bottom:2px; font-size:15px; }
+
+.phase2-legend { display:flex; align-items:center; gap:18px; margin-bottom:2px; padding-left:4px; }
+.phase2-legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:#8ab4d0; }
+.phase2-legend-dot { width:12px; height:12px; border-radius:3px; }
+
+.phase2-triad { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:6px; }
+.phase2-triad-item { padding:6px 6px; border-radius:6px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.1); text-align:center; }
+.phase2-triad-icon { font-size:14px; margin-bottom:2px; }
+.phase2-triad-label { font-size:12px; color:#e0f0ff; font-weight:600; }
+.phase2-triad-status { font-size:11px; margin-top:2px; font-weight:600; }
+.phase2-triad-status.ok { color:#00dc82; }
+.phase2-triad-status.warn { color:#ffaa3a; }
+.phase2-triad-hint { font-size:9px; color:#5a7a9a; margin-top:1px; }
+
+.phase2-log { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:3px; padding-right:4px; }
+.phase2-log-line { padding:4px 8px; border-radius:4px; background:rgba(0,168,255,0.04); border-left:2px solid rgba(0,220,130,0.4); font-size:11px; line-height:1.6; }
+.phase2-log-time { color:#00dc82; margin-right:6px; font-family:monospace; font-size:10px; }
+.phase2-log-text { color:#8ab4d0; }
+
+.phase2-rank-list { display:flex; flex-direction:column; gap:4px; padding:2px 0; flex:1; min-height:0; overflow-y:auto; }
+.phase2-rank-row { display:flex; align-items:center; gap:10px; padding:3px 8px; border-radius:5px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.08); }
+.phase2-rank-name { width:60px; font-size:12px; font-weight:600; color:#c8e4ff; flex-shrink:0; }
+.phase2-rank-bar-track { flex:1; height:12px; background:rgba(122,154,184,0.1); border-radius:6px; overflow:hidden; }
+.phase2-rank-bar-fill { height:100%; border-radius:6px; transition:width 1.4s ease; }
+.phase2-rank-score { width:55px; text-align:right; font-size:11px; font-weight:700; color:#00dc82; }
+.phase2-rank-crown { margin-left:4px; }
 </style>
