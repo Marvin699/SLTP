@@ -15,9 +15,11 @@
         <div class="phase-tab" :class="{ active: phase===4 }" @click="phase=4"><span class="tab-dot"></span>课堂小结<em>10%</em></div>
       </div>
       <div class="header-right">
-        <div class="header-status-chip"><span class="dot-pulse ok"></span>数据实时同步中</div>
+        <el-button size="small" @click="$router.push('/evaluation')" class="back-teach-btn">← 返回</el-button>
         <router-link class="heatmap-btn" to="/evaluation/task8/heatmap">🔥 班级热力图</router-link>
-        <el-button size="small" @click="$router.push('/evaluation')" style="color:#7ab8e0;background:rgba(0,168,255,0.08);border-color:rgba(0,168,255,0.2);">返回教学智评</el-button>
+        <button v-if="!demoRunning && !demoDone" class="demo-btn" @click="runDemo">▶ 展览</button>
+        <button v-if="demoRunning" class="demo-btn demo-running" disabled>⏳ 展览中...</button>
+        <button v-if="!demoRunning && demoDone" class="demo-btn demo-reset" @click="resetDemo">↺ 重置</button>
       </div>
     </header>
 
@@ -48,16 +50,28 @@
 
       <main class="content">
         <div v-if="phase===1" class="content-grid">
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">🎯</span>五维能力对比雷达图</div><div id="p1Radar" class="chart-box"></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">📊</span>教师/企业导师分项评分</div>
-            <div class="score-cards">
-              <div class="score-card" v-for="g in groups2" :key="g.name"><div class="sc-label">{{ g.name }} · 总分</div><div class="sc-value">{{ g.total }}</div><div class="sc-sub">方案{{ g.design }} / 汇报{{ g.pres }} / 质疑{{ g.chal }}</div></div>
-            </div>
-            <div class="teacher-score-list">
-              <div class="ts-item" v-for="g in groups2" :key="g.name"><span class="ts-group">{{ g.name }}</span><div class="ts-tags"><span class="ts-tag">方案设计 {{ g.design }}/50</span><span class="ts-tag">汇报展示 {{ g.pres }}/40</span><span class="ts-tag">应对质疑 {{ g.chal }}/10</span></div></div>
+          <div class="glass chart-panel">
+            <div class="panel-title"><span class="icon">📊</span>企业导师分项评分</div>
+            <div class="score-group-blocks">
+              <div class="score-group-block" v-for="g in phase1Groups" :key="g.name">
+                <div class="sg-label">{{ g.name }}</div>
+                <div class="sg-sub-blocks">
+                  <div class="sg-sub"><div class="sg-sub-label">方案设计</div><div class="sg-sub-value">{{ g.design }}</div><div class="sg-sub-unit">/50分</div></div>
+                  <div class="sg-sub"><div class="sg-sub-label">汇报展示</div><div class="sg-sub-value">{{ g.pres }}</div><div class="sg-sub-unit">/40分</div></div>
+                  <div class="sg-sub"><div class="sg-sub-label">应对质疑</div><div class="sg-sub-value">{{ g.chal }}</div><div class="sg-sub-unit">/10分</div></div>
+                  <div class="sg-sub total"><div class="sg-sub-label">总分</div><div class="sg-sub-value big">{{ g.total }}</div><div class="sg-sub-unit">分</div></div>
+                </div>
+              </div>
+              <div class="sg-mini-bars">
+                <div class="sg-mini-bar-wrap" v-for="g in phase1Groups" :key="g.name">
+                  <div class="sg-mini-bar-label">{{ g.name }}</div>
+                  <div class="sg-mini-bar"><div class="sg-mini-bar-fill" :style="{width: (g.total*1.05)+'%', background: g.name==='揽星组'?'linear-gradient(90deg,#00a8ff,#00dc82)':'linear-gradient(90deg,#00dc82,#00a8ff)'}"></div></div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">💬</span>互评加分记录</div><div class="peer-list"><div class="peer-item" v-for="p in peerLogs" :key="p.time"><span class="peer-time">{{ p.time }}</span><span class="peer-text">{{ p.text }}</span></div></div></div>
+          <div class="glass chart-panel p1-radar-panel"><div class="panel-title"><span class="icon">🎯</span>五维能力对比雷达图</div><div id="p1Radar" class="chart-box"></div></div>
+          <div class="glass chart-panel"><div class="panel-title"><span class="icon">💬</span>互评加分记录</div><div id="p1PeerBar" class="chart-box" style="flex:1;"></div></div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">🤖</span>AI 数据采集日志</div><div class="ai-log"><div v-for="(line,i) in aiLogs" :key="i" class="ai-log-line"><span class="ai-log-time">{{ line.time }}</span><span class="ai-log-text">{{ line.text }}</span></div></div></div>
         </div>
 
@@ -131,6 +145,112 @@ const modalWeightedScore = ref(0)
 const modalDims = [{ name:'综合方案设计', weight:25 },{ name:'成果汇报展示', weight:20 },{ name:'演练组织指挥', weight:25 },{ name:'跨部门协调沟通', weight:15 },{ name:'持续改进优化', weight:15 }]
 const groups = ['揽星组','御风组','巡天组','逐日组','凌云组','长空组']
 const groups2 = [{ name:'揽星组', design:45, pres:36, chal:8, total:89 },{ name:'御风组', design:42, pres:37, chal:7, total:86 },{ name:'巡天组', design:44, pres:35, chal:9, total:88 },{ name:'逐日组', design:38, pres:32, chal:6, total:76 }]
+const phase1Groups = ref([
+  { name:'揽星组', design:0, pres:0, chal:0, total:0 },
+  { name:'御风组', design:0, pres:0, chal:0, total:0 }
+])
+const phase1GroupsTarget = [
+  { name:'揽星组', design:46, pres:36, chal:8, total:90 },
+  { name:'御风组', design:42, pres:37, chal:7, total:86 }
+]
+const phase1PeerData = ref([
+  { group:'揽星组', val:0 },
+  { group:'御风组', val:0 }
+])
+const phase1PeerDataTarget = [
+  { group:'揽星组', val:5 },
+  { group:'御风组', val:5 }
+]
+const demoRunning = ref(false)
+const demoDone = ref(false)
+const aiLogs = ref([])
+const aiLogsFull = [
+  { time:'14:32:05', text:'揽星组企业导师评分录入成功：方案设计46分' },
+  { time:'14:32:08', text:'揽星组企业导师评分录入成功：汇报展示36分' },
+  { time:'14:32:11', text:'揽星组企业导师评分录入成功：应对质疑8分' },
+  { time:'14:32:12', text:'AI雷达图更新：揽星组综合方案设计能力+46分' },
+  { time:'14:35:22', text:'御风组企业导师评分录入成功：方案设计42分' },
+  { time:'14:35:25', text:'御风组企业导师评分录入成功：汇报展示37分' },
+  { time:'14:35:28', text:'御风组企业导师评分录入成功：应对质疑7分' },
+  { time:'14:35:30', text:'AI雷达对比雷达图生成完毕' },
+  { time:'14:38:15', text:'互评环节：揽星组点评御风组+5分' },
+  { time:'14:38:18', text:'互评环节：御风组点评揽星组+5分' },
+  { time:'14:38:20', text:'环节一数据采集完成，热力图刷新中...' }
+]
+
+function resetDemo() {
+  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0 }))
+  phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
+  aiLogs.value = []
+  demoDone.value = false
+  renderPhaseCharts()
+}
+
+function runDemo() {
+  if (demoRunning.value) return
+  demoRunning.value = true
+  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0 }))
+  phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
+  aiLogs.value = []
+  renderPhaseCharts()
+  setTimeout(() => {
+    animateGroups()
+    animatePeer()
+    animateLogs()
+  }, 2000)
+}
+
+function animateGroups() {
+  const steps = 28
+  const targets = phase1GroupsTarget
+  const groupAnim = (gi, field) => {
+    const target = targets[gi][field]
+    let step = 0
+    const interval = setInterval(() => {
+      step++
+      phase1Groups.value[gi][field] = Math.round(target * step / steps)
+      if (step >= steps) {
+        phase1Groups.value[gi][field] = target
+        clearInterval(interval)
+      }
+    }, 30)
+  }
+  groupAnim(0, 'design')
+  groupAnim(0, 'pres')
+  groupAnim(0, 'chal')
+  setTimeout(() => groupAnim(0, 'total'), 400)
+  groupAnim(1, 'design')
+  groupAnim(1, 'pres')
+  groupAnim(1, 'chal')
+  setTimeout(() => groupAnim(1, 'total'), 400)
+  setTimeout(() => {
+    renderPhaseCharts()
+  }, 900)
+}
+
+function animatePeer() {
+  setTimeout(() => {
+    phase1PeerData.value[0].val = phase1PeerDataTarget[0].val
+    renderPhaseCharts()
+  }, 800)
+  setTimeout(() => {
+    phase1PeerData.value[1].val = phase1PeerDataTarget[1].val
+    renderPhaseCharts()
+    setTimeout(() => {
+      demoRunning.value = false
+      demoDone.value = true
+    }, 300)
+  }, 1600)
+}
+
+function animateLogs() {
+  aiLogs.value = []
+  aiLogsFull.forEach((l, i) => {
+    setTimeout(() => {
+      aiLogs.value.push({ time:l.time, text:l.text })
+    }, 500 + i * 500)
+  })
+}
 const capabilities = reactive([
   { key:'design', name:'综合方案设计', score:77, weight:25, indicators:['方案逻辑完整性','安全冗余量化','航线规划科学性','载重配合理性'], trend:[60,65,70,75,77] },
   { key:'present', name:'成果汇报展示', score:75, weight:20, indicators:['表达清晰度','数据准确','PPT设计','时间控制'], trend:[55,60,68,72,75] },
@@ -147,7 +267,6 @@ const awards = [
 ]
 const marqueeLines = ['揽星组得分已录入，班级能力雷达图更新中……','当前最弱能力点：持续改进优化（68分）','御风组"成果汇报展示"得分37分','工单分析完毕，巡天组应急决策能力88分领先','AI助教小翼在线 · 数据采集正常','五维雷达图实时刷新中……']
 const peerLogs = [{ time:'14:38:15', text:'揽星组点评御风组 +5分' },{ time:'14:38:18', text:'御风组点评揽星组 +5分' },{ time:'14:38:20', text:'环节一数据采集完成，热力图刷新中...' }]
-const aiLogs = [{ time:'14:32:05', text:'揽星组企业导师评分录入成功：方案设计45分' },{ time:'14:32:08', text:'揽星组企业导师评分录入成功：汇报展示36分' },{ time:'14:32:11', text:'揽星组企业导师评分录入成功：应对质疑8分' },{ time:'14:32:12', text:'AI雷达图更新：揽星组综合方案设计能力+45分' },{ time:'14:35:22', text:'御风组企业导师评分录入成功：方案设计42分' },{ time:'14:35:28', text:'御风组企业导师评分录入成功：应对质疑7分' }]
 const drillProgress = [{ label:'逐日组工单', v:75 },{ label:'揽星组工单', v:88 },{ label:'御风组工单', v:82 },{ label:'巡天组工单', v:92 }]
 const judges = [
   { name:'黄雅诗', group:'长空组', dims:[{label:'安全',val:31},{label:'规范',val:30},{label:'团队',val:13},{label:'改进',val:12}] },
@@ -179,13 +298,48 @@ function renderPhaseCharts() {
   chartInstances.forEach(c=>{try{c.dispose()}catch(e){}}); chartInstances=[]
   const dims5 = dimsLabels()
   if (phase.value === 1) {
+    const groups1 = phase1Groups.value
+    const peer1 = phase1PeerData.value
+    const hasData = demoDone.value || demoRunning.value
     const el = document.getElementById('p1Radar'); if (el) {
-      const c = echarts.init(el); chartInstances.push(c)
-      c.setOption({
-        tooltip:{}, legend:{data:groups2.map(g=>g.name), textStyle:{color:'#6b8cae', fontSize:11}, top:0},
-        radar:{indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#8ab4d0', fontSize:9}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.05)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.15)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.12)'}} },
-        series:[{ type:'radar', data: groups2.map(g=>({ value:personalRadar[g.name]||[70,65,80,75,70], name:g.name, lineStyle:{width:2}, areaStyle:{opacity:0.2}, itemStyle:{symbol:'circle', symbolSize:6} })) }]
-      })
+      if (!hasData) { el.innerHTML = ''; }
+      else {
+        const c = echarts.init(el); chartInstances.push(c)
+        c.setOption({
+          animationDuration: 1200, animationEasing: 'cubicOut',
+          tooltip:{}, legend:{data:groups1.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:14}, bottom:4, left:'center', itemWidth:18, itemHeight:10},
+          radar:{indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'76%', center:['50%','42%'], axisName:{color:'#e0f5ff', fontSize:13, fontWeight:'bold'}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.05)','rgba(0,168,255,0.1)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}} },
+          series:[{ type:'radar', animationDuration:1500, data: groups1.map(g=>({
+            value:[
+              Math.min(100, Math.round(g.design * 1.4 + 10)),
+              Math.min(100, Math.round(g.pres * 1.6 + 10)),
+              Math.min(100, Math.round(g.chal * 5 + 35)),
+              g.total,
+              Math.min(100, Math.round((g.design + g.pres) * 0.7 + 25))
+            ],
+            name:g.name, lineStyle:{width:3}, areaStyle:{opacity:0.22}, itemStyle:{symbol:'circle', symbolSize:8}
+          })) }],
+          color:['#00a8ff','#00dc82']
+        })
+      }
+    }
+    const peer = document.getElementById('p1PeerBar'); if (peer) {
+      if (!hasData) { peer.innerHTML = ''; }
+      else {
+        const c = echarts.init(peer); chartInstances.push(c)
+        c.setOption({
+          animationDuration: 1200, animationEasing: 'cubicOut',
+          tooltip:{trigger:'axis'},
+          grid:{left:40,right:20,top:40,bottom:24},
+          xAxis:{type:'category', data:peer1.map(p=>p.group), axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:13}},
+          yAxis:{type:'value', max:10, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#5a7a9a', fontSize:11}},
+          series:[{ type:'bar', animationDuration:1500, data: peer1.map(p=>({
+            value:p.val,
+            itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#ff9a3a'},{offset:1,color:'#c76400'}]},borderRadius:[6,6,0,0]},
+            label:{show:p.val>0, position:'top', formatter:'+{c}分', color:'#ff9a3a', fontSize:13, fontWeight:'bold'}
+          })), barWidth:42 }]
+        })
+      }
     }
   } else if (phase.value === 2) {
     const tr = document.getElementById('p2Trend'); if (tr) {
@@ -341,6 +495,17 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .header-right { display:flex; align-items:center; gap:10px; }
 .heatmap-btn { padding:10px 16px; border-radius:8px; font-size:14px; text-decoration:none; background:rgba(0,168,255,0.1); color:#00dc82; border:1px solid rgba(0,220,180,0.25); transition:all 0.3s; }
 .heatmap-btn:hover { background:rgba(0,220,180,0.15); box-shadow:0 0 12px rgba(0,220,130,0.3); }
+.demo-btn { padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600; background:linear-gradient(135deg,rgba(0,220,180,0.2),rgba(0,168,255,0.2)); color:#00dc82; border:1px solid rgba(0,220,180,0.35); cursor:pointer; transition:all 0.3s; letter-spacing:1px; }
+.demo-btn:hover:not(:disabled) { background:linear-gradient(135deg,rgba(0,220,180,0.35),rgba(0,168,255,0.35)); box-shadow:0 0 14px rgba(0,220,130,0.4); transform:translateY(-1px); }
+.demo-btn:disabled { opacity:0.6; cursor:not-allowed; }
+.demo-btn.demo-running { background:linear-gradient(135deg,rgba(255,184,77,0.25),rgba(255,107,107,0.2)); color:#ffd479; border-color:rgba(255,212,121,0.4); animation:demoPulse 1.2s ease-in-out infinite; }
+.demo-btn.demo-reset { background:linear-gradient(135deg,rgba(106,90,205,0.2),rgba(0,168,255,0.2)); color:#a5c9ff; border-color:rgba(165,201,255,0.35); }
+.demo-btn.demo-reset:hover:not(:disabled) { background:linear-gradient(135deg,rgba(106,90,205,0.35),rgba(0,168,255,0.35)); box-shadow:0 0 14px rgba(0,168,255,0.4); }
+
+@keyframes demoPulse { 0%,100%{ box-shadow:0 0 0 rgba(255,212,121,0); } 50%{ box-shadow:0 0 18px rgba(255,212,121,0.55); } }
+
+.back-teach-btn { padding:4px 10px; font-size:12px; color:#6fa8c8; background:rgba(0,168,255,0.06); border:1px solid rgba(0,168,255,0.15); border-radius:6px; }
+.back-teach-btn:hover { color:#a6d5f0; background:rgba(0,168,255,0.12); border-color:rgba(0,168,255,0.25); }
 
 .main-container { display:flex; flex:1; overflow:hidden; padding:12px; gap:12px; }
 .sidebar { width:280px; min-width:280px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; }
@@ -394,12 +559,26 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .center-panel { align-items:center; justify-content:center; }
 .chart-box { flex:1; min-height:240px; width:100%; }
 
-.score-cards { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
-.score-card { flex:1; min-width:140px; padding:14px 16px; border-radius:10px; background:linear-gradient(135deg,rgba(0,168,255,0.06),rgba(0,100,200,0.03)); border:1px solid rgba(0,168,255,0.12); text-align:center; transition:all 0.3s; }
-.score-card:hover { transform:translateY(-2px); border-color:rgba(0,168,255,0.3); }
-.score-card .sc-label { font-size:17px; color:#6b8cae; margin-bottom:8px; }
-.score-card .sc-value { font-size:36px; font-weight:700; color:#00dc82; }
-.score-card .sc-sub { font-size:15px; color:#4a6a8a; margin-top:4px; }
+.p1-radar-panel { padding: 8px 16px 4px !important; }
+.p1-radar-panel .panel-title { margin-bottom: 4px; font-size:18px; }
+.p1-radar-panel .chart-box { min-height:320px; }
+
+.score-group-blocks { display:flex; flex-direction:column; gap:14px; }
+.score-group-block { padding:14px 16px; border-radius:10px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.1); }
+.sg-label { font-size:17px; color:#00dc82; font-weight:600; margin-bottom:10px; letter-spacing:1px; }
+.sg-sub-blocks { display:flex; gap:10px; }
+.sg-sub { flex:1; padding:12px 10px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(0,168,255,0.08); text-align:center; }
+.sg-sub.total { background:rgba(0,220,130,0.06); border-color:rgba(0,220,130,0.18); }
+.sg-sub-label { font-size:13px; color:#5a7a9a; margin-bottom:6px; letter-spacing:0.5px; }
+.sg-sub-value { font-size:30px; font-weight:700; color:#00dc82; line-height:1.1; }
+.sg-sub-value.big { font-size:36px; }
+.sg-sub-unit { font-size:12px; color:#4a6a8a; margin-top:2px; }
+.sg-mini-bars { margin-top:12px; display:flex; flex-direction:column; gap:6px; padding-top:10px; border-top:1px dashed rgba(0,168,255,0.15); }
+.sg-mini-bar-wrap { display:flex; align-items:center; gap:10px; }
+.sg-mini-bar-label { font-size:14px; color:#6b8cae; width:54px; flex-shrink:0; }
+.sg-mini-bar { flex:1; height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+.sg-mini-bar-fill { height:100%; border-radius:4px; transition:width 1s ease; position:relative; }
+.sg-mini-bar-fill::after { content:''; position:absolute; right:0; top:0; bottom:0; width:14px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35)); }
 
 .teacher-score-list, .judge-list { display:flex; flex-direction:column; gap:8px; }
 .ts-item, .judge-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:8px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.08); transition:all 0.3s; }
