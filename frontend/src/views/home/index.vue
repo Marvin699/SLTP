@@ -48,7 +48,7 @@
           <div class="agent-card agent-blue" @click="goToAgent('/agent/path-planning')">
             <div class="card-content">
               <div class="card-left">
-                <h3 class="agent-title">路径规划智能体</h3>
+                <h3 class="agent-title">路径规划</h3>
                 <p class="agent-subtitle">智能规划最优运输路线</p>
                 <ul class="feature-list">
                   <li><span class="dot blue"></span>多目标路径优化</li>
@@ -112,7 +112,7 @@
           <div class="agent-card agent-purple" @click="goToAgent('/agent/packing')">
             <div class="card-content">
               <div class="card-left">
-                <h3 class="agent-title">装箱评价智能体</h3>
+                <h3 class="agent-title">装箱评价</h3>
                 <p class="agent-subtitle">智能装载评估与优化</p>
                 <ul class="feature-list">
                   <li><span class="dot purple"></span>装载空间优化</li>
@@ -184,7 +184,7 @@
           <div class="agent-card agent-green" @click="goToAgent('/agent/teaching-graph')">
             <div class="card-content">
               <div class="card-left">
-                <h3 class="agent-title">课程图谱智能体</h3>
+                <h3 class="agent-title">课程图谱</h3>
             <p class="agent-subtitle">知识图谱与能力分析</p>
                 <ul class="feature-list">
                   <li><span class="dot green"></span>知识图谱可视化</li>

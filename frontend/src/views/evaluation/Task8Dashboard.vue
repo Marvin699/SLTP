@@ -25,23 +25,55 @@
 
     <div class="main-container">
       <aside class="sidebar">
-        <div class="section-title">核心能力达成度</div>
+        <div class="sidebar-head">📚 任务8 · 课程图谱</div>
+
+        <div class="section-title">🧠 技能点 · 核心能力</div>
         <div class="capability-list">
-          <div v-for="cap in capabilities" :key="cap.key" class="glass capability-card" :class="{ weak: cap.score < 70 }">
+          <div v-for="cap in capabilities" :key="cap.key" class="glass capability-card" :class="{ weak: cap.score>0 && cap.score < 70 }">
             <div class="cap-header">
               <span class="cap-name">{{ cap.name }}</span>
-              <span class="cap-score" :class="{ low: cap.score < 70 }">{{ cap.score }}%</span>
+              <span class="cap-score" :class="{ low: cap.score>0 && cap.score < 70 }">{{ cap.score>0 ? cap.score+'%' : '—' }}</span>
             </div>
             <div class="cap-progress">
-              <div class="cap-progress-bar" :class="cap.score < 70 ? 'cap-bar-red' : 'cap-bar-green'" :style="{ width: cap.score + '%' }"></div>
+              <div class="cap-progress-bar" :class="cap.score>=70 ? 'cap-bar-green' : (cap.score>0?'cap-bar-red':'')" :style="{ width: cap.score+'%' }"></div>
             </div>
             <div class="cap-footer">
               <span>权重 {{ cap.weight }}%</span>
-              <span>{{ cap.score < 70 ? '⚠ 需提升' : '✓ 正常' }}</span>
+              <span v-if="cap.score===0">等待达成度</span>
+              <span v-else>{{ cap.score < 70 ? '⚠ 需提升' : '✓ 已达成' }}</span>
             </div>
           </div>
         </div>
-        <div class="section-title" style="margin-top:8px;">环节进度</div>
+
+        <div class="section-title" style="margin-top:6px;">📘 知识点 · 任务8覆盖</div>
+        <div class="kp-list">
+          <div v-for="kp in knowledgePoints" :key="kp.key" class="glass kp-item" :class="{ done: kp.mastered, learning: kp.mastered===null }">
+            <span class="kp-dot">{{ kp.mastered===true ? '✓' : (kp.mastered===null ? '○' : '✗') }}</span>
+            <span class="kp-name">{{ kp.name }}</span>
+            <span class="kp-tag" v-if="kp.mastered===true">已掌握</span>
+            <span class="kp-tag kp-tag-gray" v-else-if="kp.mastered===null">学习中</span>
+            <span class="kp-tag kp-tag-red" v-else>需加强</span>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:6px;">🎯 素养点 · 核心价值</div>
+        <div class="capability-list">
+          <div v-for="lit in literacyPoints" :key="lit.key" class="glass capability-card" :class="{ weak: lit.score>0 && lit.score < 70 }">
+            <div class="cap-header">
+              <span class="cap-name">{{ lit.name }}</span>
+              <span class="cap-score" :class="{ low: lit.score>0 && lit.score < 70 }">{{ lit.score>0 ? lit.score+'%' : '—' }}</span>
+            </div>
+            <div class="cap-progress">
+              <div class="cap-progress-bar" :class="lit.score>=70 ? 'cap-bar-green' : (lit.score>0?'cap-bar-red':'')" :style="{ width: lit.score+'%' }"></div>
+            </div>
+            <div class="cap-footer">
+              <span v-if="lit.score===0">环节结束后生成</span>
+              <span v-else>{{ lit.score < 70 ? '⚠ 需提升' : '✓ 已达成' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:6px;">环节进度</div>
         <div class="phase-track">
           <div class="phase-track-fill" :style="{width: phaseProgress + '%'}"></div>
           <div class="phase-track-text">环节{{ phase }}/4 · {{ phaseNameMap[phase] }}</div>
@@ -179,19 +211,28 @@ const aiLogsFull = [
 ]
 
 function resetDemo() {
+  _clearAnim()
   phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0 }))
   phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
   aiLogs.value = []
   demoDone.value = false
+  demoRunning.value = false
+  capabilities.forEach(c => { c.score = 0 })
+  knowledgePoints.forEach(k => { k.mastered = null })
+  literacyPoints.forEach(l => { l.score = 0 })
   renderPhaseCharts()
 }
 
 function runDemo() {
   if (demoRunning.value) return
+  _clearAnim()
   demoRunning.value = true
   phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0 }))
   phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
   aiLogs.value = []
+  capabilities.forEach(c => { c.score = 0 })
+  knowledgePoints.forEach(k => { k.mastered = null })
+  literacyPoints.forEach(l => { l.score = 0 })
   renderPhaseCharts()
   setTimeout(() => {
     animateGroups()
@@ -206,12 +247,11 @@ function animateGroups() {
   const groupAnim = (gi, field) => {
     const target = targets[gi][field]
     let step = 0
-    const interval = setInterval(() => {
+    _animInterval(() => {
       step++
       phase1Groups.value[gi][field] = Math.round(target * step / steps)
       if (step >= steps) {
         phase1Groups.value[gi][field] = target
-        clearInterval(interval)
       }
     }, 30)
   }
@@ -236,11 +276,39 @@ function animatePeer() {
   setTimeout(() => {
     phase1PeerData.value[1].val = phase1PeerDataTarget[1].val
     renderPhaseCharts()
+  }, 1600)
+  setTimeout(() => {
+    const capTargets = [77, 75, 82, 79, 68]
+    capabilities.forEach((c, i) => {
+      let step = 0, steps = 20, t = capTargets[i]
+      _animInterval(() => {
+        step++
+        c.score = Math.round(t * step / steps)
+        if (step >= steps) { c.score = t }
+      }, 30)
+    })
+    knowledgePoints[0].mastered = true
+    knowledgePoints[1].mastered = true
+    knowledgePoints[6].mastered = true
+    knowledgePoints[7].mastered = true
+    knowledgePoints[2].mastered = true
+    knowledgePoints[3].mastered = false
+    knowledgePoints[4].mastered = false
+    knowledgePoints[5].mastered = false
+    const litTargets = [82, 78, 85, 68, 80]
+    literacyPoints.forEach((l, i) => {
+      let step = 0, steps = 20, t = litTargets[i]
+      _animInterval(() => {
+        step++
+        l.score = Math.round(t * step / steps)
+        if (step >= steps) { l.score = t }
+      }, 30)
+    })
     setTimeout(() => {
       demoRunning.value = false
       demoDone.value = true
-    }, 300)
-  }, 1600)
+    }, 700)
+  }, 1900)
 }
 
 function animateLogs() {
@@ -252,11 +320,30 @@ function animateLogs() {
   })
 }
 const capabilities = reactive([
-  { key:'design', name:'综合方案设计', score:77, weight:25, indicators:['方案逻辑完整性','安全冗余量化','航线规划科学性','载重配合理性'], trend:[60,65,70,75,77] },
-  { key:'present', name:'成果汇报展示', score:75, weight:20, indicators:['表达清晰度','数据准确','PPT设计','时间控制'], trend:[55,60,68,72,75] },
-  { key:'drillCmd', name:'演练组织指挥', score:82, weight:25, indicators:['决策速度','工单三要素完整','应急流程规范','资源调配合理'], trend:[65,70,74,79,82] },
-  { key:'comm', name:'跨部门协调沟通', score:79, weight:15, indicators:['信息传递准确性','角色分工合理性','冲突解决效率','团队协作默契'], trend:[62,66,70,75,79] },
-  { key:'improve', name:'持续改进优化', score:68, weight:15, indicators:['改进清单具体性','优化措施可执行','反思深度','迭代意识'], trend:[45,48,52,58,68], weak:true }
+  { key:'design', name:'综合方案设计', score:0, weight:25, indicators:['方案逻辑完整性','安全冗余量化','航线规划科学性','载重配合理性'] },
+  { key:'present', name:'成果汇报展示', score:0, weight:20, indicators:['表达清晰度','数据准确','PPT设计','时间控制'] },
+  { key:'drillCmd', name:'演练组织指挥', score:0, weight:25, indicators:['决策速度','工单三要素完整','应急流程规范','资源调配合理'] },
+  { key:'comm', name:'跨部门协调沟通', score:0, weight:15, indicators:['信息传递准确性','角色分工合理性','冲突解决效率','团队协作默契'] },
+  { key:'improve', name:'持续改进优化', score:0, weight:15, indicators:['改进清单具体性','优化措施可执行','反思深度','迭代意识'] }
+])
+
+const knowledgePoints = reactive([
+  { key:'terrain', name:'地形爬升公式', mastered:null },
+  { key:'wind', name:'风阻补偿系数', mastered:null },
+  { key:'route', name:'动态航程约束模型', mastered:null },
+  { key:'rfid', name:'RFID标识规范', mastered:null },
+  { key:'battery', name:'低温锂电池放电特性', mastered:null },
+  { key:'dualCtrl', name:'电量双控策略', mastered:null },
+  { key:'ticket', name:'工单三要素', mastered:null },
+  { key:'load', name:'无人机载重计算', mastered:null }
+])
+
+const literacyPoints = reactive([
+  { key:'safety', name:'安全意识', score:0, weight:20 },
+  { key:'team', name:'团队协作', score:0, weight:20 },
+  { key:'decision', name:'应急决策', score:0, weight:20 },
+  { key:'reflect', name:'反思改进', score:0, weight:20 },
+  { key:'respons', name:'责任担当', score:0, weight:20 }
 ])
 const personalRadar = { '揽星组':[45,36,55,48,52], '御风组':[42,37,58,55,50], '巡天组':[40,34,60,50,54], '逐日组':[38,32,50,45,48], '凌云组':[41,35,52,47,50], '长空组':[39,33,54,49,51] }
 const awards = [
@@ -294,6 +381,10 @@ function addPromise() { const t = promiseText.value.trim(); if (!t) { promiseTex
 function dimsLabels() { return ['综合方案设计','成果汇报展示','演练组织指挥','跨部门协调沟通','持续改进优化'] }
 
 let chartInstances = []
+let _animTimers = []
+function _clearAnim() { _animTimers.forEach(t=>clearInterval(t)); _animTimers=[] }
+function _animInterval(fn, ms) { const t = setInterval(fn, ms); _animTimers.push(t); return t }
+
 function renderPhaseCharts() {
   chartInstances.forEach(c=>{try{c.dispose()}catch(e){}}); chartInstances=[]
   const dims5 = dimsLabels()
@@ -508,9 +599,10 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .back-teach-btn:hover { color:#a6d5f0; background:rgba(0,168,255,0.12); border-color:rgba(0,168,255,0.25); }
 
 .main-container { display:flex; flex:1; overflow:hidden; padding:12px; gap:12px; }
-.sidebar { width:280px; min-width:280px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; }
-.section-title { font-size:17px; color:#8ab4d0; font-weight:600; padding:2px 0 6px 10px; margin-bottom:6px; letter-spacing:1px; position:relative; }
-.section-title::before { content:''; position:absolute; left:0; top:4px; width:3px; height:14px; background:linear-gradient(180deg,#00a8ff,#00dc82); border-radius:2px; }
+.sidebar { width:280px; min-width:280px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; }
+.sidebar-head { font-size:15px; font-weight:700; color:#9cd7ff; padding:4px 10px 8px; letter-spacing:1px; border-bottom:1px solid rgba(0,168,255,0.15); margin-bottom:2px; }
+.section-title { font-size:14px; color:#8ab4d0; font-weight:600; padding:2px 0 6px 10px; margin-bottom:4px; letter-spacing:1px; position:relative; }
+.section-title::before { content:''; position:absolute; left:0; top:4px; width:3px; height:12px; background:linear-gradient(180deg,#00a8ff,#00dc82); border-radius:2px; }
 
 .t8-info { padding:12px 14px; }
 .t8-status { padding:10px 14px; display:flex; flex-direction:column; gap:8px; font-size:11px; color:#7a9ab8; }
@@ -542,6 +634,18 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .cap-bar-green { background:linear-gradient(90deg,#00a8ff,#00dc82); }
 .cap-bar-red { background:linear-gradient(90deg,#ff4444,#ff8c5a); }
 .cap-footer { display:flex; justify-content:space-between; margin-top:10px; font-size:14px; color:#6a8aaa; }
+
+.kp-list { display:flex; flex-direction:column; gap:6px; }
+.kp-item { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:12px; font-size:14px; transition:all 0.3s; background:rgba(0,24,48,0.4); border:1px solid rgba(0,168,255,0.08); }
+.kp-dot { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-size:12px; font-weight:700; flex-shrink:0; }
+.kp-item.done .kp-dot { background:rgba(0,220,130,0.15); color:#00dc82; }
+.kp-item.learning .kp-dot { background:rgba(255,170,58,0.15); color:#ffaa3a; }
+.kp-item:not(.done):not(.learning) .kp-dot { background:rgba(255,80,60,0.15); color:#ff6c48; }
+.kp-name { flex:1; color:#cfe4f8; }
+.kp-tag { font-size:12px; padding:2px 8px; border-radius:10px; background:rgba(0,220,130,0.15); color:#00dc82; }
+.kp-tag-gray { background:rgba(108,168,220,0.15); color:#6ca8dc; }
+.kp-tag-red { background:rgba(255,80,60,0.15); color:#ff8c70; }
+
 @keyframes progressGrow { from{width:0} to{width:var(--target-width,100%)} }
 @keyframes pulseScore { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
 .phase-track { position:relative; height:32px; background:#0a1530; border:1px solid rgba(0,168,255,0.1); border-radius:6px; overflow:hidden; display:flex; align-items:center; }
