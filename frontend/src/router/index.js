@@ -79,6 +79,12 @@ const routes = [
         meta: { title: '任务8 · 班级热力图' }
       },
       {
+        path: 'evaluation/task8/rate',
+        name: 'Task8Rate',
+        component: () => import('../views/evaluation/Task8Rate.vue'),
+        meta: { title: '任务8 · 电子评量表' }
+      },
+      {
         path: 'resources',
         name: 'Resources',
         component: () => import('../views/resources/index.vue'),

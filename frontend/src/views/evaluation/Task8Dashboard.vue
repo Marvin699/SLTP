@@ -17,9 +17,23 @@
       <div class="header-right">
         <el-button size="small" @click="$router.push('/evaluation')" class="back-teach-btn">← 返回</el-button>
         <router-link class="heatmap-btn" to="/evaluation/task8/heatmap">🔥 班级热力图</router-link>
-        <button v-if="!demoRunning && !demoDone" class="demo-btn" @click="runDemo">▶ 展览</button>
-        <button v-if="demoRunning" class="demo-btn demo-running" disabled>⏳ 展览中...</button>
-        <button v-if="!demoRunning && demoDone" class="demo-btn demo-reset" @click="resetDemo">↺ 重置</button>
+        <template v-if="phase === 1">
+          <button v-if="!demo1Running && !demo1Done" class="demo-btn" @click="runDemo(1)">▶ 展览</button>
+          <button v-if="demo1Running" class="demo-btn demo-running" disabled>⏳ 展览中...</button>
+          <button v-if="!demo1Running && demo1Done" class="demo-btn demo-reset" @click="resetDemo(1)">↺ 重置</button>
+        </template>
+        <template v-if="phase === 2">
+          <button v-if="!demo2Running && !demo2Done" class="demo-btn" @click="runDemo(2)">▶ 展览</button>
+          <button v-if="demo2Running" class="demo-btn demo-running" disabled>⏳ 展览中...</button>
+          <button v-if="!demo2Running && demo2Done" class="demo-btn demo-reset" @click="resetDemo(2)">↺ 重置</button>
+        </template>
+        <template v-if="phase === 3">
+          <button v-if="!demo3Running && !demo3Done" class="demo-btn" @click="runDemo(3)">▶ 展览</button>
+          <button v-if="demo3Running" class="demo-btn demo-running" disabled>⏳ 展览中...</button>
+          <button v-if="!demo3Running && demo3Done" class="demo-btn demo-reset" @click="resetDemo(3)">↺ 重置</button>
+        </template>
+        <template v-if="phase === 4">
+        </template>
       </div>
     </header>
 
@@ -135,7 +149,26 @@
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">🔍</span>能力观测表得分</div><div id="p3DimChart" class="chart-box"></div></div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">📊</span>各组总分对比</div><div id="p3TotalChart" class="chart-box"></div></div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">📱</span>裁判组实时评分</div><div class="judge-list"><div class="judge-item" v-for="j in judges" :key="j.name"><div><div class="judge-name">{{ j.name }}（裁判）</div><div class="judge-obj">评分对象：{{ j.group }}</div></div><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="ts-tag" v-for="d in j.dims" :key="d.label">{{ d.label }} {{ d.val }}</span></div></div></div></div>
-          <div class="glass chart-panel center-panel"><div class="panel-title"><span class="icon">📲</span>电子自评量表</div><div class="qr-wrap"><div class="qr-box"><div class="qr-inner"><div v-for="row in 25" :key="row" class="qr-row"><div v-for="c in 25" :key="c" class="qr-cell" :class="{on:qrSeed[row*25+c]}"></div></div></div><div class="qr-finder tl"></div><div class="qr-finder tr"></div><div class="qr-finder bl"></div></div><div class="qr-hint">扫码填写电子自评量表<br><span>自我能力打分 · 最大收获 · 改进承诺</span></div></div></div>
+          <div class="glass chart-panel center-panel"><div class="panel-title"><span class="icon">📲</span>电子评量表 · 飞行演练</div>
+            <div class="rate-qr-wrap">
+              <div class="qr-box" @click="rateQrEnlarged=true">
+                <img :src="rateQrUrl||''" style="width:100%;height:100%;" alt="扫码" />
+              </div>
+              <div class="qr-hint">扫码进入 · 可在手机端切换三组评分（安全·规划·团队·改进）</div>
+              <div class="rq-link" @click="copyRateLink()" :title="'点击复制'">{{ rateLink }}</div>
+              <div class="rq-btn-row">
+                <button class="rate-meta-btn" @click="refreshRateQr">🔄 更新二维码</button>
+                <button class="rate-meta-btn rate-clear-btn" @click="resetAllRatings">🗑️ 清零所有评分</button>
+              </div>
+              <div class="rq-stats">
+                <div class="rq-stat" v-for="gid in RATE_GIDS" :key="gid">
+                  <div class="rq-stat-name">{{ GROUP_KEYS[gid] }}</div>
+                  <div class="rq-stat-num">{{ rateLatest[gid].total || '—' }}<span v-if="rateLatest[gid].total">分</span></div>
+                  <div class="rq-stat-meta">{{ rateLatest[gid].count || 0 }} 人 · 电子评量表</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-if="phase===4" class="content-grid phase4-grid">
@@ -166,12 +199,67 @@
     <div class="status-bar"><div class="status-left"><span id="clock">{{ clock }}</span><span>环节 {{ phase }}/4</span><span>{{ phaseNameMap[phase] }}</span></div><div>智慧低空应急运输教学平台 v2.0 · 数据实时同步</div></div>
 
     <div class="modal-overlay" :class="{show: showModal}" @click.self="showModal=false"><div class="modal-content"><div class="modal-header"><div class="modal-title">{{ modalTitle }}</div><button class="modal-close" @click="showModal=false">&times;</button></div><div class="modal-body"><div class="modal-layout"><div class="modal-chart"><div id="modalRadar" style="width:100%;height:260px;"></div><div class="modal-compare"><div class="compare-label">班级均值 · {{ classAvgScore }}</div><div class="progress-track" style="height:10px;"><div class="progress-fill cap-bar-blue" :style="{width:classAvgScore+'%'}"></div></div><div class="compare-label">本次得分 · {{ modalWeightedScore }}</div><div class="progress-track" style="height:12px;"><div class="progress-fill cap-bar-green" :style="{width:modalWeightedScore+'%'}"></div></div></div></div><div class="modal-info"><div class="modal-score-card"><div class="modal-score-sub">加权综合得分</div><div class="modal-score">{{ modalWeightedScore }}</div><div class="modal-badge" :class="modalWeightedScore>=85?'excellent':modalWeightedScore>=75?'good':modalWeightedScore>=60?'mid':'low'">{{ modalWeightedScore>=85?'优秀':modalWeightedScore>=75?'良好':modalWeightedScore>=60?'合格':'待提升' }}</div></div><div style="font-size:12px;color:#7a9ab8;margin:8px 0 4px;">五维得分明细</div><div v-for="(d,i) in modalDims" :key="d.name" class="modal-dim-row"><span><em>{{ d.weight }}%</em>{{ d.name }}</span><span :class="modalData[i]>=70?'ok':'warn'">{{ modalData[i] }}</span></div><div class="modal-tip">💡 权重：综合25% · 汇报20% · 演练25% · 沟通15% · 改进15%</div></div></div></div></div></div>
+
+    <div v-if="rateQrEnlarged" class="rate-enlarge-mask" @click.self="rateQrEnlarged = false">
+      <div class="rate-qr-box"><img :src="rateQrUrl||''" alt="扫码" /></div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, watch, computed, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import QRCode from 'qrcode'
+
+const GROUP_KEYS = { 1:'揽星组', 2:'御风组', 3:'巡天组', 4:'逐日组', 5:'凌云组', 6:'长空组' }
+const RATE_GIDS = [1, 3, 6]
+const JUDGE_MOCK_TOTAL = { 1: 87, 3: 93, 6: 86 }
+const JUDGE_MOCK_COUNT = { 1: 5, 3: 6, 6: 4 }
+const RATE_BASE = (location.hostname || 'localhost') + ':8000'
+const rateVersion = ref(Date.now())
+const rateLatest = reactive({
+  1:{group_id:1,group_name:'揽星组',total:0,dims:[],count:0,updated_at:0},
+  2:{group_id:2,group_name:'御风组',total:0,dims:[],count:0,updated_at:0},
+  3:{group_id:3,group_name:'巡天组',total:0,dims:[],count:0,updated_at:0},
+  4:{group_id:4,group_name:'逐日组',total:0,dims:[],count:0,updated_at:0},
+  5:{group_id:5,group_name:'凌云组',total:0,dims:[],count:0,updated_at:0},
+  6:{group_id:6,group_name:'长空组',total:0,dims:[],count:0,updated_at:0},
+})
+const rateQrUrl = ref('')
+const rateLink = ref('')
+const rateQrEnlarged = ref(false)
+
+async function _refreshQr() {
+  const url = `${location.protocol}//${location.host}/evaluation/task8/rate?v=${rateVersion.value}`
+  rateLink.value = url
+  try {
+    rateQrUrl.value = await QRCode.toDataURL(url, { width: 280, margin: 1, color:{ dark:'#0a1628', light:'#ffffff' } })
+  } catch(e) { rateQrUrl.value = '' }
+}
+function refreshRateQr() { rateVersion.value = Date.now(); _refreshQr() }
+function copyRateLink() {
+  if (navigator.clipboard) navigator.clipboard.writeText(rateLink.value||'').catch(()=>{})
+  else { const ta = document.createElement('textarea'); ta.value = rateLink.value||''; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta) }
+}
+async function resetAllRatings() {
+  try { await fetch(`${location.protocol}//${RATE_BASE}/api/ratings/reset_all`, { method:'POST' }) } catch(e){}
+  for (const k in rateLatest) {
+    Object.assign(rateLatest[k], { total:0, dims:[], count:0, updated_at:0 })
+  }
+  refreshRateQr()
+}
+async function _pollRatings() {
+  try {
+    const base = `${location.protocol}//${RATE_BASE}/api/ratings/latest_all`
+    const r = await fetch(base)
+    const j = await r.json()
+    for (const gid in j) {
+      if (rateLatest[gid]) Object.assign(rateLatest[gid], j[gid])
+    }
+  } catch(e) {}
+}
+let _rateTimer = null
+let _rateTimer2 = null
 const phase = ref(1)
 const phaseProgress = computed(() => phase.value * 25)
 const clock = ref('')
@@ -202,8 +290,12 @@ const phase1PeerDataTarget = [
   { group:'揽星组', val:5 },
   { group:'御风组', val:5 }
 ]
-const demoRunning = ref(false)
-const demoDone = ref(false)
+const demo1Running = ref(false)
+const demo1Done = ref(false)
+const demo2Running = ref(false)
+const demo2Done = ref(false)
+const demo3Running = ref(false)
+const demo3Done = ref(false)
 const aiLogs = ref([])
 const aiLogsFull = [
   { time:'14:32:05', text:'揽星组企业导师评分录入成功：方案设计46分' },
@@ -219,35 +311,128 @@ const aiLogsFull = [
   { time:'14:38:20', text:'环节一数据采集完成，热力图刷新中...' }
 ]
 
-function resetDemo() {
+function resetDemo(p) {
   _clearAnim()
-  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }))
-  phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
-  aiLogs.value = []
-  demoDone.value = false
-  demoRunning.value = false
-  capabilities.forEach(c => { c.score = 0 })
-  knowledgePoints.forEach(k => { k.mastered = null })
-  literacyPoints.forEach(l => { l.score = 0 })
+  if (p === 1 || p === undefined) {
+    phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }))
+    phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
+    aiLogs.value = []
+    demo1Done.value = false
+    demo1Running.value = false
+    capabilities.forEach(c => { c.score = 0 })
+    knowledgePoints.forEach(k => { k.mastered = null })
+    literacyPoints.forEach(l => { l.score = 0 })
+  }
+  if (p === 2 || p === undefined) {
+    drillProgress.value = drillProgress.value.map(d => ({ ...d, v:0 }))
+    demo2Done.value = false
+    demo2Running.value = false
+  }
+  if (p === 3 || p === undefined) {
+    demo3Done.value = false
+    demo3Running.value = false
+    judges.forEach(j => { j.dims.forEach(d => { d.val = 0 }) })
+    RATE_GIDS.forEach(gid => { rateLatest[gid].total = 0; rateLatest[gid].count = 0 })
+  }
   renderPhaseCharts()
 }
 
-function runDemo() {
-  if (demoRunning.value) return
-  _clearAnim()
-  demoRunning.value = true
-  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }))
-  phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
-  aiLogs.value = []
-  capabilities.forEach(c => { c.score = 0 })
-  knowledgePoints.forEach(k => { k.mastered = null })
-  literacyPoints.forEach(l => { l.score = 0 })
-  renderPhaseCharts()
-  setTimeout(() => {
-    animateGroups()
-    animatePeer()
-    animateLogs()
-  }, 2000)
+function runDemo(p) {
+  if (p === 1) {
+    if (demo1Running.value) return
+    _clearAnim()
+    demo1Running.value = true
+    phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }))
+    phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
+    aiLogs.value = []
+    capabilities.forEach(c => { c.score = 0 })
+    knowledgePoints.forEach(k => { k.mastered = null })
+    literacyPoints.forEach(l => { l.score = 0 })
+    renderPhaseCharts()
+    setTimeout(() => {
+      animateGroups()
+      animatePeer()
+      animateLogs()
+    }, 2000)
+  } else if (p === 2) {
+    if (demo2Running.value) return
+    _clearAnim()
+    demo2Running.value = true
+    drillProgress.value = drillProgress.value.map(d => ({ ...d, v:0 }))
+    renderPhaseCharts()
+    setTimeout(() => {
+const drillProgressTargets = [75, 88, 82, 93]
+      drillProgress.value.forEach((d, i) => {
+        const tgt = drillProgressTargets[i]
+        let step = 0, steps = 30
+        _animInterval(() => {
+          step++
+          d.v = Math.round(tgt * step / steps)
+          if (step >= steps) { d.v = tgt; renderPhaseCharts() }
+        }, 25)
+      })
+      setTimeout(() => { demo2Running.value = false; demo2Done.value = true }, 1600)
+    }, 2000)
+  } else if (p === 3) {
+    if (demo3Running.value) return
+    _clearAnim()
+    demo3Running.value = true
+    demo3Done.value = false
+    judges.forEach(j => { j.dims.forEach(d => { d.val = 0 }) })
+    RATE_GIDS.forEach(gid => { rateLatest[gid].total = 0; rateLatest[gid].count = 0 })
+    renderPhaseCharts()
+    const dimChart = chartInstances.find(c => c._phase3Type === 'dim')
+    const totalChart = chartInstances.find(c => c._phase3Type === 'total')
+    const colors3 = ['#00a8ff','#00dc82','#ffaa3a']
+    let step = 0, steps = 140
+    const tick = () => {
+      step++
+      const baseF = step / steps
+      const fluct = Math.sin(step * 0.35) * 0.08 + Math.cos(step * 0.17) * 0.05 + (Math.random() - 0.5) * 0.08
+      const f = Math.min(1, Math.max(0, baseF + fluct))
+      JUDGE_TARGETS.forEach((tgt, gi) => {
+        tgt.dims.forEach((td, di) => {
+          const cur = Math.round(td.val * f)
+          judges[gi].dims[di].val = Math.max(0, Math.min(td.val, cur))
+        })
+      })
+      RATE_GIDS.forEach((gid, i) => {
+        const totalF = Math.min(1, Math.max(0, f + Math.sin(step * 0.4 + i) * 0.05))
+        rateLatest[gid].total = Math.round([87, 93, 86][i] * totalF)
+        rateLatest[gid].count = Math.round([5, 6, 4][i] * Math.min(1, f + Math.sin(step * 0.5 + i * 2) * 0.05))
+      })
+      if (dimChart) {
+        dimChart.setOption({ series: JUDGE_TARGETS.map((tgt, idx) => ({
+          data: tgt.dims.map(d => Math.round(d.val * Math.min(1, Math.max(0, f + Math.sin(step * 0.45 + idx) * 0.05))))
+        })) }, false)
+      }
+      if (totalChart) {
+        totalChart.setOption({ series:[{
+          data: JUDGE_TARGETS.map((tgt, idx) => {
+            const dimsF = Math.min(1, Math.max(0, f + Math.sin(step * 0.4 + idx) * 0.05))
+            return {
+              value: Math.round(tgt.dims.reduce((s,d)=>s+d.val,0) * dimsF),
+              itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]}}
+            }
+          })
+        }] }, false)
+      }
+      if (step >= steps) {
+        JUDGE_TARGETS.forEach((tgt, gi) => {
+          tgt.dims.forEach((td, di) => { judges[gi].dims[di].val = td.val })
+        })
+        RATE_GIDS.forEach((gid, i) => {
+          rateLatest[gid].total = [87, 93, 86][i]
+          rateLatest[gid].count = [5, 6, 4][i]
+        })
+        if (dimChart) dimChart.setOption({ series: JUDGE_TARGETS.map(tgt => ({ data: tgt.dims.map(d => d.val) })) }, false)
+        if (totalChart) totalChart.setOption({ series:[{ data: JUDGE_TARGETS.map((tgt, idx) => ({ value: tgt.dims.reduce((s,d)=>s+d.val,0), itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]}} })) }] }, false)
+        demo3Running.value = false
+        demo3Done.value = true
+      }
+    }
+    _animInterval(tick, 80)
+  }
 }
 
 function animateGroups() {
@@ -319,8 +504,8 @@ function animatePeer() {
       }, 30)
     })
     setTimeout(() => {
-      demoRunning.value = false
-      demoDone.value = true
+      demo1Running.value = false
+      demo1Done.value = true
     }, 700)
   }, 1900)
 }
@@ -366,14 +551,18 @@ const awards = [
   { key:'apprentice', icon:'🌱', title:'领航学徒', group:'逐日组', reason:'跨部门协调沟通进步显著，课后改进承诺具体可执行', color:'#00a8ff' },
   { key:'progress', icon:'🚀', title:'进步之星', group:'御风组', reason:'成果汇报展示从课前55分提升至75分，进步达36%', color:'#c870ff' }
 ]
-const marqueeLines = ['揽星组得分已录入，班级能力雷达图更新中……','当前最弱能力点：持续改进优化（68分）','御风组"成果汇报展示"得分37分','工单分析完毕，巡天组应急决策能力88分领先','AI助教小翼在线 · 数据采集正常','五维雷达图实时刷新中……']
+const marqueeLines = ['揽星组得分已录入，班级能力雷达图更新中……','当前最弱能力点：持续改进优化（68分）','御风组"成果汇报展示"得分37分','工单分析完毕，巡天组应急决策能力93分领先','AI助教小翼在线 · 数据采集正常','五维雷达图实时刷新中……']
 const peerLogs = [{ time:'14:38:15', text:'揽星组点评御风组 +5分' },{ time:'14:38:18', text:'御风组点评揽星组 +5分' },{ time:'14:38:20', text:'环节一数据采集完成，热力图刷新中...' }]
 const drillProgress = [{ label:'逐日组工单', v:75 },{ label:'揽星组工单', v:88 },{ label:'御风组工单', v:82 },{ label:'巡天组工单', v:92 }]
-const judges = [
-  { name:'黄雅诗', group:'长空组', dims:[{label:'安全',val:31},{label:'规范',val:30},{label:'团队',val:13},{label:'改进',val:12}] },
-  { name:'黄怀理', group:'揽星组', dims:[{label:'安全',val:33},{label:'规范',val:32},{label:'团队',val:12},{label:'改进',val:10}] },
-  { name:'张静怡', group:'巡天组', dims:[{label:'安全',val:34},{label:'规范',val:28},{label:'团队',val:14},{label:'改进',val:11}] }
+const JUDGE_TARGETS = [
+  { name:'黄雅诗', group:'长空组', dims:[{label:'安全',val:31},{label:'规划',val:30},{label:'团队',val:13},{label:'改进',val:12}] },
+  { name:'黄怀理', group:'揽星组', dims:[{label:'安全',val:33},{label:'规划',val:32},{label:'团队',val:12},{label:'改进',val:10}] },
+  { name:'张静怡', group:'巡天组', dims:[{label:'安全',val:36},{label:'规划',val:30},{label:'团队',val:15},{label:'改进',val:12}] }
 ]
+const judges = reactive(JUDGE_TARGETS.map(j => ({
+  name: j.name, group: j.group,
+  dims: j.dims.map(d => ({ label: d.label, val: 0 }))
+})))
 const teacherComments = reactive([
   { name:'王 · 应急救援', role:'企业导师', color:'#00dc82', time:'14:42', group:'揽星组', text:'方案设计能考虑地形损耗，很专业！建议加入极端天气的备份航线预案。', tags:['方案设计+8','应对质疑+6','综合能力'] },
   { name:'李 · 无人机系统', role:'主讲教师', color:'#00a8ff', time:'14:45', group:'巡天组', text:'应急推演的工单三要素写得清晰，尤其是RFID标识的漏项提醒，值得全组推广。', tags:['演练组织+7','规范意识+5','亮点'] },
@@ -405,7 +594,9 @@ function renderPhaseCharts() {
   if (phase.value === 1) {
     const groups1 = phase1Groups.value
     const peer1 = phase1PeerData.value
-    const hasData = demoDone.value || demoRunning.value
+    const hasData = phase.value === 1 ? (demo1Done.value || demo1Running.value) :
+                    phase.value === 2 ? (demo2Done.value || demo2Running.value) :
+                                        (demo3Done.value || demo3Running.value)
     const el = document.getElementById('p1Radar'); if (el) {
       if (!hasData) { el.innerHTML = ''; }
       else {
@@ -464,19 +655,40 @@ function renderPhaseCharts() {
     }
   } else if (phase.value === 3) {
     const d3 = document.getElementById('p3DimChart'); if (d3) {
-      const c = echarts.init(d3); chartInstances.push(c)
-      c.setOption({ tooltip:{trigger:'axis',axisPointer:{type:'shadow'}}, legend:{data:['长空组','揽星组','巡天组'],textStyle:{color:'#6b8cae',fontSize:11},top:0},
+      const c = echarts.init(d3); c._phase3Type = 'dim'; chartInstances.push(c)
+      const dimLabels = judges[0]?.dims.map(d => d.label) || ['安全','规划','团队','改进']
+      const seriesNames = judges.map(j => j.group)
+      const colors = ['#00a8ff','#00dc82','#ffaa3a']
+      c.setOption({
+        animation: false, animationDuration: 0,
+        tooltip:{trigger:'axis',axisPointer:{type:'shadow'}}, legend:{data:seriesNames,textStyle:{color:'#6b8cae',fontSize:11},top:0},
         grid:{left:55,right:20,top:30,bottom:20},
-        xAxis:{type:'category',data:['安全性(35%)','规范性(35%)','团队配合(15%)','持续改进(15%)'],axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#5a7a9a',fontSize:10}},
-        yAxis:{type:'value',axisLine:{show:false},splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}},axisLabel:{color:'#4a6a8a',fontSize:10}},
-        series:[ {name:'长空组',type:'bar',data:[31,30,13,12],barWidth:16,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#00a8ff'},{offset:1,color:'#0066aa'}]}}}, {name:'揽星组',type:'bar',data:[33,32,12,10],barWidth:16,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#00dc82'},{offset:1,color:'#00a060'}]}}}, {name:'巡天组',type:'bar',data:[34,28,14,11],barWidth:16,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#ffaa3a'},{offset:1,color:'#cc7700'}]}}} ] })
+        xAxis:{type:'category',data:dimLabels,axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#5a7a9a',fontSize:10}},
+        yAxis:{type:'value',max:50,axisLine:{show:false},splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}},axisLabel:{color:'#4a6a8a',fontSize:10}},
+        series: judges.map((j, idx) => ({
+          name: j.group, type:'bar', data: j.dims.map(d => d.val), barWidth:16,
+          itemStyle:{ color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors[idx]},{offset:1,color:colors[idx]}]} }
+        }))
+      })
     }
     const t3 = document.getElementById('p3TotalChart'); if (t3) {
-      const c = echarts.init(t3); chartInstances.push(c)
-      c.setOption({ tooltip:{trigger:'axis'}, grid:{left:50,right:30,top:20,bottom:30},
-        xAxis:{type:'category',data:['长空组','揽星组','巡天组'],axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:12}},
+      const c = echarts.init(t3); c._phase3Type = 'total'; chartInstances.push(c)
+      const colors3 = ['#00a8ff', '#00dc82', '#ffaa3a']
+      c.setOption({
+        animation: false, animationDuration: 0,
+        tooltip:{trigger:'axis'}, grid:{left:50,right:30,top:20,bottom:30},
+        xAxis:{type:'category',data:judges.map(j=>j.group),axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:12}},
         yAxis:{type:'value',max:100,axisLine:{show:false},splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}},axisLabel:{color:'#4a6a8a',fontSize:10}},
-        series:[{ type:'bar',data:[{value:86,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#00a8ff'},{offset:1,color:'#0066aa'}]}}},{value:87,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#00dc82'},{offset:1,color:'#00a060'}]}}},{value:87,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#ffaa3a'},{offset:1,color:'#cc7700'}]}}}],barWidth:40, label:{show:true,position:'top',formatter:'{c}分',color:'#c8d4e0',fontSize:14,fontWeight:'bold'}, markLine:{silent:true,data:[{type:'average',name:'平均'}],lineStyle:{color:'rgba(0,168,255,0.3)',type:'dashed'},label:{color:'#5a7a9a',fontSize:10,formatter:'平均 {c}'}} }] })
+        series:[{ type:'bar',
+          data: judges.map((j, idx) => ({
+            value: j.dims.reduce((s,d)=>s+d.val,0),
+            itemStyle:{ color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]} }
+          })),
+          barWidth:40,
+          label:{show:true, position:'top', formatter:'{c}分', color:'#c8d4e0', fontSize:14, fontWeight:'bold'},
+          markLine:{silent:true, data:[{type:'average',name:'平均'}], lineStyle:{color:'rgba(0,168,255,0.3)',type:'dashed'}, label:{color:'#5a7a9a',fontSize:10,formatter:'平均 {c}'}}
+        }]
+      })
     }
   } else if (phase.value === 4) {
     const hm = document.getElementById('p4Heatmap')
@@ -546,20 +758,23 @@ function calcScale() {
   rootScale.value = Math.min(wScale, hScale)
   document.documentElement.style.setProperty('--root-scale', rootScale.value.toFixed(3))
 }
-let qrTimer = null
-onMounted(()=>{
+onMounted(async () => {
+  await _refreshQr()
+  _rateTimer = setInterval(_pollRatings, 2000)
   const tick = () => { const n = new Date(); clock.value = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0') }
-  tick(); setInterval(tick, 1000); renderPhaseCharts()
+  tick(); renderPhaseCharts()
   calcScale(); window.addEventListener('resize', calcScale)
-  setInterval(()=>{ capabilities.forEach(cap=>{ cap.score=Math.min(100,Math.max(0,Math.round(cap.score+(Math.random()*4-2)))) }) }, 30000)
-  qrTimer = setInterval(()=>{ Object.assign(qrSeed, genQrSeed(25)); Object.assign(bigQrSeed, genQrSeed(30)) }, 4000)
+  _rateTimer2 = setInterval(tick, 1000)
   window.addEventListener('resize', ()=>chartInstances.forEach(c=>{try{c.resize()}catch(e){}}))
 })
-onUnmounted(()=>{
+onUnmounted(() => {
   window.removeEventListener('resize', calcScale)
-  if (qrTimer) clearInterval(qrTimer)
+  if (_rateTimer) clearInterval(_rateTimer)
+  if (_rateTimer2) clearInterval(_rateTimer2)
 })
 watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
+
+
 </script>
 
 <style scoped>
@@ -836,4 +1051,20 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .bqr-stats > div { text-align:center; padding:8px 14px; border-radius:8px; background:rgba(0,168,255,0.06); border:1px solid rgba(0,168,255,0.12); }
 .bqr-num { font-size:22px; color:#00dc82; font-weight:700; margin-bottom:2px; text-shadow:0 0 12px rgba(0,220,130,0.4); }
 .bqr-stats > div div:last-child { font-size:10px; color:#5a7a9a; }
+.rate-qr-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:14px 16px 16px; }
+.rq-btn-row { display:flex; gap:8px; margin-top:2px; }
+.rq-link { width:100%; font-size:10px; color:#4a6a8a; text-align:center; word-break:break-all; line-height:1.3; padding:4px 8px; border-radius:4px; background:rgba(0,168,255,0.04); border:1px dashed rgba(0,168,255,0.18); cursor:pointer; }
+.rq-link:hover { color:#b8d4e8; background:rgba(0,168,255,0.1); }
+.rq-stats { display:flex; gap:12px; margin-top:6px; }
+.rq-stat { flex:1; padding:6px 10px; border-radius:6px; background:rgba(0,168,255,0.04); border:1px solid rgba(0,168,255,0.12); text-align:center; }
+.rq-stat-name { font-size:12px; color:#b8d4e8; font-weight:600; }
+.rq-stat-num { font-size:22px; color:#00dc82; font-weight:700; line-height:1.2; }
+.rq-stat-meta { font-size:9px; color:#5a7a9a; }
+.rate-meta-btn { font-size:11px; padding:4px 10px; border-radius:6px; background:rgba(0,168,255,0.1); color:#b8d4e8; border:1px solid rgba(0,168,255,0.25); cursor:pointer; transition:all 0.25s; }
+.rate-meta-btn:hover { background:rgba(0,168,255,0.22); color:#fff; border-color:rgba(0,220,180,0.6); }
+.rate-clear-btn { background:rgba(255,100,100,0.08); border-color:rgba(255,100,100,0.3); color:#ffcaca; }
+.rate-clear-btn:hover { background:rgba(255,80,80,0.22); color:#fff; border-color:rgba(255,100,100,0.7); }
+.rate-enlarge-mask { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.rate-enlarge-mask .rate-qr-box { width:360px; height:360px; background:#fff; padding:16px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; }
+.rate-enlarge-mask .rate-qr-box img { width:100%; height:100%; }
 </style>
