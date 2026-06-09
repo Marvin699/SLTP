@@ -531,7 +531,7 @@
                   <div class="detail-section">
                     <h4>包含知识点/技能点</h4>
                     <div class="detail-tags">
-                      <el-tag v-for="pt in selectedNode.points" :key="pt.id" size="small" :type="pt.type === 'knowledge' ? 'info' : 'success'" effect="plain">
+                      <el-tag v-for="pt in selectedNode.points" :key="pt.id" size="default" :type="pt.type === 'knowledge' ? 'info' : 'success'" effect="plain">
                         {{ pt.name }}
                       </el-tag>
                     </div>
@@ -593,7 +593,7 @@ const tabs = [
   { key: 'requirements', label: '四维要求', icon: List },
   { key: 'course', label: '课程图谱', icon: Share }
 ]
-const activeTab = ref('knowledge')
+const activeTab = ref('course')
 
 const currentTabLabel = computed(() => {
   const t = tabs.find(t => t.key === activeTab.value)
@@ -1054,7 +1054,7 @@ function initKnowledgeChart() {
       id: `cat-${cat.id}`, name: cat.name, category: ci,
       symbolSize: 40,
       itemStyle: { color: cat.color, borderColor: '#fff', borderWidth: 2, shadowBlur: 12, shadowColor: cat.color + '88' },
-      label: { fontSize: 11, color: '#fff', show: true, fontWeight: 'bold' },
+      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' },
       _type: 'categoryCenter'
     })
   })
@@ -1066,7 +1066,7 @@ function initKnowledgeChart() {
       id: n.id, name: n.name, category: catIdx,
       symbolSize: 26,
       itemStyle: { color: knowledgeCategoryColors[n.category] || '#999', opacity: 0.85 },
-      label: { fontSize: 10, color: '#ddd', show: true, position: 'right', distance: 2 },
+      label: { fontSize: 13, color: '#ddd', show: true, position: 'right', distance: 2 },
       _raw: n
     })
     // 连接到分类中心
@@ -1081,7 +1081,7 @@ function initKnowledgeChart() {
     if (nodes.find(n => n.id === l.source) && nodes.find(n => n.id === l.target)) {
       links.push({
         source: l.source, target: l.target,
-        label: { show: true, formatter: l.relation, fontSize: 8, color: '#718096' },
+        label: { show: true, formatter: l.relation, fontSize: 11, color: '#718096' },
         lineStyle: { color: '#4a6a8a', width: 2.5, curveness: 0.2, type: 'dashed' }
       })
     }
@@ -1122,7 +1122,7 @@ function initCapabilityChart() {
       id: `level-${lvl}`, name: lvl, category: li,
       symbolSize: 40,
       itemStyle: { color: levelColors[lvl], borderColor: '#fff', borderWidth: 2, shadowBlur: 12, shadowColor: levelColors[lvl] + '88' },
-      label: { fontSize: 11, color: '#fff', show: true, fontWeight: 'bold' },
+      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' },
       _type: 'levelCenter'
     })
   })
@@ -1134,7 +1134,7 @@ function initCapabilityChart() {
       category: levels.indexOf(c.level),
       symbolSize: 26,
       itemStyle: { color: levelColors[c.level] || '#999', opacity: 0.85 },
-      label: { fontSize: 10, color: '#ddd', show: true, position: 'right', distance: 2 },
+      label: { fontSize: 13, color: '#ddd', show: true, position: 'right', distance: 2 },
       _raw: c
     })
     links.push({
@@ -1185,7 +1185,7 @@ function initProblemChart() {
       id: taskId, name: p.task, category: 0,
       symbolSize: 42,
       itemStyle: { color: '#1a3a5c', borderColor: '#409eff', borderWidth: 2, shadowBlur: 12, shadowColor: 'rgba(64,158,255,0.4)' },
-      label: { fontSize: 11, color: '#fff', show: true, fontWeight: 'bold' },
+      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' },
       _type: 'taskCenter', _raw: p
     })
 
@@ -1195,7 +1195,7 @@ function initProblemChart() {
       id: problemId, name: `问题`, category: 1,
       symbolSize: 24,
       itemStyle: { color: '#e74c3c', shadowBlur: 6, shadowColor: 'rgba(231,76,60,0.3)' },
-      label: { fontSize: 9, color: '#fff', show: true },
+      label: { fontSize: 13, color: '#fff', show: true },
       _raw: p, _problemName: p.problem
     })
     links.push({
@@ -1210,7 +1210,7 @@ function initProblemChart() {
         id: analysisId, name: `分析`, category: 2,
         symbolSize: 22,
         itemStyle: { color: '#f39c12', shadowBlur: 5, shadowColor: 'rgba(243,156,18,0.3)' },
-        label: { fontSize: 9, color: '#fff', show: true },
+        label: { fontSize: 13, color: '#fff', show: true },
         _raw: analyses[i]
       })
       links.push({
@@ -1226,7 +1226,7 @@ function initProblemChart() {
         id: solutionId, name: `方案`, category: 3,
         symbolSize: 22,
         itemStyle: { color: '#2ecc71', shadowBlur: 5, shadowColor: 'rgba(46,204,113,0.3)' },
-        label: { fontSize: 9, color: '#fff', show: true },
+        label: { fontSize: 13, color: '#fff', show: true },
         _raw: solutions[i]
       })
       links.push({
@@ -1274,7 +1274,7 @@ function initIdeologicalChart() {
     id: 'center', name: '课程思政', category: -1,
     symbolSize: 48,
     itemStyle: { color: '#1a3a5c', borderColor: '#409eff', borderWidth: 2, shadowBlur: 15, shadowColor: 'rgba(64,158,255,0.4)' },
-    label: { fontSize: 13, color: '#fff', show: true, fontWeight: 'bold' }
+    label: { fontSize: 16, color: '#fff', show: true, fontWeight: 'bold' }
   })
 
   // 维度节点（中等大小）+ 元素节点（小）
@@ -1284,7 +1284,7 @@ function initIdeologicalChart() {
       id: dimId, name: dim.dimension, category: di,
       symbolSize: 36,
       itemStyle: { color: ideologicalDimColors[di], shadowBlur: 8, shadowColor: ideologicalDimColors[di] + '66' },
-      label: { fontSize: 11, color: '#fff', show: true, fontWeight: 'bold' }
+      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' }
     })
     links.push({
       source: 'center', target: dimId,
@@ -1296,7 +1296,7 @@ function initIdeologicalChart() {
         id: el.id, name: el.id, category: di,
         symbolSize: 20,
         itemStyle: { color: ideologicalDimColors[di], opacity: 0.8 },
-        label: { fontSize: 8, color: '#ddd', show: true, position: 'right', distance: 2 },
+        label: { fontSize: 12, color: '#ddd', show: true, position: 'right', distance: 2 },
         _raw: el
       })
       links.push({
@@ -1341,7 +1341,7 @@ function initCourseChart() {
     category: 0,
     symbolSize: 60,
     itemStyle: { color: '#e74c3c', shadowBlur: 25, shadowColor: 'rgba(231,76,60,0.5)' },
-    label: { fontSize: 13, fontWeight: 'bold', color: '#fff', show: true },
+    label: { fontSize: 16, fontWeight: 'bold', color: '#fff', show: true },
     _type: 'root',
     _data: currentProject.value
   })
@@ -1359,7 +1359,7 @@ function initCourseChart() {
       category: 1,
       symbolSize: 40,
       itemStyle: { color: '#e67e22', opacity, shadowBlur: visible ? 10 : 0, shadowColor: visible ? 'rgba(230,126,34,0.4)' : 'transparent' },
-      label: { fontSize: 11, fontWeight: 'bold', color: opacity === 1 ? '#fff' : 'rgba(255,255,255,0.3)', show: true },
+      label: { fontSize: 14, fontWeight: 'bold', color: opacity === 1 ? '#fff' : 'rgba(255,255,255,0.3)', show: true },
       _type: 'subProject',
       _data: sp,
       _tasks: sp.tasks || []
@@ -1383,7 +1383,7 @@ function initCourseChart() {
         category: 2,
         symbolSize: 30,
         itemStyle: { color: taskBaseColor, borderColor: taskStatusColor ? taskStatusColor : 'transparent', borderWidth: taskStatusColor ? 2 : 0, opacity: taskOpacity, shadowBlur: taskVisible ? 6 : 0, shadowColor: taskVisible ? 'rgba(243,156,18,0.3)' : 'transparent' },
-        label: { fontSize: 10, color: taskOpacity === 1 ? '#fff' : 'rgba(255,255,255,0.3)', show: true },
+        label: { fontSize: 13, color: taskOpacity === 1 ? '#fff' : 'rgba(255,255,255,0.3)', show: true },
         _type: 'task',
         _taskId: task.id,
         _parentName: sp.name,
@@ -1403,7 +1403,7 @@ function initCourseChart() {
           category: catIdx,
           symbolSize: 18,
           itemStyle: { color: ptColor, opacity: ptOpacity },
-          label: { fontSize: 9, color: '#ddd', position: 'right', distance: 3, show: ptOpacity === 1 },
+          label: { fontSize: 12, color: '#ddd', position: 'right', distance: 3, show: ptOpacity === 1 },
           _type: pt.type,
           _data: pt
         })
@@ -2156,7 +2156,7 @@ function handleTouchEnd() {
 
 /* 右侧详情面板 */
 .right-detail {
-  width: 350px;
+  width: 420px;
   flex-shrink: 0;
   background: linear-gradient(135deg, rgba(13, 33, 55, 0.9), rgba(26, 58, 92, 0.7));
   border: 1px solid rgba(64, 158, 255, 0.2);
@@ -2169,22 +2169,22 @@ function handleTouchEnd() {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 18px 20px;
+  padding: 22px 24px;
   border-bottom: 1px solid rgba(64, 158, 255, 0.15);
 }
-.detail-title-row { display: flex; flex-direction: column; gap: 8px; }
+.detail-title-row { display: flex; flex-direction: column; gap: 10px; }
 .detail-type-tag {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 5px;
-  font-size: 13px;
+  font-size: 15px;
   color: #fff;
   font-weight: 600;
 }
-.detail-header h3 { margin: 0; font-size: 18px; color: #fff; line-height: 1.4; font-weight: 600; }
+.detail-header h3 { margin: 0; font-size: 22px; color: #fff; line-height: 1.4; font-weight: 600; }
 .detail-close {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   border: 1px solid rgba(64, 158, 255, 0.2);
   background: rgba(13, 33, 55, 0.8);
@@ -2195,41 +2195,41 @@ function handleTouchEnd() {
   justify-content: center;
   transition: all 0.3s;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: 18px;
 }
 .detail-close:hover { border-color: #f56c6c; color: #f56c6c; background: rgba(245, 108, 108, 0.1); }
 .detail-body {
   flex: 1;
-  padding: 18px 20px;
+  padding: 22px 24px;
   overflow-y: auto;
 }
-.detail-section { margin-bottom: 18px; }
+.detail-section { margin-bottom: 22px; }
 .detail-section h4 {
-  font-size: 15px;
+  font-size: 18px;
   color: #c0c8d4;
-  margin: 0 0 10px;
-  padding-bottom: 8px;
+  margin: 0 0 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-weight: 500;
 }
 .detail-section p {
-  font-size: 15px;
+  font-size: 18px;
   color: #c0c8d4;
   line-height: 1.7;
   margin: 0;
 }
-.detail-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.detail-task-list { display: flex; flex-direction: column; gap: 8px; }
+.detail-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.detail-task-list { display: flex; flex-direction: column; gap: 10px; }
 .detail-task-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 15px;
+  gap: 12px;
+  font-size: 18px;
   color: #c0c8d4;
 }
 .task-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #f39c12;
   flex-shrink: 0;
@@ -2240,20 +2240,20 @@ function handleTouchEnd() {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 .detail-card .card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 .detail-card .card-icon {
-  font-size: 22px;
+  font-size: 26px;
 }
 .detail-card .card-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   color: #e2e8f0;
 }
@@ -2265,14 +2265,14 @@ function handleTouchEnd() {
 .status-radio-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .status-radio {
   display: flex;
   align-items: center;
-  height: 44px;
+  height: 50px;
   width: 100%;
-  padding: 0 14px;
+  padding: 0 16px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -2284,21 +2284,27 @@ function handleTouchEnd() {
   border-color: rgba(255, 255, 255, 0.12);
 }
 :deep(.status-radio .el-radio__input) {
-  margin-right: 8px;
+  margin-right: 10px;
 }
 :deep(.status-radio .el-radio__label) {
   color: #c0c8d4;
-  font-size: 15px;
+  font-size: 17px;
   padding-left: 2px;
   width: 100%;
+}
+:deep(.detail-tags .el-tag) {
+  font-size: 16px;
+  padding: 6px 12px;
+  height: auto;
+  line-height: 1.4;
 }
 :deep(.status-radio.el-radio) {
   margin-right: 0;
   width: 100%;
 }
 .radio-icon {
-  margin-right: 6px;
-  font-size: 16px;
+  margin-right: 8px;
+  font-size: 18px;
 }
 
 /* 智能体评价链接 */
@@ -2306,8 +2312,8 @@ function handleTouchEnd() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  margin-bottom: 8px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
   border-radius: 10px;
   background: rgba(64, 158, 255, 0.08);
   border: 1px solid rgba(64, 158, 255, 0.15);
@@ -2319,64 +2325,64 @@ function handleTouchEnd() {
   border-color: rgba(64, 158, 255, 0.3);
 }
 .eval-link-name {
-  font-size: 15px;
+  font-size: 18px;
   color: #a0c4ff;
   flex: 1;
   font-weight: 500;
 }
 .eval-link-arrow {
   color: #409eff;
-  font-size: 18px;
+  font-size: 20px;
   margin-left: 10px;
 }
 
 /* 学习路径卡片 */
 .learning-goal,
 .learning-path,
-.learning-suggestion { margin-bottom: 20px; }
+.learning-suggestion { margin-bottom: 24px; }
 .learning-goal h4,
 .learning-path h4,
 .learning-suggestion h4 {
-  font-size: 15px;
+  font-size: 18px;
   color: #c0c8d4;
-  margin: 0 0 10px;
-  padding-bottom: 8px;
+  margin: 0 0 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-weight: 500;
 }
 .learning-goal p,
 .learning-suggestion p {
-  font-size: 15px;
+  font-size: 18px;
   color: #c0c8d4;
   line-height: 1.7;
   margin: 0;
 }
-.path-steps { display: flex; flex-direction: column; gap: 12px; }
+.path-steps { display: flex; flex-direction: column; gap: 14px; }
 .path-step {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
+  gap: 14px;
+  padding: 16px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   border-left: 4px solid #409eff;
 }
 .step-num {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #409eff;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   flex-shrink: 0;
 }
 .step-content { flex: 1; }
-.step-title { font-size: 15px; color: #e2e8f0; font-weight: 600; }
-.step-desc { font-size: 14px; color: #c0c8d4; margin-top: 4px; }
+.step-title { font-size: 18px; color: #e2e8f0; font-weight: 600; }
+.step-desc { font-size: 16px; color: #c0c8d4; margin-top: 4px; }
 
 /* 右侧面板过渡 */
 .right-detail {

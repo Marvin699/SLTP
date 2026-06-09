@@ -58,17 +58,6 @@
           </div>
         </div>
 
-        <div class="section-title" style="margin-top:6px;">📘 知识点 · 任务8覆盖</div>
-        <div class="kp-list">
-          <div v-for="kp in knowledgePoints" :key="kp.key" class="glass kp-item" :class="{ done: kp.mastered, learning: kp.mastered===null }">
-            <span class="kp-dot">{{ kp.mastered===true ? '✓' : (kp.mastered===null ? '○' : '✗') }}</span>
-            <span class="kp-name">{{ kp.name }}</span>
-            <span class="kp-tag" v-if="kp.mastered===true">已掌握</span>
-            <span class="kp-tag kp-tag-gray" v-else-if="kp.mastered===null">学习中</span>
-            <span class="kp-tag kp-tag-red" v-else>需加强</span>
-          </div>
-        </div>
-
         <div class="section-title" style="margin-top:6px;">🎯 素养点 · 核心价值</div>
         <div class="capability-list">
           <div v-for="lit in literacyPoints" :key="lit.key" class="glass capability-card" :class="{ weak: lit.score>0 && lit.score < 70 }">
@@ -354,7 +343,7 @@ const phaseTipMap = { 1:'正在采集企业导师评分...', 2:'应急推演进�
 const modalTitle = ref('')
 const modalData = ref([])
 const modalWeightedScore = ref(0)
-const modalDims = [{ name:'综合方案设计', weight:25 },{ name:'成果汇报展示', weight:20 },{ name:'演练组织指挥', weight:25 },{ name:'跨部门协调沟通', weight:15 },{ name:'持续改进优化', weight:15 }]
+const modalDims = [{ name:'运输方案优化与汇报', weight:20 },{ name:'应急响应预案制定', weight:20 },{ name:'飞行前准备应急综合演练', weight:20 },{ name:'应急任务工单填写', weight:20 },{ name:'物资投送应急综合演练', weight:20 }]
 const groups = ['揽星组','御风组','巡天组','逐日组','凌云组','长空组']
 const groups2 = [{ name:'揽星组', design:45, pres:36, chal:8, total:89 },{ name:'御风组', design:42, pres:37, chal:7, total:86 },{ name:'巡天组', design:44, pres:35, chal:9, total:88 },{ name:'逐日组', design:38, pres:32, chal:6, total:76 }]
 const phase1Groups = ref([
@@ -414,12 +403,16 @@ function resetDemo(p) {
     const radarEl = document.getElementById('p2Radar'); if (radarEl) radarEl.innerHTML = ''
     demo2Done.value = false
     demo2Running.value = false
+    // 重置环节2的技能点，保留环节1的
+    capabilities.forEach(c => { if (c.phase === 2) c.score = 0 })
   }
   if (p === 3 || p === undefined) {
     demo3Done.value = false
     demo3Running.value = false
     judges.forEach(j => { j.dims.forEach(d => { d.val = 0 }) })
     RATE_GIDS.forEach(gid => { rateLatest[gid].total = 0; rateLatest[gid].count = 0 })
+    // 重置环节3的技能点，保留环节1和2的
+    capabilities.forEach(c => { if (c.phase === 3) c.score = 0 })
   }
   if (p !== 2) renderPhaseCharts()
 }
@@ -446,15 +439,20 @@ function runDemo(p) {
     _clearAnim()
     demo2Running.value = true
     demo2Done.value = false
+    // 保留环节1的技能点分数，只重置环节2和3的
+    capabilities.forEach(c => { if (c.phase !== 1) c.score = 0 })
+    renderPhaseCharts()
     animateDemo2()
   } else if (p === 3) {
     if (demo3Running.value) return
     _clearAnim()
     demo3Running.value = true
     demo3Done.value = false
+    // 保留环节1和2的技能点分数，只重置环节3的
+    capabilities.forEach(c => { if (c.phase === 3) c.score = 0 })
     judges.forEach(j => { j.dims.forEach(d => { d.val = 0 }) })
-    RATE_GIDS.forEach(gid => { rateLatest[gid].total = 0; rateLatest[gid].count = 0 })
     renderPhaseCharts()
+    RATE_GIDS.forEach(gid => { rateLatest[gid].total = 0; rateLatest[gid].count = 0 })
     const dimChart = chartInstances.find(c => c._phase3Type === 'dim')
     const totalChart = chartInstances.find(c => c._phase3Type === 'total')
     const colors3 = ['#00a8ff','#00dc82','#ffaa3a']
@@ -541,6 +539,12 @@ function runDemo(p) {
           label:{show:true, position:'top', formatter:'{c}分', color:'#c8d4e0', fontSize:14, fontWeight:'bold'},
           markLine:{silent:true, data:[{type:'average',name:'平均'}], lineStyle:{color:'rgba(0,168,255,0.3)',type:'dashed'},label:{color:'#5a7a9a',fontSize:10,formatter:'平均 {c}'}}
         }] }, false)
+        // 环节3显示应急任务工单填写（只更新环节3的技能点）
+        const capTargets3 = [0, 0, 0, 88, 0]
+        capabilities.forEach((c, i) => {
+          if (capTargets3[i] === 0) return
+          c.score = capTargets3[i]
+        })
         demo3Running.value = false
         demo3Done.value = true
       }
@@ -605,6 +609,12 @@ function animateDemo2() {
           g.score = g._score
         })
         _renderPhase2Charts(false)
+        // 环节2显示应急响应预案制定、飞行前准备应急综合演练、物资投送应急综合演练
+        const capTargets2 = [0, 82, 78, 0, 85]
+        capabilities.forEach((c, i) => {
+          if (capTargets2[i] === 0) return
+          c.score = capTargets2[i]
+        })
         phase2LogsFull.forEach((l, idx)=>{
           _animTimeout(()=>{
             phase2Logs.value.push({ time:l.time, text:l.text })
@@ -632,7 +642,7 @@ function _renderPhase2Charts(isInit) {
       _p2BarChart = echarts.init(bar)
     }
     _p2BarChart.setOption({
-      animationDuration: 900, animationEasing:'cubicOut',
+      animation: false, animationDuration: 0,
       tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
       legend:{data:['决策依据','风险对冲'], textStyle:{color:'#6b8cae', fontSize:12}, top:0, right:10, itemWidth:22, itemHeight:14},
       grid:{left:40,right:30,top:44,bottom:24},
@@ -656,7 +666,7 @@ function _renderPhase2Charts(isInit) {
     }
     const top3 = phase2Sorted.value.slice(0,3)
     _p2RadarChart.setOption({
-      animationDuration: 1200, animationEasing:'cubicOut',
+      animation: false, animationDuration: 0,
       legend:{data:top3.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:12}, bottom:2, left:'center', itemWidth:18, itemHeight:10},
       radar:{
         indicator:[
@@ -672,7 +682,7 @@ function _renderPhase2Charts(isInit) {
         axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}},
         splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}
       },
-      series:[{ type:'radar', animationDuration:1400, data: top3.map((g)=>({
+      series:[{ type:'radar', animation: false, animationDuration: 0, data: top3.map((g)=>({
         value:[
           g.cordOk?100:60,
           Math.round(g.basisPct),
@@ -706,24 +716,21 @@ function animatePeer() {
     renderPhaseCharts()
   }, 1600)
   setTimeout(() => {
-    const capTargets = [77, 75, 82, 79, 68]
+    // 环节1只显示运输方案优化与汇报
+    const capTargets = [77, 0, 0, 0, 0]
     capabilities.forEach((c, i) => {
+      if (capTargets[i] === 0) return
       let step = 0, steps = 20, t = capTargets[i]
       _animInterval(() => {
         step++
         c.score = Math.round(t * step / steps)
         if (step >= steps) { c.score = t }
-      }, 30)
+      }, 120)
     })
     knowledgePoints[0].mastered = true
     knowledgePoints[1].mastered = true
-    knowledgePoints[6].mastered = true
-    knowledgePoints[7].mastered = true
     knowledgePoints[2].mastered = true
-    knowledgePoints[3].mastered = false
-    knowledgePoints[4].mastered = false
-    knowledgePoints[5].mastered = false
-    const litTargets = [82, 78, 85, 68, 80]
+    const litTargets = [82, 80]
     literacyPoints.forEach((l, i) => {
       let step = 0, steps = 20, t = litTargets[i]
       _animInterval(() => {
@@ -748,30 +755,22 @@ function animateLogs() {
   })
 }
 const capabilities = reactive([
-  { key:'design', name:'综合方案设计', score:0, weight:25, indicators:['方案逻辑完整性','安全冗余量化','航线规划科学性','载重配合理性'] },
-  { key:'present', name:'成果汇报展示', score:0, weight:20, indicators:['表达清晰度','数据准确','PPT设计','时间控制'] },
-  { key:'drillCmd', name:'演练组织指挥', score:0, weight:25, indicators:['决策速度','工单三要素完整','应急流程规范','资源调配合理'] },
-  { key:'comm', name:'跨部门协调沟通', score:0, weight:15, indicators:['信息传递准确性','角色分工合理性','冲突解决效率','团队协作默契'] },
-  { key:'improve', name:'持续改进优化', score:0, weight:15, indicators:['改进清单具体性','优化措施可执行','反思深度','迭代意识'] }
+  { key:'design', name:'运输方案优化与汇报', score:0, weight:20, indicators:['方案逻辑完整性','AI评分复盘','企业反馈整合','汇报表达清晰度'], phase: 1 },
+  { key:'present', name:'应急响应预案制定', score:0, weight:20, indicators:['突发事件识别','处置流程规范','预案可执行性','风险缓控措施'], phase: 2 },
+  { key:'drillCmd', name:'飞行前准备应急综合演练', score:0, weight:20, indicators:['规划调整能力','突发故障应对','飞行前检查完整','决策速度'], phase: 2 },
+  { key:'comm', name:'应急任务工单填写', score:0, weight:20, indicators:['工单三要素完整','异常处置记录','决策依据清晰','信息传递准确'], phase: 3 },
+  { key:'improve', name:'物资投送应急综合演练', score:0, weight:20, indicators:['物资装载规范','航线规划合理','精准投放控制','安全裕度保障'], phase: 2 }
 ])
 
 const knowledgePoints = reactive([
-  { key:'terrain', name:'地形爬升公式', mastered:null },
-  { key:'wind', name:'风阻补偿系数', mastered:null },
-  { key:'route', name:'动态航程约束模型', mastered:null },
-  { key:'rfid', name:'RFID标识规范', mastered:null },
-  { key:'battery', name:'低温锂电池放电特性', mastered:null },
-  { key:'dualCtrl', name:'电量双控策略', mastered:null },
   { key:'ticket', name:'工单三要素', mastered:null },
-  { key:'load', name:'无人机载重计算', mastered:null }
+  { key:'team', name:'团队协作', mastered:null },
+  { key:'safety', name:'安全文化与责任担当', mastered:null }
 ])
 
 const literacyPoints = reactive([
-  { key:'safety', name:'安全意识', score:0, weight:20 },
-  { key:'team', name:'团队协作', score:0, weight:20 },
-  { key:'decision', name:'应急决策', score:0, weight:20 },
-  { key:'reflect', name:'反思改进', score:0, weight:20 },
-  { key:'respons', name:'责任担当', score:0, weight:20 }
+  { key:'team', name:'团队协作', score:0, weight:50 },
+  { key:'safety', name:'安全文化与责任担当', score:0, weight:50 }
 ])
 const personalRadar = { '揽星组':[45,36,55,48,52], '御风组':[42,37,58,55,50], '巡天组':[40,34,60,50,54], '逐日组':[38,32,50,45,48], '凌云组':[41,35,52,47,50], '长空组':[39,33,54,49,51] }
 const awards = [
@@ -874,7 +873,7 @@ const avgGrowth = computed(() => {
   return Math.round(total/count)
 })
 
-function dimsLabels() { return ['综合方案设计','成果汇报展示','演练组织指挥','跨部门协调沟通','持续改进优化'] }
+function dimsLabels() { return ['运输方案优化与汇报','应急响应预案制定','飞行前准备应急综合演练','应急任务工单填写','物资投送应急综合演练'] }
 
 let chartInstances = []
 let _animTimers = []
@@ -896,10 +895,10 @@ function renderPhaseCharts() {
       else {
         const c = echarts.init(el); chartInstances.push(c)
         c.setOption({
-          animationDuration: 1200, animationEasing: 'cubicOut',
+          animation: false, animationDuration: 0,
           tooltip:{}, legend:{data:groups1.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:14}, bottom:4, left:'center', itemWidth:18, itemHeight:10},
           radar:{indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'76%', center:['50%','42%'], axisName:{color:'#e0f5ff', fontSize:13, fontWeight:'bold'}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.05)','rgba(0,168,255,0.1)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}} },
-          series:[{ type:'radar', animationDuration:1500, data: groups1.map(g=>({
+          series:[{ type:'radar', animation: false, animationDuration: 0, data: groups1.map(g=>({
             value:[
               Math.min(100, Math.round(g.design * 1.4 + 10)),
               Math.min(100, Math.round(g.pres * 1.6 + 10)),
@@ -918,12 +917,12 @@ function renderPhaseCharts() {
       else {
         const c = echarts.init(peer); chartInstances.push(c)
         c.setOption({
-          animationDuration: 1200, animationEasing: 'cubicOut',
+          animation: false, animationDuration: 0,
           tooltip:{trigger:'axis'},
           grid:{left:40,right:20,top:40,bottom:24},
           xAxis:{type:'category', data:peer1.map(p=>p.group), axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:13}},
           yAxis:{type:'value', max:10, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#5a7a9a', fontSize:11}},
-          series:[{ type:'bar', animationDuration:1500, data: peer1.map(p=>({
+          series:[{ type:'bar', animation: false, animationDuration: 0, data: peer1.map(p=>({
             value:p.val,
             itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#ff9a3a'},{offset:1,color:'#c76400'}]},borderRadius:[6,6,0,0]},
             label:{show:p.val>0, position:'top', formatter:'+{c}分', color:'#ff9a3a', fontSize:13, fontWeight:'bold'}
@@ -959,7 +958,7 @@ function renderPhaseCharts() {
       const top3 = phase2Sorted.value.slice(0,3)
       const c = echarts.init(r); chartInstances.push(c)
       c.setOption({
-        animationDuration: 1500, animationEasing:'cubicOut',
+        animation: false, animationDuration: 0,
         legend:{data:top3.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:13}, bottom:2, left:'center', itemWidth:18, itemHeight:10},
         radar:{
           indicator:[
@@ -975,7 +974,7 @@ function renderPhaseCharts() {
           axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}},
           splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}
         },
-        series:[{ type:'radar', animationDuration:2000, data: top3.map((g,i)=>({
+        series:[{ type:'radar', animation: false, animationDuration: 0, data: top3.map((g,i)=>({
           value:[
             g.cordOk?100:60,
             Math.round(g.basisPct),
@@ -1113,7 +1112,194 @@ onUnmounted(() => {
   if (_rateTimer) clearInterval(_rateTimer)
   if (_rateTimer2) clearInterval(_rateTimer2)
 })
-watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
+watch(phase, ()=>{
+  // 切换环节时只重新渲染图表，不重置技能点分数
+  setTimeout(() => {
+    chartInstances.forEach(c=>{try{c.dispose()}catch(e){}}); chartInstances=[]
+    const dims5 = dimsLabels()
+    if (phase.value === 1) {
+      const groups1 = phase1Groups.value
+      const peer1 = phase1PeerData.value
+      const hasData = demo1Done.value || demo1Running.value
+      const el = document.getElementById('p1Radar'); if (el) {
+        if (!hasData) { el.innerHTML = ''; }
+        else {
+          const c = echarts.init(el); chartInstances.push(c)
+          c.setOption({
+            animation: false, animationDuration: 0,
+            tooltip:{}, legend:{data:groups1.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:14}, bottom:4, left:'center', itemWidth:18, itemHeight:10},
+            radar:{indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'76%', center:['50%','42%'], axisName:{color:'#e0f5ff', fontSize:13, fontWeight:'bold'}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.05)','rgba(0,168,255,0.1)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}} },
+            series:[{ type:'radar', animation: false, animationDuration: 0, data: groups1.map(g=>({
+              value:[
+                Math.min(100, Math.round(g.design * 1.4 + 10)),
+                Math.min(100, Math.round(g.pres * 1.6 + 10)),
+                Math.min(100, Math.round(g.chal * 5 + 35)),
+                g.total,
+                Math.min(100, Math.round((g.design + g.pres) * 0.7 + 25))
+              ],
+              name:g.name, lineStyle:{width:3}, areaStyle:{opacity:0.22}, itemStyle:{symbol:'circle', symbolSize:8}
+            })) }],
+            color:['#00a8ff','#00dc82']
+          })
+        }
+      }
+      const peer = document.getElementById('p1PeerBar'); if (peer) {
+        if (!hasData) { peer.innerHTML = ''; }
+        else {
+          const c = echarts.init(peer); chartInstances.push(c)
+          c.setOption({
+            animation: false, animationDuration: 0,
+            tooltip:{trigger:'axis'},
+            grid:{left:40,right:20,top:40,bottom:24},
+            xAxis:{type:'category', data:peer1.map(p=>p.group), axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:13}},
+            yAxis:{type:'value', max:10, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#5a7a9a', fontSize:11}},
+            series:[{ type:'bar', animation: false, animationDuration: 0, data: peer1.map(p=>({
+              value:p.val,
+              itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#ff9a3a'},{offset:1,color:'#c76400'}]},borderRadius:[6,6,0,0]},
+              label:{show:p.val>0, position:'top', formatter:'+{c}分', color:'#ff9a3a', fontSize:13, fontWeight:'bold'}
+            })), barWidth:42 }]
+          })
+        }
+      }
+    } else if (phase.value === 2) {
+      const bar = document.getElementById('p2CompareBar')
+      if (bar) {
+        const c = echarts.init(bar); chartInstances.push(c)
+        const names = phase2Groups.map(g=>g.name)
+        const basisVals = phase2Groups.map(g=>g.basisCount)
+        const riskVals = phase2Groups.map(g=>g.riskCount)
+        c.setOption({
+          tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+          legend:{data:['决策依据','风险对冲'], textStyle:{color:'#6b8cae', fontSize:13}, top:2, right:10, itemWidth:22, itemHeight:14},
+          grid:{left:40,right:30,top:50,bottom:28},
+          xAxis:{type:'category', data:names, axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}, axisLabel:{color:'#8ab4d0', fontSize:12}},
+          yAxis:{type:'value', max:6, axisLine:{show:false}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}}, axisLabel:{color:'#4a6a8a', fontSize:10}},
+          series:[
+            { name:'决策依据', type:'bar', data:basisVals, barWidth:20, barGap:'10%',
+              itemStyle:{color:'#00a8ff', borderRadius:[4,4,0,0]},
+              label:{show:true, position:'top', formatter:'{c}条', color:'#00a8ff', fontSize:12, fontWeight:'bold'} },
+            { name:'风险对冲', type:'bar', data:riskVals, barWidth:20,
+              itemStyle:{color:'#ffaa3a', borderRadius:[4,4,0,0]},
+              label:{show:true, position:'top', formatter:'{c}条', color:'#ffaa3a', fontSize:12, fontWeight:'bold'} }
+          ]
+        })
+      }
+      const r = document.getElementById('p2Radar')
+      if (r) {
+        const top3 = phase2Sorted.value.slice(0,3)
+        const c = echarts.init(r); chartInstances.push(c)
+        c.setOption({
+          animation: false, animationDuration: 0,
+          legend:{data:top3.map(g=>g.name), textStyle:{color:'#c8e4ff', fontSize:13}, bottom:2, left:'center', itemWidth:18, itemHeight:10},
+          radar:{
+            indicator:[
+              {name:'决策坐标完整度', max:100},
+              {name:'决策依据充分性', max:100},
+              {name:'风险对冲强度', max:100},
+              {name:'三要素均衡度', max:100},
+              {name:'综合质量分', max:100}
+            ],
+            shape:'polygon', radius:'70%', center:['50%','40%'],
+            axisName:{color:'#e0f5ff', fontSize:12, fontWeight:'bold'},
+            splitArea:{areaStyle:{color:['rgba(0,168,255,0.04)','rgba(0,220,180,0.08)']}},
+            axisLine:{lineStyle:{color:'rgba(0,168,255,0.25)'}},
+            splitLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}}
+          },
+          series:[{ type:'radar', animation: false, animationDuration: 0, data: top3.map((g,i)=>({
+            value:[
+              g.cordOk?100:60,
+              Math.round(g.basisPct),
+              Math.round(g.riskPct),
+              Math.round((g.basisPct+g.riskPct+(g.cordOk?100:0))/3),
+              g.score
+            ],
+            name:g.name,
+            lineStyle:{width:3},
+            areaStyle:{opacity:0.22},
+            itemStyle:{symbol:'circle', symbolSize:7}
+          })) }],
+          color:['#00dc82','#00a8ff','#ffaa3a']
+        })
+      }
+    } else if (phase.value === 3) {
+      const d3 = document.getElementById('p3DimChart'); if (d3) {
+        const c = echarts.init(d3); c._phase3Type = 'dim'; chartInstances.push(c)
+        const dimLabels = judges[0]?.dims.map(d => d.label) || ['安全','规划','团队','改进']
+        const seriesNames = judges.map(j => j.group)
+        const colors = ['#00a8ff','#00dc82','#ffaa3a']
+        c.setOption({
+          animation: false, animationDuration: 0,
+          tooltip:{trigger:'axis',axisPointer:{type:'shadow'}}, legend:{data:seriesNames,textStyle:{color:'#6b8cae',fontSize:11},top:0},
+          grid:{left:55,right:20,top:30,bottom:20},
+          xAxis:{type:'category',data:dimLabels,axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#5a7a9a',fontSize:10}},
+          yAxis:{type:'value',max:50,axisLine:{show:false},splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}},axisLabel:{color:'#4a6a8a',fontSize:10}},
+          series: judges.map((j, idx) => ({
+            name: j.group, type:'bar', data: j.dims.map(d => d.val), barWidth:16,
+            itemStyle:{ color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors[idx]},{offset:1,color:colors[idx]}]} }
+          }))
+        })
+      }
+      const t3 = document.getElementById('p3TotalChart'); if (t3) {
+        const c = echarts.init(t3); c._phase3Type = 'total'; chartInstances.push(c)
+        const colors3 = ['#00a8ff', '#00dc82', '#ffaa3a']
+        c.setOption({
+          animation: false, animationDuration: 0,
+          tooltip:{trigger:'axis'}, grid:{left:50,right:30,top:20,bottom:30},
+          xAxis:{type:'category',data:judges.map(j=>j.group),axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:12}},
+          yAxis:{type:'value',max:100,axisLine:{show:false},splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}},axisLabel:{color:'#4a6a8a',fontSize:10}},
+          series:[{ type:'bar',
+            data: judges.map((j, idx) => ({
+              value: j.dims.reduce((s,d)=>s+d.val,0),
+              itemStyle:{ color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:colors3[idx]},{offset:1,color:colors3[idx]}]} }
+            })),
+            barWidth:40,
+            label:{show:true, position:'top', formatter:'{c}分', color:'#c8d4e0', fontSize:14, fontWeight:'bold'},
+            markLine:{silent:true, data:[{type:'average',name:'平均'}], lineStyle:{color:'rgba(0,168,255,0.3)',type:'dashed'}, label:{color:'#5a7a9a',fontSize:10,formatter:'平均 {c}'}}
+          }]
+        })
+      }
+    } else if (phase.value === 4) {
+      const hm = document.getElementById('p4Heatmap')
+      if (hm) {
+        const c = echarts.init(hm); chartInstances.push(c)
+        const dims = dims5
+        const heatData = []
+        groups.forEach((g, gi) => {
+          const vals = personalRadar[g]
+          vals.forEach((v, di) => {
+            heatData.push([gi, di, v])
+          })
+        })
+        c.setOption({
+          animation: false, animationDuration: 0,
+          tooltip:{position:'top', formatter:(p)=>`${groups[p.value[0]]}<br/>${dims[p.value[1]]}: <b>${p.value[2]}分</b>`},
+          grid:{left:90,right:30,top:20,bottom:30},
+          xAxis:{type:'category',data:groups,axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:11},splitArea:{show:true,areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.04)']}}},
+          yAxis:{type:'category',data:dims,axisLine:{lineStyle:{color:'rgba(0,168,255,0.2)'}},axisLabel:{color:'#8ab4d0',fontSize:10},splitArea:{show:true,areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.04)']}}},
+          visualMap:{min:30,max:100,calculable:false,orient:'horizontal',left:'center',bottom:0,show:false,inRange:{color:['#0a1628','#0066cc','#00dc82','#ffd24d']}},
+          series:[{ type:'heatmap', data:heatData, label:{show:true,formatter:'{c}',color:'#e0f0ff',fontSize:11,fontWeight:'bold'}, emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,220,130,0.5)'}} }]
+        })
+      }
+      const before = document.getElementById('p4RadarBefore'); if (before) {
+        const c = echarts.init(before); chartInstances.push(c)
+        const beforeVals = personalRadar['揽星组'].map(v => Math.round(v * 0.72))
+        c.setOption({ animation: false, animationDuration: 0, radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#4a6a8a',fontSize:9}, splitArea:{areaStyle:{color:'rgba(0,168,255,0.02)'}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.1)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.08)'}} }, series:[{type:'radar', animation: false, animationDuration: 0, data:[{value:beforeVals,name:'课前',lineStyle:{color:'rgba(0,168,255,0.5)',width:1.5,type:'dashed'},areaStyle:{color:'rgba(0,168,255,0.08)'},itemStyle:{color:'rgba(0,168,255,0.5)'},symbol:'circle',symbolSize:4}]}] })
+      }
+      const after = document.getElementById('p4RadarAfter'); if (after) {
+        const c = echarts.init(after); chartInstances.push(c)
+        c.setOption({ animation: false, animationDuration: 0, radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'65%', axisName:{color:'#8ab4d0',fontSize:9}, splitArea:{areaStyle:{color:['rgba(0,168,255,0.02)','rgba(0,168,255,0.05)']}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.15)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.12)'}} }, series:[{type:'radar', animation: false, animationDuration: 0, data:[{value:personalRadar['揽星组'],name:'课后',lineStyle:{color:'#00dc82',width:2.5},areaStyle:{color:'rgba(0,220,130,0.25)'},itemStyle:{color:'#00dc82'},symbol:'circle',symbolSize:6}]}] })
+      }
+      const grid = document.getElementById('personalRadarGrid'); if (grid) {
+        const top3 = ['揽星组','御风组','巡天组']
+        grid.innerHTML = top3.map((g,i)=>`<div class="personal-card" data-g="${g}"><div class="pr-name">${g}</div><div id="miniRadar_${i}" style="width:100%;height:120px;"></div><div class="pr-score">${personalRadar[g].reduce((s,v)=>s+v,0)/5|0}分</div><div class="pr-sub">点击查看画像</div></div>`).join('')
+        setTimeout(()=>{
+          top3.forEach((g,i)=>{ const el=document.getElementById(`miniRadar_${i}`); if(!el)return; const mc=echarts.init(el); chartInstances.push(mc); mc.setOption({ animation: false, animationDuration: 0, radar:{ indicator:dims5.map(d=>({name:d,max:100})), shape:'polygon', radius:'75%', axisName:{show:false}, splitArea:{areaStyle:{color:'rgba(0,168,255,0.03)'}}, axisLine:{lineStyle:{color:'rgba(0,168,255,0.1)'}}, splitLine:{lineStyle:{color:'rgba(0,168,255,0.06)'}} }, series:[{type:'radar', animation: false, animationDuration: 0, data:[{value:personalRadar[g],name:g,lineStyle:{color:groupColor(g),width:2.5},areaStyle:{color:groupColor(g)+'40'},itemStyle:{color:groupColor(g)},symbol:'circle',symbolSize:5}]}] }) })
+          document.querySelectorAll('.personal-card').forEach(card=>{ card.addEventListener('click', e=>showPersonalRadarModal(card.getAttribute('data-g'))) })
+        }, 80)
+      }
+    }
+  }, 60)
+})
 
 
 </script>
@@ -1189,23 +1375,23 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .status-dot.blue { background:#00a8ff; box-shadow:0 0 6px #00a8ff; }
 .status-dot.warn { background:#ffaa3a; box-shadow:0 0 6px #ffaa3a; }
 
-.capability-card { padding:18px 20px; margin-bottom:12px; border-radius:16px; position:relative; overflow:hidden; cursor:pointer; transition:all 0.3s; animation:fadeIn 0.5s ease both; }
+.capability-card { padding:18px 20px; margin-bottom:12px; border-radius:16px; position:relative; overflow:hidden; cursor:pointer; }
 .capability-card:hover { transform:translateX(3px); box-shadow:0 0 24px rgba(0,168,255,0.15), inset 0 0 20px rgba(0,168,255,0.05); }
 .capability-card.weak:hover { box-shadow:0 0 24px rgba(255,80,60,0.2), inset 0 0 20px rgba(255,80,60,0.05); }
 .capability-card.weak .cap-name { color:#ff8c70; }
 .cap-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.cap-name { font-size:20px; color:#d0e4f0; font-weight:500; transition:color 0.3s; }
-.cap-score { font-size:24px; font-weight:700; color:#00dc82; transition:all 0.3s; }
-.cap-score.low { color:#ff6b50; animation:pulseScore 2s ease-in-out infinite; }
+.cap-name { font-size:20px; color:#d0e4f0; font-weight:500; }
+.cap-score { font-size:24px; font-weight:700; color:#00dc82; }
+.cap-score.low { color:#ff6b50; }
 .cap-progress { height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; margin-bottom:10px; }
-.cap-progress-bar { height:100%; border-radius:4px; position:relative; width:0; animation:progressGrow 1s ease forwards; }
+.cap-progress-bar { height:100%; border-radius:4px; position:relative; width:0; }
 .cap-progress-bar::after { content:''; position:absolute; right:0; top:0; bottom:0; width:14px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4)); }
 .cap-bar-green { background:linear-gradient(90deg,#00a8ff,#00dc82); }
 .cap-bar-red { background:linear-gradient(90deg,#ff4444,#ff8c5a); }
 .cap-footer { display:flex; justify-content:space-between; margin-top:10px; font-size:14px; color:#6a8aaa; }
 
 .kp-list { display:flex; flex-direction:column; gap:6px; }
-.kp-item { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:12px; font-size:14px; transition:all 0.3s; background:rgba(0,24,48,0.4); border:1px solid rgba(0,168,255,0.08); }
+.kp-item { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:12px; font-size:14px; background:rgba(0,24,48,0.4); border:1px solid rgba(0,168,255,0.08); }
 .kp-dot { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-size:12px; font-weight:700; flex-shrink:0; }
 .kp-item.done .kp-dot { background:rgba(0,220,130,0.15); color:#00dc82; }
 .kp-item.learning .kp-dot { background:rgba(255,170,58,0.15); color:#ffaa3a; }
@@ -1215,10 +1401,9 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .kp-tag-gray { background:rgba(108,168,220,0.15); color:#6ca8dc; }
 .kp-tag-red { background:rgba(255,80,60,0.15); color:#ff8c70; }
 
-@keyframes progressGrow { from{width:0} to{width:var(--target-width,100%)} }
 @keyframes pulseScore { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
 .phase-track { position:relative; height:32px; background:#0a1530; border:1px solid rgba(0,168,255,0.1); border-radius:6px; overflow:hidden; display:flex; align-items:center; }
-.phase-track-fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,rgba(0,168,255,0.15),rgba(0,220,130,0.2)); border-radius:6px; transition:width 0.8s ease; }
+.phase-track-fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,rgba(0,168,255,0.15),rgba(0,220,130,0.2)); border-radius:6px; }
 .phase-track-text { position:relative; z-index:1; font-size:12px; color:#8ab4d0; padding:0 12px; letter-spacing:0.5px; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
 
