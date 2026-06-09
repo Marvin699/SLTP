@@ -86,18 +86,27 @@
             <div class="panel-title"><span class="icon">📊</span>企业导师分项评分</div>
             <div class="score-group-blocks">
               <div class="score-group-block" v-for="g in phase1Groups" :key="g.name">
-                <div class="sg-label">{{ g.name }}</div>
-                <div class="sg-sub-blocks">
-                  <div class="sg-sub"><div class="sg-sub-label">方案设计</div><div class="sg-sub-value">{{ g.design }}</div><div class="sg-sub-unit">/50分</div></div>
-                  <div class="sg-sub"><div class="sg-sub-label">汇报展示</div><div class="sg-sub-value">{{ g.pres }}</div><div class="sg-sub-unit">/40分</div></div>
-                  <div class="sg-sub"><div class="sg-sub-label">应对质疑</div><div class="sg-sub-value">{{ g.chal }}</div><div class="sg-sub-unit">/10分</div></div>
-                  <div class="sg-sub total"><div class="sg-sub-label">总分</div><div class="sg-sub-value big">{{ g.total }}</div><div class="sg-sub-unit">分</div></div>
+                <div class="sg-label-row">
+                  <span class="sg-label-dot" :style="{background:g.name==='揽星组'?'#00dc82':'#00a8ff'}"></span>
+                  <span class="sg-label">{{ g.name }}</span>
+                  <span class="sg-label-score">{{ g.total }}<em>/100</em></span>
                 </div>
-              </div>
-              <div class="sg-mini-bars">
-                <div class="sg-mini-bar-wrap" v-for="g in phase1Groups" :key="g.name">
-                  <div class="sg-mini-bar-label">{{ g.name }}</div>
-                  <div class="sg-mini-bar"><div class="sg-mini-bar-fill" :style="{width: (g.total*1.05)+'%', background: g.name==='揽星组'?'linear-gradient(90deg,#00a8ff,#00dc82)':'linear-gradient(90deg,#00dc82,#00a8ff)'}"></div></div>
+                <div class="sg-sub-blocks">
+                  <div class="sg-sub">
+                    <div class="sg-sub-row"><div class="sg-sub-label">方案设计</div><div class="sg-sub-value">{{ g.design }}</div><div class="sg-sub-unit">/50</div></div>
+                    <div class="sg-sub-bar"><div class="sg-sub-bar-fill" :style="{width: (g.design*2)+'%', background:'linear-gradient(90deg,#00dc82,#00a8ff)'}"></div></div>
+                    <div class="sg-sub-reason" v-if="g.reason_design">{{ g.reason_design }}</div>
+                  </div>
+                  <div class="sg-sub">
+                    <div class="sg-sub-row"><div class="sg-sub-label">汇报展示</div><div class="sg-sub-value">{{ g.pres }}</div><div class="sg-sub-unit">/40</div></div>
+                    <div class="sg-sub-bar"><div class="sg-sub-bar-fill" :style="{width: (g.pres*2.5)+'%', background:'linear-gradient(90deg,#00dc82,#00a8ff)'}"></div></div>
+                    <div class="sg-sub-reason" v-if="g.reason_pres">{{ g.reason_pres }}</div>
+                  </div>
+                  <div class="sg-sub">
+                    <div class="sg-sub-row"><div class="sg-sub-label">应对质疑</div><div class="sg-sub-value">{{ g.chal }}</div><div class="sg-sub-unit">/10</div></div>
+                    <div class="sg-sub-bar"><div class="sg-sub-bar-fill" :style="{width: (g.chal*10)+'%', background:'linear-gradient(90deg,#00dc82,#00a8ff)'}"></div></div>
+                    <div class="sg-sub-reason" v-if="g.reason_chal">{{ g.reason_chal }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -178,12 +187,12 @@ const modalDims = [{ name:'综合方案设计', weight:25 },{ name:'成果汇报
 const groups = ['揽星组','御风组','巡天组','逐日组','凌云组','长空组']
 const groups2 = [{ name:'揽星组', design:45, pres:36, chal:8, total:89 },{ name:'御风组', design:42, pres:37, chal:7, total:86 },{ name:'巡天组', design:44, pres:35, chal:9, total:88 },{ name:'逐日组', design:38, pres:32, chal:6, total:76 }]
 const phase1Groups = ref([
-  { name:'揽星组', design:0, pres:0, chal:0, total:0 },
-  { name:'御风组', design:0, pres:0, chal:0, total:0 }
+  { name:'揽星组', design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' },
+  { name:'御风组', design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }
 ])
 const phase1GroupsTarget = [
-  { name:'揽星组', design:46, pres:36, chal:8, total:90 },
-  { name:'御风组', design:42, pres:37, chal:7, total:86 }
+  { name:'揽星组', design:46, pres:36, chal:8, total:90, reason_design:'逻辑完整、安全冗余量化到位、动态航程约束有创新', reason_pres:'数据扎实、表达清晰，但时间控制稍紧', reason_chal:'面对地形爬升问题，能快速回应并承诺改进' },
+  { name:'御风组', design:42, pres:35, chal:9, total:86, reason_design:'极端天气备份航线考虑周全，但冗余偏重', reason_pres:'团队配合默契、演示流畅', reason_chal:'应对自如，补充两个改进点' }
 ]
 const phase1PeerData = ref([
   { group:'揽星组', val:0 },
@@ -212,7 +221,7 @@ const aiLogsFull = [
 
 function resetDemo() {
   _clearAnim()
-  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0 }))
+  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }))
   phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
   aiLogs.value = []
   demoDone.value = false
@@ -227,7 +236,7 @@ function runDemo() {
   if (demoRunning.value) return
   _clearAnim()
   demoRunning.value = true
-  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0 }))
+  phase1Groups.value = phase1Groups.value.map(g => ({ ...g, design:0, pres:0, chal:0, total:0, reason_design:'', reason_pres:'', reason_chal:'' }))
   phase1PeerData.value = phase1PeerData.value.map(p => ({ ...p, val:0 }))
   aiLogs.value = []
   capabilities.forEach(c => { c.score = 0 })
@@ -264,6 +273,11 @@ function animateGroups() {
   groupAnim(1, 'chal')
   setTimeout(() => groupAnim(1, 'total'), 400)
   setTimeout(() => {
+    phase1Groups.value.forEach((g, i) => {
+      g.reason_design = targets[i].reason_design
+      g.reason_pres = targets[i].reason_pres
+      g.reason_chal = targets[i].reason_chal
+    })
     renderPhaseCharts()
   }, 900)
 }
@@ -348,7 +362,7 @@ const literacyPoints = reactive([
 const personalRadar = { '揽星组':[45,36,55,48,52], '御风组':[42,37,58,55,50], '巡天组':[40,34,60,50,54], '逐日组':[38,32,50,45,48], '凌云组':[41,35,52,47,50], '长空组':[39,33,54,49,51] }
 const awards = [
   { key:'pilot', icon:'🏆', title:'领航能手', group:'揽星组', reason:'综合方案设计77分领先，安全冗余量化获企业导师认可', color:'#ffd24d' },
-  { key:'craftsman', icon:'⚙️', title:'领航工匠', group:'巡天组', reason:'演练组织指挥82分全班最高，应急决策工单质量最佳', color:'#00dc82' },
+  { key:'craftsman', icon:'⚙️', title:'领航工匠', group:'巡天组', reason:'方案综合得分93分全班最高，应急决策工单质量最佳', color:'#00dc82' },
   { key:'apprentice', icon:'🌱', title:'领航学徒', group:'逐日组', reason:'跨部门协调沟通进步显著，课后改进承诺具体可执行', color:'#00a8ff' },
   { key:'progress', icon:'🚀', title:'进步之星', group:'御风组', reason:'成果汇报展示从课前55分提升至75分，进步达36%', color:'#c870ff' }
 ]
@@ -677,6 +691,16 @@ watch(phase, ()=>setTimeout(renderPhaseCharts, 60))
 .sg-sub-value { font-size:30px; font-weight:700; color:#00dc82; line-height:1.1; }
 .sg-sub-value.big { font-size:36px; }
 .sg-sub-unit { font-size:12px; color:#4a6a8a; margin-top:2px; }
+
+.sg-label-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.sg-label-dot { width:10px; height:10px; border-radius:50%; box-shadow: 0 0 10px currentColor; }
+.sg-label-score { margin-left:auto; font-size:18px; color:#fff; font-weight:600; }
+.sg-label-score em { font-size:11px; color:#7a9ab8; font-style:normal; font-weight:400; margin-left:2px; }
+.sg-sub-row { display:flex; align-items:baseline; justify-content:space-between; }
+.sg-sub-bar { height:6px; background:rgba(122,154,184,.15); border-radius:4px; margin:4px 0; overflow:hidden; }
+.sg-sub-bar-fill { height:100%; border-radius:4px; transition:width 1.6s ease-out; }
+.sg-sub-reason { font-size:11px; color:#7a9ab8; line-height:1.4; letter-spacing:.2px; padding-left:6px; border-left:2px solid rgba(0,220,130,.5); margin-top:4px; }
+
 .sg-mini-bars { margin-top:12px; display:flex; flex-direction:column; gap:6px; padding-top:10px; border-top:1px dashed rgba(0,168,255,0.15); }
 .sg-mini-bar-wrap { display:flex; align-items:center; gap:10px; }
 .sg-mini-bar-label { font-size:14px; color:#6b8cae; width:54px; flex-shrink:0; }

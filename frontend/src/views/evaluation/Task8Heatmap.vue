@@ -17,7 +17,6 @@
         <div class="section-title">筛选小组</div>
         <div class="filter-pills">
           <span v-for="g in groupList" :key="g" class="filter-pill" :class="{active:selectedGroup===g}" @click="selectedGroup = g">{{ g }}</span>
-          <span class="filter-pill" :class="{active:selectedGroup==='全部'}" @click="selectedGroup='全部'">全部</span>
         </div>
 
         <div class="section-title">班级雷达速览</div>
@@ -53,11 +52,6 @@
         <div class="glass chart-panel">
           <div class="panel-title"><span class="icon">🔥</span>班级能力热力矩阵 <span class="tooltip-hint">横轴：六维能力 · 纵轴：学生</span></div>
           <div id="heatmapChart" class="heatmap-container"></div>
-        </div>
-
-        <div class="glass chart-panel">
-          <div class="panel-title"><span class="icon">🏆</span>四组能力达成度柱状对比</div>
-          <div id="groupBarChart" style="flex:1;min-height:220px;"></div>
         </div>
 
         <div class="glass chart-panel">
@@ -214,7 +208,7 @@ const awards = [
   { key:'progress', icon:'🚀', title:'进步之星', group:'逐日组', reason:'持续改进优化52→74，全班进步最大' }
 ]
 
-const selectedGroup = ref('全部')
+const selectedGroup = ref('揽星组')
 const showModal = ref(false)
 const modalName = ref('')
 const modalGroup = ref('')
@@ -272,42 +266,16 @@ function renderHeatmap(){
   })
   c.setOption({
     tooltip:{ formatter:p=>`${filteredMembers.value[p.data[1]].name} · ${dimLabels[p.data[0]]}<br/>分数：<b>${p.data[2]}</b>` },
-    grid:{ left:90, right:60, top:10, bottom:120 },
+    grid:{ left:90, right:20, top:10, bottom:30 },
     xAxis:{ type:'category', data:dimLabels, axisLabel:{ color:'#8ab4d0', fontSize:11, rotate:0, interval:0 }, axisLine:{ lineStyle:{ color:'rgba(0,168,255,0.2)' } } },
     yAxis:{ type:'category', data:names.reverse(), axisLabel:{ color:'#c8d4e0', fontSize:10 }, axisLine:{ lineStyle:{ color:'rgba(0,168,255,0.2)' } } },
-    visualMap:{ min:40, max:95, calculable:true, orient:'horizontal', left:'center', bottom:10,
-      inRange:{ color:['#0a2860','#0052cc','#00a8ff','#00dc82','#ffd24d','#ff8c5a','#ff4444'] },
-      textStyle:{ color:'#8ab4d0', fontSize:11 } },
+    visualMap:{ show:false, min:40, max:95, calculable:false,
+      inRange:{ color:['#0a2860','#0052cc','#00a8ff','#00dc82','#ffd24d','#ff8c5a','#ff4444'] } },
     series:[{ type:'heatmap', data:data.map(d=>[d[0], filteredMembers.value.length-1-d[1], d[2]]), label:{ show:true, color:'#0a1628', fontSize:10, fontWeight:'bold' },
       emphasis:{ itemStyle:{ shadowBlur:10, shadowColor:'rgba(0,0,0,0.5)' } },
       itemStyle:{ borderColor:'rgba(0,168,255,0.08)', borderWidth:1, borderRadius:2 } }]
   })
 
-  const groupBar = document.getElementById('groupBarChart')
-  if (groupBar) {
-    const c2 = echarts.init(groupBar)
-    charts.push(c2)
-    const groupsAgg = groupList.map(gn => {
-      const gms = members.filter(m=>m.group===gn)
-      return dims.map(di => {
-        const sum = gms.reduce((s,m)=>s+m.scores[dims.indexOf(di)], 0)
-        return Math.round(sum/gms.length)
-      })
-    })
-    c2.setOption({
-      tooltip:{ trigger:'axis' },
-      legend:{ data:dimLabels, textStyle:{ color:'#6b8cae', fontSize:11 }, top:0 },
-      grid:{ left:50, right:30, top:40, bottom:30 },
-      xAxis:{ type:'category', data:groupList, axisLine:{ lineStyle:{ color:'rgba(0,168,255,0.2)' } }, axisLabel:{ color:'#8ab4d0', fontSize:12 } },
-      yAxis:{ type:'value', max:100, axisLine:{ show:false }, splitLine:{ lineStyle:{ color:'rgba(0,168,255,0.08)' } }, axisLabel:{ color:'#4a6a8a', fontSize:10 } },
-      series: dimLabels.map((dn, xi) => ({
-        name:dn, type:'bar', stack:'total', barWidth:28,
-        data: groupList.map((_, gi) => groupsAgg[gi][xi]),
-        itemStyle:{ borderRadius:0 }
-      })),
-      markLine:{ silent:true, symbol:'none', lineStyle:{ color:'rgba(255,100,60,0.6)', type:'dashed', width:1.5 }, label:{ color:'#ff6b50', fontSize:10, formatter:'达标70' }, data:[{ yAxis:70 }] }
-    })
-  }
   renderClassRadar()
 }
 function openMember(m){
@@ -382,9 +350,9 @@ watch(selectedGroup, () => renderHeatmap())
 .panel-title .icon{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,rgba(0,168,255,0.15),rgba(0,220,180,0.1));display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid rgba(0,168,255,0.2);}
 .heatmap-container{flex:1;min-height:320px;}
 .tooltip-hint{font-size:11px;color:#4a6a8a;margin-left:auto;font-weight:normal;}
-.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;}
-.member-card{padding:10px 12px;border-radius:10px;background:rgba(0,168,255,0.04);border:1px solid rgba(0,168,255,0.1);cursor:pointer;transition:all 0.3s;}
-.member-card:hover{border-color:rgba(0,168,255,0.3);background:rgba(0,168,255,0.08);transform:translateY(-2px);}
+.member-grid{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.member-card{flex:0 0 210px;padding:10px 12px;border-radius:10px;background:rgba(0,168,255,0.04);border:1px solid rgba(0,168,255,0.1);cursor:pointer;transition:all 0.3s;}
+.member-card:hover{border-color:rgba(0,168,255,0.3);background:rgba(0,168,255,0.08);transform:translateY(-1px);}
 .m-name{font-size:13px;color:#c8d4e0;font-weight:500;}
 .m-role{font-size:10px;color:#5a7a9a;background:rgba(0,168,255,0.1);padding:2px 6px;border-radius:4px;}
 .m-score-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
