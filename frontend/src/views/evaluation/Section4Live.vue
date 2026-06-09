@@ -318,7 +318,7 @@ const groups = reactive([
     stream: null, detections: [], events: [], score: 88, scoreColor: '#42d39c',
   },
   {
-    id: 3, name: '驭风组', village: '坡乐村', task: '避光防潮抗生素', color: '#6be6a1', stage: 1,
+    id: 3, name: '御风组', village: '坡乐村', task: '避光防潮抗生素', color: '#6be6a1', stage: 1,
     rfid: null,
     roles: [
       { role: '物资管理员', name: '王艳' },
@@ -459,7 +459,7 @@ const presets = [
   { groupName: '揽星组', groups: [2], level: 'yellow',
     text: '温度探头未固定在箱体几何中心，请固定在中心位置的一支疫苗瓶身上，确保读数准确',
   },
-  { groupName: '驭风组', groups: [3], level: 'yellow',
+  { groupName: '御风组', groups: [3], level: 'yellow',
     text: '包装正确 ✓ 但装箱时每层之间要铺黑色避光纸，最后箱子外面再包一层黑色塑料膜做双重避光',
   },
   { groupName: '长空组', groups: [4], level: 'orange',
@@ -482,7 +482,7 @@ const presets = [
 const achievementScores = reactive([
   { id: 1, name: '逐日组', score: 92 },
   { id: 2, name: '揽星组', score: 88 },
-  { id: 3, name: '驭风组', score: 95 },
+  { id: 3, name: '御风组', score: 95 },
   { id: 4, name: '长空组', score: 85 },
   { id: 5, name: '凌云组', score: 90 },
   { id: 6, name: '巡天组', score: 87 },
@@ -722,7 +722,7 @@ function disaster(msg) {
 
 function disasterAck(action) {
   disasterDlg.value = false
-  emit(3, 'yellow', action === 'adjust' ? '驭风组方案调整为优先包装诺氟沙星胶囊，其他药品压缩重量应对风速限制' : '已向各组传达灾情事件', '教师')
+  emit(3, 'yellow', action === 'adjust' ? '御风组方案调整为优先包装诺氟沙星胶囊，其他药品压缩重量应对风速限制' : '已向各组传达灾情事件', '教师')
 }
 
 function simulateRfid(groupId) {
@@ -1070,7 +1070,7 @@ function freezeAchievement() {
   })
   const sorted = [...groups].sort((a, b) => b.score - a.score)
   emit(0, 'yellow', `AI初步评分：${sorted.map(g => `${g.name}${g.score}`).join(' / ')} 。AI记录：缓冲材料填充不够密实、危险品标识粘贴不规范、长空组安瓿瓶包装速度偏慢`, 'AI智能体')
-  speak('成果定格！驭风组95分 · 揽星组92分 · 凌云组90分 · 逐日组88分 · 巡天组87分 · 长空组85分')
+  speak('成果定格！御风组95分 · 揽星组92分 · 凌云组90分 · 逐日组88分 · 巡天组87分 · 长空组85分')
   ElMessage.success('🏆 成果定格 · AI初步评分已冻结')
 }
 

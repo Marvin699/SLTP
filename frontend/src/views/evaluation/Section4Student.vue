@@ -176,7 +176,7 @@ const GROUP_LIBRARY = [
     ],
   },
   {
-    id: 3, name: '驭风组', village: '坡乐村', task: '避光防潮抗生素', standardShort: 'WS/T823+T/CAEE',
+    id: 3, name: '御风组', village: '坡乐村', task: '避光防潮抗生素', standardShort: 'WS/T823+T/CAEE',
     color: '#6be6a1',
     rfidItems: '头孢曲松钠60瓶 · 阿莫西林钠克拉维酸钾40瓶 · 铝箔袋100个 · 黑色避光纸10张 · 防水胶带1卷 · 30L周转箱',
     rfidStandard: 'WS/T823-2023 第4.2条 + T/CAEE 0001—2026',

@@ -325,7 +325,7 @@ function drawWave() {
 function goToAnalysis() {
   router.push({
     path: `/evaluation/section/${selectedSection.value}/ai-analysis`,
-    query: { groupA: '揽星组', groupB: '驭风组' }
+    query: { groupA: '揽星组', groupB: '御风组' }
   })
 }
 

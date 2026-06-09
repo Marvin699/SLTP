@@ -13,7 +13,7 @@ from app.schemas.score_session import (
 
 router = APIRouter(prefix="/api/score", tags=["评分会话"])
 
-DEFAULT_GROUPS = ["逐日组", "揽星组", "驭风组", "长空组", "凌云组", "巡天组"]
+DEFAULT_GROUPS = ["逐日组", "揽星组", "御风组", "长空组", "凌云组", "巡天组"]
 
 # 三个环节及其专属评分维度（统一4维度+权重）
 SECTION_CONFIG = {

@@ -22,7 +22,7 @@
         <div class="panel-body">
           <!-- 左右双栏词云 -->
           <div class="cloud-columns">
-            <!-- 左栏：驭风组（橙色） -->
+            <!-- 左栏：御风组（橙色） -->
             <div class="cloud-col cloud-col-orange">
               <div class="col-header">
                 <span class="col-dot dot-orange"></span>
@@ -77,16 +77,25 @@
           <span class="risk-count-badge">{{ riskAlerts.length }} 条</span>
         </div>
         <div class="panel-body">
-          <div v-for="(risk, i) in riskAlerts" :key="i" class="risk-item">
-            <div class="risk-top">
-              <span class="risk-level" :class="'level-' + risk.level">{{ risk.levelLabel }}</span>
-              <span class="risk-group" :class="risk.group === groupA ? 'grp-blue' : 'grp-orange'">{{ risk.group }}</span>
-              <button class="speak-btn" :class="{ speaking: speakingId === 'risk-' + i }" @click="speakRisk(risk, i)">
-                <span v-if="speakingId === 'risk-' + i">🔊 播放中...</span>
-                <span v-else>🔈 播报</span>
-              </button>
+          <!-- 揽星组 -->
+          <div class="risk-group-section">
+            <div class="risk-group-title grp-blue">{{ groupA }}</div>
+            <div v-for="(risk, i) in riskAlerts.filter(r => r.group === groupA)" :key="'a-' + i" class="risk-item">
+              <div class="risk-top">
+                <span class="risk-level" :class="'level-' + risk.level">{{ risk.levelLabel }}</span>
+              </div>
+              <div class="risk-desc">{{ risk.description }}</div>
             </div>
-            <div class="risk-desc">{{ risk.description }}</div>
+          </div>
+          <!-- 御风组 -->
+          <div class="risk-group-section">
+            <div class="risk-group-title grp-orange">{{ groupB }}</div>
+            <div v-for="(risk, i) in riskAlerts.filter(r => r.group === groupB)" :key="'b-' + i" class="risk-item">
+              <div class="risk-top">
+                <span class="risk-level" :class="'level-' + risk.level">{{ risk.levelLabel }}</span>
+              </div>
+              <div class="risk-desc">{{ risk.description }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -98,11 +107,6 @@
         <div class="sc-top">
           <span class="sc-rank">#1</span>
           <span class="sc-name">{{ groupA }}</span>
-          <span class="sc-score">{{ groupAScore }}<small>分</small></span>
-          <button class="speak-btn speak-btn-lg" :class="{ speaking: speakingId === 'summary-A' }" @click="speakSummary('A')">
-            <span v-if="speakingId === 'summary-A'">🔊 播放中...</span>
-            <span v-else>🔈 播报点评</span>
-          </button>
         </div>
         <div class="sc-body">
           <div class="sc-tag">技术深度</div>
@@ -115,11 +119,6 @@
         <div class="sc-top">
           <span class="sc-rank">#2</span>
           <span class="sc-name">{{ groupB }}</span>
-          <span class="sc-score">{{ groupBScore }}<small>分</small></span>
-          <button class="speak-btn speak-btn-lg" :class="{ speaking: speakingId === 'summary-B' }" @click="speakSummary('B')">
-            <span v-if="speakingId === 'summary-B'">🔊 播放中...</span>
-            <span v-else>🔈 播报点评</span>
-          </button>
         </div>
         <div class="sc-body">
           <div class="sc-tag">系统整合</div>
@@ -139,68 +138,21 @@
 </template>
 
 <script setup>
-import { computed, ref, onBeforeUnmount } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const speakingId = ref(null)
-let currentUtterance = null
-
 const groupA = computed(() => route.query.groupA || '揽星组')
-const groupB = computed(() => route.query.groupB || '驭风组')
-const groupAScore = 92
-const groupBScore = 91
+const groupB = computed(() => route.query.groupB || '御风组')
 
 function getKwSizeClass(weight) {
   if (weight >= 85) return 'kw-lg'
   if (weight >= 70) return 'kw-md'
   return 'kw-sm'
 }
-
-function speak(text, id) {
-  if (!('speechSynthesis' in window)) {
-    alert('您的浏览器不支持语音播报')
-    return
-  }
-  if (speakingId.value === id) {
-    window.speechSynthesis.cancel()
-    speakingId.value = null
-    return
-  }
-  window.speechSynthesis.cancel()
-  const u = new SpeechSynthesisUtterance(text)
-  u.lang = 'zh-CN'
-  u.rate = 1
-  u.pitch = 1
-  u.onstart = () => { speakingId.value = id }
-  u.onend = () => { if (speakingId.value === id) speakingId.value = null }
-  u.onerror = () => { if (speakingId.value === id) speakingId.value = null }
-  currentUtterance = u
-  speakingId.value = id
-  window.speechSynthesis.speak(u)
-}
-
-function speakRisk(risk, i) {
-  const text = `${risk.group}，${risk.levelLabel}：${risk.description}`
-  speak(text, 'risk-' + i)
-}
-
-function speakSummary(which) {
-  if (which === 'A') {
-    const text = `${groupA.value}，排名第一，${groupAScore}分。亮点：技术深度、安全冗余量化、动态航程约束建模。点评：方案数学建模扎实，数据支撑充分；但总耗时偏长，实际应急中需再压缩。`
-    speak(text, 'summary-A')
-  } else {
-    const text = `${groupB.value}，排名第二，${groupBScore}分。亮点：系统整合、三层冗余备份、多机协同设计。点评：协同设计有前瞻性，效率优先策略清晰；但数据口径必须统一，这是企业汇报基本要求。`
-    speak(text, 'summary-B')
-  }
-}
-
-onBeforeUnmount(() => {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel()
-})
 
 // 关键词数据
 const wordCloudData = {
@@ -221,7 +173,7 @@ const wordCloudData = {
     { text: '分级配送', weight: 58 },
     { text: '仿真', weight: 50 },
   ],
-  '驭风组': [
+  '御风组': [
     { text: '协同', weight: 92 },
     { text: '优先级', weight: 88 },
     { text: '快速恢复', weight: 85 },
@@ -251,25 +203,25 @@ function getTop3(groupName) {
   return (wordCloudData[groupName] || []).slice(0, 3).map(w => w.text).join('、')
 }
 
-// 风险数据
+// 风险数据 — 按组聚合，组名作为一级标题
 const riskAlerts = computed(() => [
   {
     group: groupA.value,
-    level: 'medium',
-    levelLabel: '中风险',
-    description: `"68.5小时总耗时"与"2.5小时并行作业"逻辑一致性存疑，建议澄清计算口径`,
-  },
-  {
-    group: groupB.value,
     level: 'high',
     levelLabel: '高风险',
-    description: `"65小时"总耗时与"150分钟"单批次用时数据口径不一致，需组内校准`,
+    description: `揽星组冗余设计导致时效偏低`,
   },
   {
     group: groupA.value,
     level: 'low',
     levelLabel: '低风险',
     description: `索降和吊装模式物资损坏概率缺少量化依据，仅有定性判断`,
+  },
+  {
+    group: groupB.value,
+    level: 'high',
+    levelLabel: '高风险',
+    description: `极限压缩时间带来安全裕度不足`,
   },
   {
     group: groupB.value,
@@ -495,11 +447,28 @@ function goBack() {
 /* ===== 风险面板 ===== */
 .risk-panel { flex: 0.7; }
 
+.risk-group-section {
+  margin-bottom: 16px;
+}
+.risk-group-section:last-child {
+  margin-bottom: 0;
+}
+.risk-group-title {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  color: #fff;
+}
+.risk-group-title.grp-blue { background: linear-gradient(90deg, rgba(59,130,246,0.35) 0%, rgba(59,130,246,0.1) 100%); border-left: 4px solid #3b82f6; }
+.risk-group-title.grp-orange { background: linear-gradient(90deg, rgba(245,158,11,0.35) 0%, rgba(245,158,11,0.1) 100%); border-left: 4px solid #f59e0b; }
+
 .risk-item {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   margin-bottom: 10px;
 }
 .risk-item:last-child { margin-bottom: 0; }
@@ -507,31 +476,21 @@ function goBack() {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .risk-level {
-  padding: 1px 8px;
-  border-radius: 3px;
-  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 700;
 }
 .level-high { background: rgba(239,68,68,0.18); color: #f87171; }
 .level-medium { background: rgba(245,158,11,0.18); color: #fbbf24; }
 .level-low { background: rgba(34,197,94,0.18); color: #4ade80; }
 
-.risk-group {
-  padding: 1px 8px;
-  border-radius: 3px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-}
-.grp-blue { background: #3b82f6; }
-.grp-orange { background: #f59e0b; }
-
 .risk-desc {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.7;
   color: #c0c8d4;
 }
 
@@ -595,7 +554,7 @@ function goBack() {
 .card-orange .sc-tag { background: rgba(245,158,11,0.15); color: #fbbf24; }
 
 .sc-comment {
-  font-size: 13px;
+  font-size: 15px;
   color: #c0c8d4;
   line-height: 1.6;
 }

@@ -364,7 +364,7 @@ const AI_DIM_WEIGHTS = { '时效性': 0.20, '安全性': 0.25, '创新性': 0.20
 const AI_DEMO_DATA = {
   section1: [
     { group_id: '揽星组', scores: [95, 96, 88, 83, 95, 85] },   // 展示分: [95,96,78,73,95,85] 均分87 ✓第1
-    { group_id: '驭风组', scores: [95, 95, 86, 82, 94, 84] },   // 展示分: [95,95,76,72,94,84] 均分86 ✓第2
+    { group_id: '御风组', scores: [95, 95, 86, 82, 94, 84] },   // 展示分: [95,95,76,72,94,84] 均分86 ✓第2
     { group_id: '长空组', scores: [88, 90, 87, 84, 88, 87] },   // 展示分: [88,90,77,74,88,87] 均分84
     { group_id: '巡天组', scores: [86, 88, 85, 82, 86, 85] },   // 展示分: [86,88,75,72,86,85] 均分82
     { group_id: '逐日组', scores: [80, 82, 73, 75, 80, 80] },   // 展示分: [80,82,63,65,80,80] 均分75
@@ -373,7 +373,7 @@ const AI_DEMO_DATA = {
   section2: [
     { group_id: '逐日组', scores: [80, 88, 82, 85, 90, 86] },
     { group_id: '揽星组', scores: [88, 85, 90, 82, 86, 92] },
-    { group_id: '驭风组', scores: [85, 92, 86, 80, 88, 90] },
+    { group_id: '御风组', scores: [85, 92, 86, 80, 88, 90] },
     { group_id: '长空组', scores: [82, 86, 88, 90, 84, 85] },
     { group_id: '凌云组', scores: [90, 84, 85, 86, 82, 88] },
     { group_id: '巡天组', scores: [86, 90, 84, 88, 85, 82] },
@@ -381,7 +381,7 @@ const AI_DEMO_DATA = {
   section3: [
     { group_id: '逐日组', scores: [82, 90, 86, 80, 88, 85] },
     { group_id: '揽星组', scores: [86, 88, 92, 84, 82, 90] },
-    { group_id: '驭风组', scores: [90, 85, 88, 82, 86, 88] },
+    { group_id: '御风组', scores: [90, 85, 88, 82, 86, 88] },
     { group_id: '长空组', scores: [88, 92, 85, 86, 84, 82] },
     { group_id: '凌云组', scores: [84, 86, 84, 90, 92, 86] },
     { group_id: '巡天组', scores: [92, 84, 86, 88, 80, 90] },
@@ -534,13 +534,13 @@ const selectedAIGroupData = computed(() => {
 })
 
 // --- 演示数据 ---
-// 展览模式下，揽星组/驭风组/逐日组分数始终为0，仅长空组/凌云组/巡天组有演示数据
-const ZERO_GROUPS = ['逐日组', '揽星组', '驭风组']
+// 展览模式下，揽星组/御风组/逐日组分数始终为0，仅长空组/凌云组/巡天组有演示数据
+const ZERO_GROUPS = ['逐日组', '揽星组', '御风组']
 function getDemoGroups(dimensions) {
   const demoScores = {
     '逐日组': [92, 88, 85, 90],
     '揽星组': [87, 93, 89, 85],
-    '驭风组': [90, 86, 92, 88],
+    '御风组': [90, 86, 92, 88],
     '长空组': [85, 90, 87, 92],
     '凌云组': [88, 85, 90, 87],
     '巡天组': [94, 92, 90, 92],
@@ -578,7 +578,7 @@ async function loadSessions() {
   } catch { sessions.value = [] }
 }
 
-const DEFAULT_GROUP_NAMES = ['逐日组', '揽星组', '驭风组', '长空组', '凌云组', '巡天组']
+const DEFAULT_GROUP_NAMES = ['逐日组', '揽星组', '御风组', '长空组', '凌云组', '巡天组']
 
 function getEmptyGroups(dimensions) {
   return DEFAULT_GROUP_NAMES.map(name => {
@@ -632,7 +632,7 @@ function switchToOverview() {
   })
 }
 
-const SIM_ROLES = ['老师', '企业导师', '逐日组观察员', '揽星组观察员', '驭风组观察员', '长空组观察员', '凌云组观察员', '巡天组观察员']
+const SIM_ROLES = ['老师', '企业导师', '逐日组观察员', '揽星组观察员', '御风组观察员', '长空组观察员', '凌云组观察员', '巡天组观察员']
 const WAVE_TICK_MS = 260
 const WAVE_DURATION_MS = 15000
 const FREEZE_TICK_MS = 60
