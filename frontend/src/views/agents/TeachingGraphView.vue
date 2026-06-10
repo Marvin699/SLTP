@@ -640,8 +640,8 @@ const teachingStatusMap = ref({}) // { nodeId: { status, node_name } }
 const TASK_SECTION_MAP = {
   8: [
     { sectionId: 'section1', sectionName: '环节一：运输方案汇报与知识深化' },
-    { sectionId: 'section2', sectionName: '环节二：无预案应急推演' },
-    { sectionId: 'section3', sectionName: '环节三：飞行前准备应急演练比拼' },
+    { sectionId: 'section2', sectionName: '环节二：应急推演与工单处置' },
+    { sectionId: 'section3', sectionName: '环节三：飞行演练与裁判评分' },
   ],
 }
 

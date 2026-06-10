@@ -389,6 +389,38 @@ def _seed_p5_graph_data(db):
         print("[Startup] P5四图谱数据导入完成")
 
 
+TASK8_POINT_FIXES = {
+    "8-3": "飞行前准备应急综合演练",
+    "8-7": "物资投送应急综合演练",
+}
+
+def _fix_task8_points(existing):
+    """修复任务8技能点名称（兼容旧数据）"""
+    import json
+    try:
+        subs = json.loads(existing.sub_projects) if isinstance(existing.sub_projects, str) else existing.sub_projects
+        changed = False
+        for sp in subs:
+            for task in sp.get("tasks", []):
+                if task.get("id") == 8:
+                    for pt in task.get("points", []):
+                        pid = pt.get("id", "")
+                        if pid in TASK8_POINT_FIXES and pt.get("name") != TASK8_POINT_FIXES[pid]:
+                            pt["name"] = TASK8_POINT_FIXES[pid]
+                            changed = True
+                    ids = {pt.get("id") for pt in task.get("points", [])}
+                    if "8-7" not in ids:
+                        task["points"].append({
+                            "id": "8-7", "name": "物资投送应急综合演练",
+                            "type": "skill", "standard": "1+X（高级）、审定指南§4.2(f)",
+                            "desc": "包含物资装载、航线规划、精准投放等场景"
+                        })
+                        changed = True
+        if changed:
+            existing.sub_projects = json.dumps(subs, ensure_ascii=False)
+    except Exception:
+        pass
+
 def _init_default_projects():
     """初始化默认课程项目数据（P5）"""
     from app.core.database import SessionLocal
@@ -399,7 +431,10 @@ def _init_default_projects():
         db = SessionLocal()
         existing = db.query(CourseProject).filter(CourseProject.project_id == "P5").first()
         if existing:
-            # P5已存在，检查是否缺少四图谱数据，缺少则自动补全
+            # P5已存在，检查并修复任务8技能点名称
+            _fix_task8_points(existing)
+            db.commit()
+            # 检查是否缺少四图谱数据，缺少则自动补全
             if not existing.knowledge_graph:
                 _seed_p5_graph_data(db)
             db.close()
