@@ -114,7 +114,7 @@
             </div>
           </div>
           <div class="glass chart-panel p1-radar-panel"><div class="panel-title"><span class="icon">🎯</span>五维能力对比雷达图</div><div id="p1Radar" class="chart-box"></div></div>
-          <div class="glass chart-panel"><div class="panel-title"><span class="icon">💬</span>互评加分记录</div><div id="p1PeerBar" class="chart-box" style="flex:1;"></div></div>
+          <div class="glass chart-panel"><div class="panel-title"><span class="icon">💬</span>汇报加分记录</div><div id="p1PeerBar" class="chart-box" style="flex:1;"></div></div>
           <div class="glass chart-panel"><div class="panel-title"><span class="icon">🤖</span>AI 数据采集日志</div><div class="ai-log"><div v-for="(line,i) in aiLogs" :key="i" class="ai-log-line"><span class="ai-log-time">{{ line.time }}</span><span class="ai-log-text">{{ line.text }}</span></div></div></div>
         </div>
 

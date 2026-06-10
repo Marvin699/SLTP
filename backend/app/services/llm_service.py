@@ -30,7 +30,7 @@ def get_client():
     return OpenAI(
         api_key=settings.LLM_API_KEY,
         base_url=settings.LLM_BASE_URL,
-        timeout=300.0,
+        timeout=180.0,
     )
 
 
@@ -53,7 +53,7 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3) -> str:
                 {"role": "user", "content": user_prompt},
             ],
             temperature=temperature,
-            max_tokens=8192,
+            max_tokens=4096,
         )
         msg = response.choices[0].message
         content = msg.content
