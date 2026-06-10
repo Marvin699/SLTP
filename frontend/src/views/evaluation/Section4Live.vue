@@ -67,8 +67,8 @@
           <div class="gc-video">
             <img v-if="groupStreamImgs[g.id]" :src="groupStreamImgs[g.id]" class="stream-img" />
             <video v-else :src="groupVideoSrcs[g.id] || ''" autoplay muted playsinline loop :ref="el => setVideoRef(g.id, el)"></video>
-            <div class="stream-tip" style="font-size:12px;color:#94a3b8;padding:4px 8px 8px">📷 等待学生端推流…</div>
-            <div class="video-placeholder">
+            <div v-if="!groupStreamImgs[g.id] && !groupVideoSrcs[g.id]" class="stream-tip" style="font-size:12px;color:#94a3b8;padding:4px 8px 8px">📷 等待学生端推流…</div>
+            <div v-if="!groupStreamImgs[g.id] && !groupVideoSrcs[g.id]" class="video-placeholder">
               <span>📷 等待学生端推流…</span>
             </div>
             <canvas class="video-overlay" :ref="el => setOverlayRef(g.id, el)"></canvas>
