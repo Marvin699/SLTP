@@ -182,9 +182,14 @@ function handleLogout() {
 .main-content {
   padding: clamp(12px, 1.5vw, 24px);
   min-height: calc(100vh - 60px);
-  max-width: 1920px;
-  margin: 0 auto;
   width: 100%;
+}
+
+@media (min-width: 2560px) {
+  .main-content {
+    padding-left: clamp(32px, 3vw, 64px);
+    padding-right: clamp(32px, 3vw, 64px);
+  }
 }
 
 @media (max-width: 1024px) {
