@@ -1,5 +1,6 @@
 <template>
-  <div class="task8-heatmap">
+  <div class="heatmap-wrap">
+  <div class="task8-heatmap" :style="{ transform: 'scale('+heatScale+')' }">
     <header class="header">
       <div class="header-left">
         <div class="logo-icon">翼</div>
@@ -141,11 +142,20 @@
       <span>加权班级均值 {{ classAvgWeighted }} · 达标率 87.5%</span>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import * as echarts from 'echarts'
+
+const heatScale = ref(1)
+function calcHeatScale() {
+  const baseW = 1920, baseH = 1080
+  const wScale = window.innerWidth / baseW
+  const hScale = window.innerHeight / baseH
+  heatScale.value = Math.min(wScale, hScale, 1.5)
+}
 
 const dims = [
   { name:'综合方案设计', weight:20 },
@@ -317,12 +327,21 @@ function openMember(m){
     })
   }, 80)
 }
-onMounted(()=>{ renderHeatmap(); window.addEventListener('resize', renderHeatmap) })
+onMounted(()=>{
+  calcHeatScale()
+  renderHeatmap()
+  window.addEventListener('resize', ()=>{ calcHeatScale(); renderHeatmap() })
+  document.body.style.overflow = 'hidden'
+})
+onBeforeUnmount(()=>{
+  document.body.style.overflow = ''
+})
 watch(selectedGroup, () => renderHeatmap())
 </script>
 
 <style scoped>
-.task8-heatmap{margin:0;padding:0;width:100%;min-height:100vh;background:#060d1f;color:#c8d4e0;display:flex;flex-direction:column;font-family:'Microsoft YaHei','PingFang SC',sans-serif;box-sizing:border-box;}
+.heatmap-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#060d1f;overflow:hidden;z-index:9999;}
+.task8-heatmap{margin:0;padding:0;width:1920px;height:1080px;background:#060d1f;color:#c8d4e0;display:flex;flex-direction:column;font-family:'Microsoft YaHei','PingFang SC',sans-serif;box-sizing:border-box;transform-origin:top left;}
 .header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:linear-gradient(180deg,rgba(0,20,40,0.95),rgba(6,13,31,0.98));border-bottom:1px solid rgba(0,168,255,0.2);position:relative;z-index:100;}
 .header-left{display:flex;align-items:center;gap:12px;}
 .logo-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#00a8ff,#00dc82);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:bold;}

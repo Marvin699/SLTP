@@ -1106,11 +1106,13 @@ onMounted(async () => {
   calcScale(); window.addEventListener('resize', calcScale)
   _rateTimer2 = setInterval(tick, 1000)
   window.addEventListener('resize', ()=>chartInstances.forEach(c=>{try{c.resize()}catch(e){}}))
+  document.body.style.overflow = 'hidden'
 })
 onUnmounted(() => {
   window.removeEventListener('resize', calcScale)
   if (_rateTimer) clearInterval(_rateTimer)
   if (_rateTimer2) clearInterval(_rateTimer2)
+  document.body.style.overflow = ''
 })
 watch(phase, ()=>{
   // 切换环节时只重新渲染图表，不重置技能点分数
