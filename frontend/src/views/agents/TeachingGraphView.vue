@@ -2205,7 +2205,7 @@ function handleTouchEnd() {
 }
 .detail-section { margin-bottom: 22px; }
 .detail-section h4 {
-  font-size: 18px;
+  font-size: 20px;
   color: #c0c8d4;
   margin: 0 0 12px;
   padding-bottom: 10px;
@@ -2218,7 +2218,7 @@ function handleTouchEnd() {
   line-height: 1.7;
   margin: 0;
 }
-.detail-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.detail-tags { display: flex; flex-direction: column; gap: 12px; }
 .detail-task-list { display: flex; flex-direction: column; gap: 10px; }
 .detail-task-item {
   display: flex;
@@ -2293,10 +2293,11 @@ function handleTouchEnd() {
   width: 100%;
 }
 :deep(.detail-tags .el-tag) {
-  font-size: 16px;
-  padding: 6px 12px;
-  height: auto;
-  line-height: 1.4;
+  font-size: 20px;
+  height: 40px;
+  padding: 0 18px;
+  line-height: 40px;
+  font-weight: 500;
 }
 :deep(.status-radio.el-radio) {
   margin-right: 0;
