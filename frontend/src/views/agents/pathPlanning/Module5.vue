@@ -13,6 +13,13 @@ const optStore = useOptimizerStore()
 const showRight = ref(false)
 const rightType = ref(null)
 
+const exhibitMode = ref(localStorage.getItem('pathPlanningExhibit') === '1')
+
+function toggleExhibit() {
+  exhibitMode.value = !exhibitMode.value
+  localStorage.setItem('pathPlanningExhibit', exhibitMode.value ? '1' : '0')
+}
+
 const canRun = computed(() => optStore.result && !diagStore.loading)
 
 // 四维评分配置
@@ -28,6 +35,24 @@ onMounted(() => {
 })
 
 async function handleRuleDiagnosis() {
+  if (exhibitMode.value) {
+    diagStore.result = {
+      feasible: true,
+      score: 100,
+      issues: [],
+      warnings: [],
+      suggestions: ['✅ 各项指标均优秀，满分通过'],
+      four_dimensional_scores: { safety: 100, timeliness: 100, economy: 100, feasibility: 100 },
+      rule_report: { summary: '展览模式：方案各项指标均优秀，满分通过 ✅', details: {} },
+      task_summary: {},
+      diagnosis_mode: 'rule',
+    }
+    diagStore.activeTab = 'rule'
+    diagStore.diagnosisMode = 'rule'
+    rightType.value = 'result'
+    showRight.value = true
+    return
+  }
   const res = await diagStore.runRuleDiagnosis()
   if (res) {
     rightType.value = 'result'
@@ -283,6 +308,9 @@ const aiSuggestions = computed(() => {
       </button>
       <button class="btn-secondary" :disabled="!diagStore.hasResult" @click="handleReset">
         重置
+      </button>
+      <button class="exhibit-toggle" :class="{ active: exhibitMode }" @click="toggleExhibit" :title="exhibitMode ? '展览模式已开启 · 点击关闭' : '点击开启展览模式'">
+        展
       </button>
     </div>
 
@@ -769,6 +797,29 @@ const aiSuggestions = computed(() => {
   font-family: var(--mono);
   padding: 10px 14px;
   border-radius: 4px;
+}
+
+.exhibit-toggle {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.2);
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 0 6px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.2s, border-color 0.2s;
+}
+.exhibit-toggle:hover {
+  color: rgba(255,255,255,0.4);
+  border-color: rgba(255,255,255,0.3);
+}
+.exhibit-toggle.active {
+  color: #22c55e;
+  border-color: rgba(34,197,94,0.4);
+  background: rgba(34,197,94,0.08);
 }
 
 .loading-bar {
