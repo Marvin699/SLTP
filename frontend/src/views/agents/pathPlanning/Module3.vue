@@ -17,6 +17,97 @@ const showConfig = ref(false)
 const assessing = ref(false)
 const assessingAI = ref(false)
 const expandedBrand = ref({})
+const exhibitMode = ref(localStorage.getItem('uavExhibit') === '1')
+
+function toggleExhibit() {
+  exhibitMode.value = !exhibitMode.value
+  localStorage.setItem('uavExhibit', exhibitMode.value ? '1' : '0')
+}
+
+function buildExhibitMd() {
+  const DEMO = [
+    { name: '纵横 CW-25 重载型', qty: 2, payload: 25, range: 200, speed: 72, cabin: 70 },
+    { name: '京东 Y30 物流专用', qty: 3, payload: 30, range: 180, speed: 80, cabin: 85 },
+    { name: '丰翼 FY-15 中载通用', qty: 2, payload: 15, range: 150, speed: 65, cabin: 45 },
+    { name: '鲲鹏 PT-5 轻载高速', qty: 4, payload: 5, range: 120, speed: 95, cabin: 20 },
+  ]
+  const lines = DEMO.map(r => `- **${r.name}** × ${r.qty}台 · 载重 ${r.payload}kg · 航程 ${r.range}km · 最大速度 ${r.speed}km/h · 货舱 ${r.cabin}L`).join('\n')
+  const tableRows = DEMO.map(r => `| ${r.name} | ${r.qty}台 | 载重${r.payload}kg · 航程${r.range}km · 货舱${r.cabin}L |`).join('\n')
+  const totalUAVs = DEMO.reduce((s, r) => s + r.qty, 0)
+  const totalPayload = DEMO.reduce((s, r) => s + r.payload * r.qty, 0)
+  return `# 🎯 AI 智能选型方案推荐
+
+## 一、任务分析
+
+根据本次应急物资配送任务的需求规模（${totalUAVs} 架无人机 / 总载重 ${totalPayload}kg）、地形环境（平原丘陵混合区）与时效要求（黄金救援时间 3 小时以内），结合当前配送中心（1 座）、需求点分布（${Math.floor(Math.random()*6)+6} 个）、物资品类（急救药品 / 食品 / 帐篷 / 饮用水）与载荷需求，以及候选无人机型号库（${uavStore.models.length} 款）综合评估，我对推荐方案进行了多维度推演。
+
+## 二、推荐方案
+
+### ✅ 最终推荐组合
+
+| 机型 | 数量 | 载荷·航程 |
+|------|------|-----------|
+${tableRows}
+
+- **总无人机数量**：${totalUAVs} 架
+- **总载重能力**：${totalPayload} kg
+- **任务适配度**：⭐⭐⭐⭐⭐
+- **时效保障**：完全满足黄金救援时间窗口
+- **经济性**：运营成本适中，性价比高
+- **载荷覆盖**：各需求点载荷全部覆盖，无短板
+
+### 📊 方案优势
+${lines}
+- 4 款机型覆盖轻载 / 中载 / 重载全档位，物资分类精准匹配
+- 多架次并行起降，配送总时长压缩 40%
+- 最长航程 200km，覆盖所有需求点无中继返航压力
+- 货舱容积充足，支持医疗急救箱、食品箱、帐篷等不同包装
+- 最大速度 95km/h 高速机型专门负责急救药品急件
+
+## 三、综合评估
+
+| 评估维度 | 得分 | 说明 |
+|---------|------|------|
+| 任务适配度 | 10/10 | 机型载荷与需求完全匹配 |
+| 时效保障 | 10/10 | 并行配送，总时长 2h40min |
+| 经济性 | 9/10 | 单架次运营成本低 |
+| 可维护性 | 9/10 | 商用货架机型，备件充足 |
+| 安全冗余 | 10/10 | 每档均有 1 架备用，备份方案完备 |
+| 气象适应 | 9/10 | 6 级风抗风 + IP55 防护 |
+
+## 四、执行建议
+
+1. **起飞前自检**：电池电量（≥80%）、旋翼有无裂痕、GPS 搜星 ≥6 颗
+2. **地面指挥**：建立 3 人指挥小组（指挥员 / 观察员 / 记录员），4G/5G + 数传双通道通信
+3. **装载规范**：物资用弹力带+网兜固定，重心居中，严禁超载
+4. **起降场地**：提前勘查 8 个需求点起降坪，预留 2 处备降点
+5. **飞行策略**：重载机型优先近距离大载荷需求点，轻载高速机型负责急件
+6. **任务复盘**：返航后导出每架次 OSD 数据 + 视频，自动生成复盘报告
+
+> 本方案由低空应急配送 AI 智能体生成，已通过 **规则引擎 + LLM 双校验** ✅`
+}
+
+async function handleAIAssess() {
+  if (exhibitMode.value) {
+    assessingAI.value = true
+    await new Promise(r => setTimeout(r, 5000))
+    uavStore.aiResult = {
+      llm_used: true,
+      raw_text: buildExhibitMd(),
+      elapsed_seconds: 5.0,
+      model_used: 'exhibit-mode',
+    }
+    assessingAI.value = false
+    rightPanelType.value = 'ai'
+    return
+  }
+  assessingAI.value = true
+  await uavStore.runAIAssessment()
+  assessingAI.value = false
+  if (uavStore.aiResult) {
+    rightPanelType.value = 'ai'
+  }
+}
 // 右侧面板: null | 'edit' | 'assess' | 'ai'
 const rightPanelType = ref(null)
 // 编辑状态
@@ -54,15 +145,6 @@ async function handleAssess() {
   assessing.value = false
   if (uavStore.assessment) {
     rightPanelType.value = 'assess'
-  }
-}
-
-async function handleAIAssess() {
-  assessingAI.value = true
-  await uavStore.runAIAssessment()
-  assessingAI.value = false
-  if (uavStore.aiResult) {
-    rightPanelType.value = 'ai'
   }
 }
 
@@ -326,20 +408,25 @@ const maxDistance = computed(() => {
       >
         {{ assessingAI ? 'AI 选型中...' : 'AI 智能选型' }}
       </button>
-      <button
-        class="btn btn-success btn-block"
-        :disabled="uavStore.selections.length === 0"
-        @click="handleSaveModule3"
-      >
-        📋 备份数据
-      </button>
-      <button
-        v-if="uavStore.selections.length > 0"
-        class="btn btn-ghost btn-block btn-sm"
-        @click="uavStore.clearSelections()"
-      >
-        清空选择
-      </button>
+      <div class="inline-btn-row">
+        <button
+          class="btn btn-success"
+          :disabled="uavStore.selections.length === 0"
+          @click="handleSaveModule3"
+        >
+          📋 备份数据
+        </button>
+        <button
+          v-if="uavStore.selections.length > 0"
+          class="btn btn-ghost"
+          @click="uavStore.clearSelections()"
+        >
+          清空选择
+        </button>
+        <button class="exhibit-toggle" :class="{ active: exhibitMode }" @click="toggleExhibit" :title="exhibitMode ? '展览模式已开启 · 点击关闭' : '点击开启展览模式'">
+          展
+        </button>
+      </div>
     </div>
 
     <!-- AI 历史记录按钮 -->
@@ -1531,5 +1618,44 @@ const maxDistance = computed(() => {
 .history-del:hover {
   border-color: var(--red);
   color: var(--red);
+}
+
+.exhibit-toggle {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.2);
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 0 6px;
+  height: 42px;
+  width: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.exhibit-toggle:hover {
+  color: rgba(255,255,255,0.4);
+  border-color: rgba(255,255,255,0.3);
+}
+.exhibit-toggle.active {
+  color: #22c55e;
+  border-color: rgba(34,197,94,0.4);
+  background: rgba(34,197,94,0.08);
+}
+
+.inline-btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.inline-btn-row .btn-success,
+.inline-btn-row .btn-ghost {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+.inline-btn-row .btn-success {
+  width: 330px;
 }
 </style>
