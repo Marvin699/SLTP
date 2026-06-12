@@ -61,7 +61,7 @@ onMounted(() => {
           <el-icon><ArrowLeft /></el-icon>
           返回首页
         </el-button>
-        <h1 class="page-title">低空应急智能体</h1>
+        <h1 class="page-title">无人机应急调度智能体</h1>
         <el-tag type="info" size="small">v1.2</el-tag>
       </div>
       <div class="header-right">

@@ -8,7 +8,7 @@ const app = useAppStore()
   <div class="topbar">
     <div class="topbar-logo">
       <span class="logo-icon">◈</span>
-      <span class="logo-text">低空应急智能体</span>
+      <span class="logo-text">无人机应急调度智能体</span>
     </div>
 
     <nav class="topbar-tabs">

@@ -61,7 +61,7 @@ function handleDeleteDemand(idx) {
     <div class="panel-header">
       <div class="panel-logo">
         <span class="logo-icon">◈</span>
-        <span class="logo-text">低空应急智能体</span>
+        <span class="logo-text">无人机应急调度智能体</span>
       </div>
       <span class="panel-badge">M1</span>
     </div>

@@ -48,7 +48,7 @@
           <div class="agent-card agent-blue" @click="goToAgent('/agent/path-planning')">
             <div class="card-content">
               <div class="card-left">
-                <h3 class="agent-title">路径规划</h3>
+                <h3 class="agent-title">应急调度</h3>
                 <p class="agent-subtitle">智能规划最优运输路线</p>
                 <ul class="feature-list">
                   <li><span class="dot blue"></span>多目标路径优化</li>

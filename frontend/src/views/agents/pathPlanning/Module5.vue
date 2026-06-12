@@ -142,7 +142,7 @@ async function handleAiDiagnosis() {
 - 第三批（60~90min）：轻载高速无人机（PT-5）起飞，负责急救药品急件
 - 地面指挥：建立 3 人指挥小组 + 双通道通信（4G/5G + 数传 900MHz）
 
-> 本报告由 **低空应急智能体 · AI 诊断引擎** 生成，已通过规则引擎双校验 ✅`,
+> 本报告由 **无人机应急调度智能体 · AI 诊断引擎** 生成，已通过规则引擎双校验 ✅`,
       task_summary: { total_tasks: 9, priority_p1: 3, priority_p2: 4, priority_p3: 2 },
       diagnosis_mode: 'ai',
     }
