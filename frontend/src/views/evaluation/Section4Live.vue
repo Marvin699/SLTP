@@ -92,8 +92,11 @@
         </div>
 
         <div class="gc-checklist">
-          <div class="cl-title">工单标准检查</div>
-          <div class="cl-list">
+          <div class="cl-title-row" @click="toggleChecklist(g.id)">
+            <span class="cl-title">工单标准检查</span>
+            <span class="cl-toggle">{{ collapsedChecklists[g.id] ? '▶' : '▼' }}</span>
+          </div>
+          <div v-if="!collapsedChecklists[g.id]" class="cl-list">
             <div v-for="c in g.checklist" :key="c.label" class="cl-item"
               :class="{ done: c.done, warn: c.warn }"
               @click="toggleCheck(g, c)">
@@ -793,6 +796,13 @@ const expandedGroupId = ref(null)
 function expandGroup(id) { expandedGroupId.value = id }
 function collapseGroup() { expandedGroupId.value = null }
 
+const collapsedChecklists = reactive({})
+groups.forEach(g => collapsedChecklists[g.id] = false)
+
+function toggleChecklist(id) {
+  collapsedChecklists[id] = !collapsedChecklists[id]
+}
+
 const recordingAll = ref(false)
 async function recordAll() {
   recordingAll.value = true
@@ -1163,7 +1173,9 @@ onUnmounted(() => {
 .score-rfid { font-size: 9px; color: #42d39c; margin-top: 2px; }
 
 .gc-checklist { background: rgba(0,0,0,0.22); border-radius: 8px; padding: 8px 10px; }
-.cl-title { font-size: 11px; opacity: 0.7; margin-bottom: 4px; font-weight: 700; }
+.cl-title-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 4px; user-select: none; }
+.cl-title { font-size: 11px; opacity: 0.7; font-weight: 700; }
+.cl-toggle { font-size: 10px; opacity: 0.6; }
 .cl-list { display: flex; flex-direction: column; gap: 2px; max-height: 120px; overflow-y: auto; }
 .cl-item { display: flex; align-items: center; gap: 6px; padding: 3px 5px; border-radius: 4px; font-size: 10px; cursor: pointer; background: rgba(255,255,255,0.03); }
 .cl-item.done { background: rgba(66,211,156,0.1); color: #42d39c; text-decoration: line-through; opacity: 0.8; }
