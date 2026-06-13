@@ -202,6 +202,37 @@ def set_default_case(case_id: int, db: Session = Depends(get_db)):
     return {"success": True, "message": "已设置为默认案例"}
 
 
+@router.get("/debug/material-data")
+def debug_material_data(case_id: Optional[int] = None, db: Session = Depends(get_db)):
+    """调试接口：查看案例的物资数据结构"""
+    if case_id:
+        cases = [db.query(CaseStudy).filter(CaseStudy.id == case_id, CaseStudy.is_active == True).first()]
+    else:
+        cases = db.query(CaseStudy).filter(CaseStudy.is_active == True).all()
+    
+    result = []
+    for case in cases:
+        if case:
+            material_data = json.loads(case.material_data) if case.material_data else None
+            result.append({
+                "id": case.id,
+                "name": case.name,
+                "demand_points": [d["name"] for d in json.loads(case.demand_points)],
+                "material_data_keys": list(material_data.keys()) if material_data else [],
+                "material_data_structure": {k: {
+                    "has_weight": "weight" in v or "total_weight" in v,
+                    "has_items": "items" in v,
+                    "has_supply_types": "supply_types" in v,
+                    "sample": {
+                        "weight": v.get("weight") or v.get("total_weight"),
+                        "supply_types": v.get("supply_types"),
+                        "items_count": len(v.get("items", []))
+                    }
+                } for k, v in material_data.items()} if material_data else {},
+            })
+    return {"cases": result}
+
+
 @router.post("/init-default")
 def init_default_case(db: Session = Depends(get_db)):
     """初始化默认案例（渠洋镇应急物资配送案例）"""
