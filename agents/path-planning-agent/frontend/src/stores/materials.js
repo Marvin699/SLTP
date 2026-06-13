@@ -356,13 +356,21 @@ export const useMaterialsStore = defineStore('materials', () => {
       return
     }
 
+    console.log('[materials] 案例物资数据keys:', Object.keys(caseMaterials))
+    console.log('[materials] 当前需求点:', pointsStore.demands.map(p => ({ id: p.id, name: p.name })))
+
     let loadedCount = 0
     const missingPoints = []
 
     // 为每个需求点加载案例中的物资数据
     for (const pt of pointsStore.demands) {
       // 尝试多种方式匹配：先按id匹配，再按name匹配
-      const info = caseMaterials[pt.id] || caseMaterials[pt.name] || findCaseMaterialByName(caseMaterials, pt.name)
+      const byId = caseMaterials[pt.id]
+      const byName = caseMaterials[pt.name]
+      const byFuzzy = findCaseMaterialByName(caseMaterials, pt.name)
+      const info = byId || byName || byFuzzy
+      
+      console.log(`[materials] 需求点 ${pt.name}(id=${pt.id}): byId=${!!byId}, byName=${!!byName}, byFuzzy=${!!byFuzzy}`)
       
       if (info) {
         try {

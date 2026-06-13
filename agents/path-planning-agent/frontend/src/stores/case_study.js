@@ -145,7 +145,9 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
 
     console.log('[case_study] 开始应用案例:', caseData.name)
     console.log('[case_study] 需求点数量:', caseData.demand_points?.length || 0)
+    console.log('[case_study] 需求点名称:', caseData.demand_points?.map(d => d.name))
     console.log('[case_study] 物资数据存在:', !!caseData.material_data)
+    console.log('[case_study] 物资数据结构:', caseData.material_data ? Object.keys(caseData.material_data) : 'null')
 
     // 先清除旧的物资分配
     materialsStore.clearAssignments()
@@ -173,6 +175,7 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
     await new Promise(resolve => setTimeout(resolve, 300))
 
     // 验证需求点是否已正确创建
+    console.log('[case_study] 新创建的需求点:', pointsStore.demands.map(p => ({ id: p.id, name: p.name })))
     if (pointsStore.demands.length === 0) {
       console.warn('[case_study] 需求点创建失败，尝试重新加载')
       return
