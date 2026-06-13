@@ -6,6 +6,7 @@ import {
   saveAssignment as apiSaveAssignment,
   fetchDefaultCase,
   loadSavedAssignments,
+  deleteSavedAssignment as apiDeleteAssignment,
 } from '../api/materials'
 
 export const useMaterialsStore = defineStore('materials', () => {
@@ -51,7 +52,8 @@ export const useMaterialsStore = defineStore('materials', () => {
       if (res.data) {
         const pointsStore = usePointsStore()
         const remapped = {}
-        const unmatched = []
+        const unmatchedIds = []
+        const unmatchedNames = []
         
         // 规范化 risk_warnings 字段，并尝试按 point_name 重新映射
         for (const key of Object.keys(res.data)) {
@@ -69,27 +71,59 @@ export const useMaterialsStore = defineStore('materials', () => {
             // point_id 不匹配，尝试按 point_name 查找
             const ptByName = pointsStore.demands.find(p => p.name === a.point_name)
             if (ptByName) {
+              // 保存旧的 point_id
+              const oldPointId = a.point_id
               // 用新的 point_id 保存
               a.point_id = ptByName.id
               remapped[ptByName.id] = a
+              // 清理旧的 point_id 数据
+              cleanupOldAssignment(oldPointId, ptByName.id)
             } else {
-              unmatched.push(a.point_name || a.point_id)
+              unmatchedIds.push(a.point_id)
+              unmatchedNames.push(a.point_name)
             }
           }
         }
         
         assignments.value = remapped
         
-        if (unmatched.length > 0) {
-          console.warn('[materials] 以下物资数据未匹配到需求点:', unmatched)
-        } else {
-          console.log(`[materials] 从数据库加载 ${Object.keys(remapped).length} 条物资数据`)
+        // 清理不匹配的数据
+        if (unmatchedIds.length > 0) {
+          console.warn(`[materials] 发现 ${unmatchedIds.length} 条无效物资数据，正在清理...`)
+          cleanupInvalidAssignments(unmatchedIds)
         }
+        
+        console.log(`[materials] 从数据库加载 ${Object.keys(remapped).length} 条物资数据`)
       }
     } catch (e) {
       console.error('[materials] 加载数据库物资数据失败:', e)
       assignments.value = {}
     }
+  }
+
+  // 清理旧的 point_id 数据
+  async function cleanupOldAssignment(oldPointId, newPointId) {
+    try {
+      // 只有当 oldPointId != newPointId 时才清理
+      if (oldPointId !== newPointId) {
+        await apiDeleteAssignment(oldPointId)
+        console.log(`[materials] 清理旧的物资数据: point_id=${oldPointId}`)
+      }
+    } catch (e) {
+      console.warn('[materials] 清理旧物资数据失败:', e.message)
+    }
+  }
+
+  // 批量清理无效数据
+  async function cleanupInvalidAssignments(pointIds) {
+    for (const pointId of pointIds) {
+      try {
+        await apiDeleteAssignment(pointId)
+      } catch (e) {
+        // 忽略错误，可能数据已经被删除
+      }
+    }
+    console.log(`[materials] 已清理 ${pointIds.length} 条无效物资数据`)
   }
 
   async function assignMaterials(pointId, categoryIds) {
