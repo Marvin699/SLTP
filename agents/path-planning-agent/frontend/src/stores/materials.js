@@ -7,6 +7,7 @@ import {
   fetchDefaultCase,
   loadSavedAssignments,
   deleteSavedAssignment as apiDeleteAssignment,
+  deleteAllSavedAssignments as apiDeleteAllAssignments,
 } from '../api/materials'
 
 export const useMaterialsStore = defineStore('materials', () => {
@@ -314,6 +315,16 @@ export const useMaterialsStore = defineStore('materials', () => {
     assignments.value = {}
   }
 
+  async function clearAllFromDb() {
+    assignments.value = {}
+    try {
+      await apiDeleteAllAssignments()
+      console.log('[materials] 已清空所有物资数据')
+    } catch (e) {
+      console.warn('[materials] 清空物资数据失败:', e.message)
+    }
+  }
+
   async function loadDefaultCase() {
     loading.value = true
     error.value = null
@@ -476,5 +487,6 @@ export const useMaterialsStore = defineStore('materials', () => {
     updatePriority,
     updateDeliveryMode,
     clearAssignments,
+    clearAllFromDb,
   }
 })

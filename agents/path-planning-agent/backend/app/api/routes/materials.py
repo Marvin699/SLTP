@@ -223,3 +223,15 @@ def delete_saved_assignment(point_id: int):
         return {"status": "ok"}
     finally:
         db.close()
+
+
+@router.delete("/saved")
+def delete_all_saved_assignments():
+    """删除所有物资分配"""
+    db = SessionLocal()
+    try:
+        db.query(MaterialAssignment).delete()
+        db.commit()
+        return {"status": "ok"}
+    finally:
+        db.close()

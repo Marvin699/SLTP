@@ -21,3 +21,6 @@ export const loadSavedAssignments = () => api.get('/saved')
 
 /** 删除指定需求点的物资分配 */
 export const deleteSavedAssignment = (pointId) => api.delete(`/saved/${pointId}`)
+
+/** 删除所有物资分配 */
+export const deleteAllSavedAssignments = () => api.delete('/saved')

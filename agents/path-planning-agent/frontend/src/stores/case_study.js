@@ -149,8 +149,8 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
     console.log('[case_study] 物资数据存在:', !!caseData.material_data)
     console.log('[case_study] 物资数据结构:', caseData.material_data ? Object.keys(caseData.material_data) : 'null')
 
-    // 先清除旧的物资分配
-    materialsStore.clearAssignments()
+    // 彻底清除旧的物资分配（包括前端状态和数据库）
+    await materialsStore.clearAllFromDb()
 
     // 清除旧的无人机选型数据
     const uavsStoreModule = await import('./uavs')

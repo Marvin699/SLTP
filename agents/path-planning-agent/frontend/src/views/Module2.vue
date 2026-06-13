@@ -40,29 +40,18 @@ onMounted(async () => {
   await matStore.loadCategories()
   await caseStore.loadCases()
   
-  // 始终尝试从数据库加载物资数据
-  try {
-    await matStore.loadFromDb()
-    console.log('[Module2] 从数据库加载物资数据:', matStore.assignedCount, '条')
-  } catch (e) {
-    console.warn('[Module2] 从数据库加载物资数据失败:', e.message)
-  }
-  
-  // 如果需求点已加载，检查数据匹配
-  if (pointsStore.demands.length > 0 && matStore.assignedCount > 0) {
-    const currentDemandNames = pointsStore.demands.map(d => d.name)
-    const loadedAssignmentNames = Object.values(matStore.assignments).map(a => a.point_name)
-    
-    // 只清除不匹配的项，保留匹配的
-    const hasMatch = loadedAssignmentNames.some(name => currentDemandNames.includes(name))
-    if (!hasMatch) {
-      console.warn('[Module2] 物资数据与当前需求点不匹配，清除所有数据')
-      matStore.clearAssignments()
+  // 只有当需求点已加载时才从数据库加载物资数据
+  if (pointsStore.demands.length > 0) {
+    try {
+      await matStore.loadFromDb()
+      console.log('[Module2] 从数据库加载物资数据:', matStore.assignedCount, '条')
+    } catch (e) {
+      console.warn('[Module2] 从数据库加载物资数据失败:', e.message)
     }
   }
   
   // 如果没有数据，尝试从工作空间加载
-  if (matStore.assignedCount === 0) {
+  if (matStore.assignedCount === 0 && pointsStore.demands.length > 0) {
     console.log('[Module2] 没有物资数据，尝试从工作空间加载')
     await loadFromWorkspace()
   }
