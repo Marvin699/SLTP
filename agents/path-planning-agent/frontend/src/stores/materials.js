@@ -63,18 +63,22 @@ export const useMaterialsStore = defineStore('materials', () => {
             a.risk_warnings = a.risk_warnings ? a.risk_warnings.split('；').filter(Boolean) : []
           }
           
+          // 确保 point_id 是数字类型（如果可能）
+          const pointId = Number(a.point_id) || a.point_id
+          
           // 检查 point_id 是否在当前需求点中存在
-          const existingPt = pointsStore.demands.find(p => p.id === a.point_id)
+          const existingPt = pointsStore.demands.find(p => p.id === pointId || String(p.id) === String(a.point_id))
           if (existingPt) {
-            // point_id 匹配，直接使用
-            remapped[a.point_id] = a
+            // point_id 匹配，直接使用（使用 pt.id 作为 key，确保类型一致）
+            remapped[existingPt.id] = a
+            a.point_id = existingPt.id  // 确保 point_id 字段也一致
           } else {
             // point_id 不匹配，尝试按 point_name 查找
             const ptByName = pointsStore.demands.find(p => p.name === a.point_name)
             if (ptByName) {
               // 保存旧的 point_id
               const oldPointId = a.point_id
-              // 用新的 point_id 保存
+              // 用新的 point_id 保存（使用 ptByName.id 作为 key）
               a.point_id = ptByName.id
               remapped[ptByName.id] = a
               // 清理旧的 point_id 数据
@@ -95,6 +99,7 @@ export const useMaterialsStore = defineStore('materials', () => {
         }
         
         console.log(`[materials] 从数据库加载 ${Object.keys(remapped).length} 条物资数据`)
+        console.log(`[materials] remapped keys 类型: ${Object.keys(remapped).map(k => typeof k)}`)
       }
     } catch (e) {
       console.error('[materials] 加载数据库物资数据失败:', e)
@@ -168,7 +173,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   function toggleCategory(pointId, categoryId) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (!assignment) {
       const pointsStore = usePointsStore()
       const pt = pointsStore.demands.find(p => p.id === pointId)
@@ -222,7 +227,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   function updateItem(pointId, itemIndex, field, value) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment && assignment.items[itemIndex]) {
       assignment.items[itemIndex][field] = value
       if (field === 'qty' || field === 'unit_weight') {
@@ -233,7 +238,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   function addItem(pointId) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment) {
       assignment.items.push({
         name: '',
@@ -248,7 +253,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   function removeItem(pointId, itemIndex) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment && assignment.items[itemIndex]) {
       assignment.items.splice(itemIndex, 1)
       assignment.custom_items = assignment.items
@@ -257,7 +262,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   function _recalculateTotal(pointId) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment) {
       assignment.total_weight = assignment.items.reduce((sum, item) => {
         return sum + ((item.unit_weight || 0) * (item.qty || 0))
@@ -266,16 +271,33 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   function getAssignment(pointId) {
-    return assignments.value[pointId] || null
+    // 尝试多种类型匹配（字符串或数字）
+    const strId = String(pointId)
+    const numId = Number(pointId)
+    
+    // 先直接用原始类型查找
+    if (assignments.value[pointId]) {
+      return assignments.value[pointId]
+    }
+    // 再用字符串类型查找
+    if (assignments.value[strId]) {
+      return assignments.value[strId]
+    }
+    // 最后用数字类型查找（如果可能）
+    if (!isNaN(numId) && assignments.value[numId]) {
+      return assignments.value[numId]
+    }
+    
+    return null
   }
 
   function isCategorySelected(pointId, categoryId) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     return assignment && assignment.category_ids && assignment.category_ids.includes(categoryId)
   }
 
   async function _saveToDb(pointId) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment) {
       try {
         await apiSaveAssignment({
@@ -296,7 +318,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   async function updatePriority(pointId, priority) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment) {
       assignment.priority = priority
       await _saveToDb(pointId)
@@ -304,7 +326,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   async function updateDeliveryMode(pointId, mode) {
-    const assignment = assignments.value[pointId]
+    const assignment = getAssignment(pointId)
     if (assignment) {
       assignment.supply_types = mode
       await _saveToDb(pointId)
