@@ -49,16 +49,45 @@ export const useMaterialsStore = defineStore('materials', () => {
     try {
       const res = await loadSavedAssignments()
       if (res.data) {
-        // 规范化 risk_warnings 字段（后端存的是字符串，前端需要数组）
+        const pointsStore = usePointsStore()
+        const remapped = {}
+        const unmatched = []
+        
+        // 规范化 risk_warnings 字段，并尝试按 point_name 重新映射
         for (const key of Object.keys(res.data)) {
           const a = res.data[key]
           if (typeof a.risk_warnings === 'string') {
             a.risk_warnings = a.risk_warnings ? a.risk_warnings.split('；').filter(Boolean) : []
           }
+          
+          // 检查 point_id 是否在当前需求点中存在
+          const existingPt = pointsStore.demands.find(p => p.id === a.point_id)
+          if (existingPt) {
+            // point_id 匹配，直接使用
+            remapped[a.point_id] = a
+          } else {
+            // point_id 不匹配，尝试按 point_name 查找
+            const ptByName = pointsStore.demands.find(p => p.name === a.point_name)
+            if (ptByName) {
+              // 用新的 point_id 保存
+              a.point_id = ptByName.id
+              remapped[ptByName.id] = a
+            } else {
+              unmatched.push(a.point_name || a.point_id)
+            }
+          }
         }
-        assignments.value = { ...res.data }
+        
+        assignments.value = remapped
+        
+        if (unmatched.length > 0) {
+          console.warn('[materials] 以下物资数据未匹配到需求点:', unmatched)
+        } else {
+          console.log(`[materials] 从数据库加载 ${Object.keys(remapped).length} 条物资数据`)
+        }
       }
-    } catch {
+    } catch (e) {
+      console.error('[materials] 加载数据库物资数据失败:', e)
       assignments.value = {}
     }
   }
@@ -286,56 +315,101 @@ export const useMaterialsStore = defineStore('materials', () => {
     // 清除所有现有的物资分配
     assignments.value = {}
 
+    // 检查案例物资数据是否存在
+    if (!caseMaterials || Object.keys(caseMaterials).length === 0) {
+      console.warn('[materials] 案例物资数据为空，跳过加载')
+      assignments.value = {}
+      return
+    }
+
+    let loadedCount = 0
+    const missingPoints = []
+
     // 为每个需求点加载案例中的物资数据
     for (const pt of pointsStore.demands) {
-      if (caseMaterials[pt.name]) {
-        const info = caseMaterials[pt.name]
-        const convertedItems = (info.items || []).map(item => {
-          const uw = item.unit_weight || item.weight || 0
-          const q = item.qty || item.quantity || 1
-          return {
-            name: item.name || '',
-            unit: 'kg',
-            unit_weight: uw,
-            qty: q,
-            subtotal: uw * q,
-            category_id: null,
+      // 尝试多种方式匹配：先按id匹配，再按name匹配
+      const info = caseMaterials[pt.id] || caseMaterials[pt.name] || findCaseMaterialByName(caseMaterials, pt.name)
+      
+      if (info) {
+        try {
+          const convertedItems = (info.items || []).map(item => {
+            const uw = item.unit_weight || item.weight || 0
+            const q = item.qty || item.quantity || 1
+            return {
+              name: item.name || '',
+              unit: 'kg',
+              unit_weight: uw,
+              qty: q,
+              subtotal: uw * q,
+              category_id: null,
+            }
+          })
+
+          let supplyTypes = []
+          if (info.supply_types) {
+            if (Array.isArray(info.supply_types)) {
+              supplyTypes = info.supply_types
+            } else if (typeof info.supply_types === 'string') {
+              supplyTypes = [info.supply_types]
+            }
           }
-        })
 
-        let supplyTypes = []
-        if (info.supply_types) {
-          if (Array.isArray(info.supply_types)) {
-            supplyTypes = info.supply_types
-          } else if (typeof info.supply_types === 'string') {
-            supplyTypes = [info.supply_types]
+          // 从 supply_types 推导 category_ids（去重）
+          const categoryIds = [...new Set(
+            supplyTypes.map(t => SUPPLY_TYPE_TO_CATEGORY[t]).filter(Boolean)
+          )]
+
+          assignments.value[pt.id] = {
+            point_id: pt.id,
+            point_name: pt.name,
+            category_ids: info.category_ids || categoryIds,
+            custom_items: convertedItems,
+            total_weight: info.weight || info.total_weight || 0,
+            priority: info.priority || 3,
+            special_requirements: info.special_requirements || '',
+            risk_warnings: Array.isArray(info.risk_warnings) ? info.risk_warnings : (info.risk_warnings ? [info.risk_warnings] : []),
+            supply_types: supplyTypes,
+            items: convertedItems,
           }
+
+          // 保存到数据库
+          await _saveToDb(pt.id)
+          loadedCount++
+        } catch (e) {
+          console.error(`[materials] 加载需求点 ${pt.name} 物资数据失败:`, e)
+          missingPoints.push(pt.name)
         }
-
-        // 从 supply_types 推导 category_ids（去重）
-        const categoryIds = [...new Set(
-          supplyTypes.map(t => SUPPLY_TYPE_TO_CATEGORY[t]).filter(Boolean)
-        )]
-
-        assignments.value[pt.id] = {
-          point_id: pt.id,
-          point_name: pt.name,
-          category_ids: info.category_ids || categoryIds,
-          custom_items: convertedItems,
-          total_weight: info.weight || info.total_weight || 0,
-          priority: info.priority || 3,
-          special_requirements: info.special_requirements || '',
-          risk_warnings: Array.isArray(info.risk_warnings) ? info.risk_warnings : (info.risk_warnings ? [info.risk_warnings] : []),
-          supply_types: supplyTypes,
-          items: convertedItems,
-        }
-
-        await _saveToDb(pt.id)
+      } else {
+        missingPoints.push(pt.name)
       }
     }
 
     // 触发响应式更新
     assignments.value = { ...assignments.value }
+
+    // 验证结果
+    const totalCount = pointsStore.demands.length
+    if (loadedCount === 0) {
+      console.warn('[materials] 未加载任何物资数据！可能是案例数据为空或名称不匹配')
+    } else if (loadedCount < totalCount) {
+      console.warn(`[materials] 部分需求点物资数据缺失: ${missingPoints.join(', ')}`)
+    } else {
+      console.log(`[materials] 成功加载 ${loadedCount}/${totalCount} 个需求点的物资数据`)
+    }
+  }
+
+  // 辅助函数：按名称模糊查找案例物资
+  function findCaseMaterialByName(caseMaterials, name) {
+    // 精确匹配
+    if (caseMaterials[name]) return caseMaterials[name]
+    // 去除空格后匹配
+    const cleanName = name.trim()
+    for (const key of Object.keys(caseMaterials)) {
+      if (key.trim() === cleanName) {
+        return caseMaterials[key]
+      }
+    }
+    return null
   }
 
   return {

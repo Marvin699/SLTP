@@ -6,6 +6,7 @@ import httpx
 from app.core.database import get_db
 from app.core.config import settings
 from app.models.point import DeliveryPoint
+from app.models.assignment import MaterialAssignment
 from app.schemas.point import (
     PointCreate,
     PointUpdate,
@@ -49,6 +50,9 @@ def get_distance_matrix(db: Session = Depends(get_db)):
 @router.post("/batch", response_model=List[PointResponse], status_code=201, summary="批量创建点位")
 def batch_create_points(data: BatchPointCreate, db: Session = Depends(get_db)):
     """批量创建点位，先清空旧数据再写入"""
+    # 先删除所有物资分配数据（因为point_id会变化）
+    db.query(MaterialAssignment).delete()
+    # 再删除所有点位数据
     db.query(DeliveryPoint).delete()
     db.commit()
 

@@ -143,8 +143,17 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
     const pointsStore = pointsStoreModule.usePointsStore()
     const materialsStore = materialsStoreModule.useMaterialsStore()
 
+    console.log('[case_study] 开始应用案例:', caseData.name)
+    console.log('[case_study] 需求点数量:', caseData.demand_points?.length || 0)
+    console.log('[case_study] 物资数据存在:', !!caseData.material_data)
+
     // 先清除旧的物资分配
     materialsStore.clearAssignments()
+
+    // 清除旧的无人机选型数据
+    const uavsStoreModule = await import('./uavs')
+    const uavsStore = uavsStoreModule.useUavsStore()
+    uavsStore.selections = []
 
     // 应用配送中心和需求点（第一个参数是需求点列表，第二个参数是配送中心）
     await pointsStore.submitBatch(
@@ -160,12 +169,26 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
       }
     )
 
-    // 等待一下让模块二的watch触发完成
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // 等待数据库写入完成并触发watch
+    await new Promise(resolve => setTimeout(resolve, 300))
 
-    // 应用物资分配（在watch之后，避免被覆盖）
-    if (caseData.material_data) {
+    // 验证需求点是否已正确创建
+    if (pointsStore.demands.length === 0) {
+      console.warn('[case_study] 需求点创建失败，尝试重新加载')
+      return
+    }
+
+    // 应用物资分配
+    if (caseData.material_data && Object.keys(caseData.material_data).length > 0) {
       await materialsStore.loadAssignmentFromCase(caseData.material_data)
+      
+      // 验证物资数据加载结果
+      const loadedCount = Object.keys(materialsStore.assignments).length
+      console.log(`[case_study] 物资数据加载完成: ${loadedCount}/${pointsStore.demands.length}`)
+    } else {
+      // 没有物资数据，确保清空物资分配
+      console.log('[case_study] 案例无物资数据，跳过加载')
+      materialsStore.clearAssignments()
     }
 
     // 如果案例包含预设路线方案，加载到优化器（教学示范用）
