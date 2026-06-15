@@ -13,6 +13,7 @@ export const useAppStore = defineStore('app', () => {
     { id: 6, label: '方案优出', icon: '📊' },
     { id: 7, label: '案例管理', icon: '📚' },
     { id: 8, label: '系统设置', icon: '⚙' },
+    { id: 9, label: '图片管理', icon: '🖼' },
   ]
 
   function setModule(id) {

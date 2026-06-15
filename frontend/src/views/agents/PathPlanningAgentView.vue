@@ -17,6 +17,7 @@ import Module5 from '@/views/agents/pathPlanning/Module5.vue'
 import Module6 from '@/views/agents/pathPlanning/Module6.vue'
 import Module7 from '@/views/agents/pathPlanning/Module7.vue'
 import Module8 from '@/views/agents/pathPlanning/Module8.vue'
+import Module11 from '@/views/agents/pathPlanning/Module11.vue'
 import RoutesDetail from '@/views/agents/RoutesDetail.vue'
 import { useTeacherSolutionsStore } from '@/stores/pathPlanning/teacherSolutions'
 
@@ -80,6 +81,11 @@ onMounted(() => {
     <!-- Main area -->
     <div class="main-area routes-mode" v-if="app.activeModule === 9">
       <RoutesDetail embedded-full />
+    </div>
+
+    <!-- 图片管理（模块 11）- 全屏布局 -->
+    <div class="main-area fullscreen" v-else-if="app.activeModule === 11">
+      <Module11 />
     </div>
 
     <!-- 教师端方案审阅（模块 10）-->
@@ -155,6 +161,9 @@ onMounted(() => {
 
           <!-- Module 8: System Settings -->
           <Module8 v-else-if="app.activeModule === 8" />
+
+          <!-- Module 11: Image Management -->
+          <Module11 v-else-if="app.activeModule === 11" />
 
           <!-- Placeholder for other modules -->
           <div
@@ -302,6 +311,16 @@ onMounted(() => {
   flex: 1;
   display: flex;
   overflow: hidden;
+}
+
+.main-area.fullscreen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--navy2);
+  width: 100%;
+  align-items: center;
 }
 
 /* Left side panel */

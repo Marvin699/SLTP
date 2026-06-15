@@ -1,625 +1,739 @@
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.oxml.ns import qn
+from lxml import etree
 import os
 
 SLIDE_W = Inches(13.333)
 SLIDE_H = Inches(7.5)
 
-DARK_BG = RGBColor(0x06, 0x11, 0x1f)
-ACCENT_BLUE = RGBColor(0x1a, 0x90, 0xff)
-ACCENT_CYAN = RGBColor(0x00, 0xe5, 0xff)
-ACCENT_GOLD = RGBColor(0xff, 0xb3, 0x00)
-WHITE = RGBColor(0xff, 0xff, 0xff)
-LIGHT_GRAY = RGBColor(0xcc, 0xd6, 0xe0)
-SOFT_GRAY = RGBColor(0x9f, 0xac, 0xb8)
+BG_DEEP = RGBColor(0x04, 0x0b, 0x18)
+BG_DARK = RGBColor(0x06, 0x11, 0x1f)
+BG_CARD = RGBColor(0x0c, 0x1f, 0x35)
 
-FONT_TITLE = "PingFang SC"
-FONT_BODY = "PingFang SC"
+CYAN = RGBColor(0x00, 0xe5, 0xff)
+CYAN_DIM = RGBColor(0x00, 0xa8, 0xcc)
+GOLD = RGBColor(0xff, 0xb3, 0x00)
+GOLD_DIM = RGBColor(0xcc, 0x8f, 0x00)
+BLUE = RGBColor(0x1a, 0x90, 0xff)
+PURPLE = RGBColor(0xa8, 0x55, 0xf7)
+GREEN = RGBColor(0x00, 0xd4, 0xaa)
+RED_ACCENT = RGBColor(0xff, 0x47, 0x57)
+
+WHITE = RGBColor(0xff, 0xff, 0xff)
+LIGHT = RGBColor(0xcc, 0xd6, 0xe0)
+MUTED = RGBColor(0x6b, 0x7d, 0x8c)
+
+FONT = "PingFang SC"
 FONT_MONO = "Menlo"
 
-OUT = os.path.join(os.path.dirname(__file__), "低空应急智能运输_路演PPT_5分钟.pptx")
+OUT = os.path.join(os.path.dirname(__file__), "低空应急智能运输_路演PPT.pptx")
 
 
 def blank_slide(prs):
-    layout = prs.slide_layouts[6]  # blank
-    return prs.slides.add_slide(layout)
+    return prs.slides.add_slide(prs.slide_layouts[6])
 
 
-def set_slide_bg(slide, color):
+def set_bg(slide, color=BG_DARK):
     bg = slide.background
     fill = bg.fill
     fill.solid()
     fill.fore_color.rgb = color
 
 
-def add_top_bar(slide):
-    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, SLIDE_W, Inches(0.08))
-    shape.line.fill.background()
-    shape.fill.solid()
-    shape.fill.fore_color.rgb = ACCENT_BLUE
+def add_decorative_corners(slide, color=CYAN):
+    for (x, y) in [(0, 0), (SLIDE_W, 0), (0, SLIDE_H), (SLIDE_W, SLIDE_H)]:
+        corner = slide.shapes.add_shape(MSO_SHAPE.LINE, x, y, Inches(0.4), Inches(0.02))
+        corner.line.color.rgb = color
+        corner.line.width = Pt(1.5)
+        corner.fill.background()
 
 
-def add_bottom_bar(slide):
-    shape = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, 0, SLIDE_H - Inches(0.4), SLIDE_W, Inches(0.4)
-    )
-    shape.line.fill.background()
-    shape.fill.solid()
-    shape.fill.fore_color.rgb = RGBColor(0x0b, 0x1d, 0x32)
+def add_top_accent(slide):
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, SLIDE_W, Inches(0.05))
+    bar.line.fill.background()
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = BLUE
+    glow = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, Inches(0.05), SLIDE_W, Inches(0.02))
+    glow.line.fill.background()
+    glow.fill.solid()
+    glow.fill.fore_color.rgb = CYAN_DIM
 
-    left = slide.shapes.add_textbox(
-        Inches(0.5), SLIDE_H - Inches(0.38), Inches(12), Inches(0.38)
-    )
-    tf = left.text_frame
-    tf.word_wrap = True
+
+def add_footer(slide, n, total):
+    line = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.6), SLIDE_H - Inches(0.6), SLIDE_W - Inches(1.2), Inches(0.01))
+    line.line.fill.background()
+    line.fill.solid()
+    line.fill.fore_color.rgb = RGBColor(0x1a, 0x30, 0x50)
+
+    tb = slide.shapes.add_textbox(Inches(0.6), SLIDE_H - Inches(0.55), Inches(8), Inches(0.4))
+    tf = tb.text_frame
     p = tf.paragraphs[0]
-    run = p.add_run()
-    run.text = "智慧低空应急运输教学平台 · 5 分钟路演"
-    run.font.size = Pt(10)
-    run.font.color.rgb = SOFT_GRAY
-    run.font.name = FONT_BODY
-    p.alignment = PP_ALIGN.LEFT
+    r = p.add_run()
+    r.text = "智慧低空应急运输教学平台"
+    r.font.size = Pt(11)
+    r.font.color.rgb = MUTED
+    r.font.name = FONT
+
+    num = slide.shapes.add_textbox(SLIDE_W - Inches(1.2), SLIDE_H - Inches(0.55), Inches(0.8), Inches(0.4))
+    tf2 = num.text_frame
+    p2 = tf2.paragraphs[0]
+    r2 = p2.add_run()
+    r2.text = f"{n} / {total}"
+    r2.font.size = Pt(12)
+    r2.font.color.rgb = CYAN
+    r2.font.name = FONT_MONO
+    r2.font.bold = True
+    p2.alignment = PP_ALIGN.RIGHT
+
+    dots = slide.shapes.add_textbox(SLIDE_W / 2 - Inches(1), SLIDE_H - Inches(0.55), Inches(2), Inches(0.4))
+    tf3 = dots.text_frame
+    tf3.word_wrap = False
+    p3 = tf3.paragraphs[0]
+    parts = []
+    for i in range(total):
+        if i < n - 1:
+            parts.append("●")
+        elif i == n - 1:
+            parts.append("●")
+        else:
+            parts.append("○")
+    r3 = p3.add_run()
+    r3.text = "  ".join(parts)
+    r3.font.size = Pt(8)
+    r3.font.color.rgb = CYAN if n else MUTED
+    r3.font.name = FONT_MONO
+    p3.alignment = PP_ALIGN.CENTER
 
 
-def add_page_num(slide, n, total):
-    tb = slide.shapes.add_textbox(
-        SLIDE_W - Inches(1.2), SLIDE_H - Inches(0.38), Inches(1), Inches(0.38)
-    )
+def add_title_block(slide, title, subtitle=None):
+    tb = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(11), Inches(1.3))
     tf = tb.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
-    run = p.add_run()
-    run.text = f"{n} / {total}"
-    run.font.size = Pt(10)
-    run.font.color.rgb = SOFT_GRAY
-    run.font.name = FONT_MONO
-    p.alignment = PP_ALIGN.RIGHT
+    r = p.add_run()
+    r.text = title
+    r.font.size = Pt(36)
+    r.font.bold = True
+    r.font.color.rgb = WHITE
+    r.font.name = FONT
 
-
-def add_heading(slide, title, subtitle=None, top=Inches(0.45)):
-    tb = slide.shapes.add_textbox(Inches(0.65), top, Inches(12), Inches(0.9))
-    tf = tb.text_frame
-    tf.word_wrap = True
-
-    p = tf.paragraphs[0]
-    run = p.add_run()
-    run.text = title
-    run.font.size = Pt(32)
-    run.font.bold = True
-    run.font.color.rgb = WHITE
-    run.font.name = FONT_TITLE
-    p.alignment = PP_ALIGN.LEFT
+    accent_line = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(0.7) + Inches(0.5), Inches(0.8), Inches(0.04))
+    accent_line.line.fill.background()
+    accent_line.fill.solid()
+    accent_line.fill.fore_color.rgb = CYAN
 
     if subtitle:
         p2 = tf.add_paragraph()
-        p2.space_before = Pt(4)
+        p2.space_before = Pt(8)
         r2 = p2.add_run()
         r2.text = subtitle
-        r2.font.size = Pt(13)
-        r2.font.color.rgb = ACCENT_CYAN
-        r2.font.name = FONT_BODY
-        p2.alignment = PP_ALIGN.LEFT
-
-    line = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, Inches(0.65), top + Inches(0.92), Inches(12), Inches(0.03)
-    )
-    line.line.fill.background()
-    line.fill.solid()
-    line.fill.fore_color.rgb = ACCENT_BLUE
+        r2.font.size = Pt(15)
+        r2.font.color.rgb = LIGHT
+        r2.font.name = FONT
 
 
-def add_card(slide, left, top, width, height, title, body_lines=None, accent=ACCENT_CYAN, bg=RGBColor(0x0c, 0x1f, 0x35)):
-    shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
-    shape.line.color.rgb = accent
-    shape.line.width = Pt(1.2)
-    shape.fill.solid()
-    shape.fill.fore_color.rgb = bg
+def add_glow_card(slide, left, top, width, height, title, body=None, icon="", accent=CYAN):
+    card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+    card.line.color.rgb = accent
+    card.line.width = Pt(1.5)
+    card.shadow.inherit = False
+    card.fill.solid()
+    card.fill.fore_color.rgb = BG_CARD
 
-    accent_bar = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, left, top, Inches(0.08), height
-    )
-    accent_bar.line.fill.background()
-    accent_bar.fill.solid()
-    accent_bar.fill.fore_color.rgb = accent
+    glow = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left - Inches(0.05), top - Inches(0.05), width + Inches(0.1), height + Inches(0.1))
+    glow.line.color.rgb = accent
+    glow.line.width = Pt(0.5)
+    glow.line.transparency = 0.7
+    glow.fill.background()
 
-    tb = slide.shapes.add_textbox(left + Inches(0.28), top + Inches(0.12), width - Inches(0.34), height - Inches(0.18))
-    tf = tb.text_frame
+    accent_strip = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, Inches(0.06), height)
+    accent_strip.line.fill.background()
+    accent_strip.fill.solid()
+    accent_strip.fill.fore_color.rgb = accent
+
+    content_tb = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(0.15), width - Inches(0.4), height - Inches(0.3))
+    tf = content_tb.text_frame
     tf.word_wrap = True
 
-    p = tf.paragraphs[0]
-    p.space_before = Pt(0)
-    r = p.add_run()
-    r.text = title
-    r.font.size = Pt(16)
-    r.font.bold = True
-    r.font.color.rgb = WHITE
-    r.font.name = FONT_TITLE
+    if icon:
+        icon_tb = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(0.12), Inches(0.5), Inches(0.4))
+        icon_tf = icon_tb.text_frame
+        ip = icon_tf.paragraphs[0]
+        ir = ip.add_run()
+        ir.text = icon
+        ir.font.size = Pt(24)
 
-    if body_lines:
-        for line in body_lines:
-            pp = tf.add_paragraph()
-            pp.space_before = Pt(4)
-            rr = pp.add_run()
-            rr.text = line
-            rr.font.size = Pt(11)
-            rr.font.color.rgb = LIGHT_GRAY
-            rr.font.name = FONT_BODY
-            pp.level = 0
+    title_tb = slide.shapes.add_textbox(left + Inches(0.85) if icon else left + Inches(0.3), top + Inches(0.12), width - (Inches(0.9) if icon else Inches(0.4)), Inches(0.45))
+    title_tf = title_tb.text_frame
+    tp = title_tf.paragraphs[0]
+    tr = tp.add_run()
+    tr.text = title
+    tr.font.size = Pt(17)
+    tr.font.bold = True
+    tr.font.color.rgb = WHITE
+    tr.font.name = FONT
 
-
-def add_bullet(text_frame, text, color=LIGHT_GRAY, indent=False):
-    p = text_frame.add_paragraph()
-    r = p.add_run()
-    r.text = text
-    r.font.size = Pt(14)
-    r.font.color.rgb = color
-    r.font.name = FONT_BODY
-    if indent:
-        p.level = 1
-    return p
+    if body:
+        body_tb = slide.shapes.add_textbox(left + Inches(0.3), top + Inches(0.65), width - Inches(0.4), height - Inches(0.8))
+        body_tf = body_tb.text_frame
+        body_tf.word_wrap = True
+        for i, line in enumerate(body):
+            p = body_tf.paragraphs[0] if i == 0 else body_tf.add_paragraph()
+            p.space_before = Pt(2)
+            r = p.add_run()
+            r.text = line
+            r.font.size = Pt(13)
+            r.font.color.rgb = LIGHT
+            r.font.name = FONT
 
 
 def slide1_cover(prs, total):
     s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
+    set_bg(s, BG_DEEP)
 
-    add_top_bar(s)
-    add_bottom_bar(s)
-    add_page_num(s, 1, total)
+    add_top_accent(s)
+    add_decorative_corners(s, CYAN_DIM)
+    add_footer(s, 1, total)
 
-    big = s.shapes.add_textbox(Inches(0.9), Inches(1.5), Inches(12), Inches(2))
-    tf = big.text_frame
+    deco1 = s.shapes.add_shape(MSO_SHAPE.LINE, Inches(1), Inches(1.2), Inches(3), Inches(0.01))
+    deco1.line.color.rgb = CYAN
+    deco1.line.width = Pt(1)
+    deco1.line.transparency = 0.5
+
+    deco2 = s.shapes.add_shape(MSO_SHAPE.LINE, Inches(1), Inches(1.5), Inches(2), Inches(0.01))
+    deco2.line.color.rgb = CYAN
+    deco2.line.width = Pt(0.5)
+    deco2.line.transparency = 0.7
+
+    main_title = s.shapes.add_textbox(Inches(1), Inches(2.0), Inches(11), Inches(2.5))
+    tf = main_title.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
     r = p.add_run()
-    r.text = "智慧低空应急运输\n教学平台"
-    r.font.size = Pt(54)
+    r.text = "智慧低空应急运输"
+    r.font.size = Pt(64)
     r.font.bold = True
     r.font.color.rgb = WHITE
-    r.font.name = FONT_TITLE
-    r.font.shadow = True
-    p.alignment = PP_ALIGN.LEFT
+    r.font.name = FONT
 
-    tag = s.shapes.add_textbox(Inches(0.9), Inches(3.6), Inches(12), Inches(0.7))
-    tf2 = tag.text_frame
-    tf2.word_wrap = True
-    p2 = tf2.paragraphs[0]
+    p2 = tf.add_paragraph()
+    p2.space_before = Pt(4)
     r2 = p2.add_run()
-    r2.text = "AI × 无人机 · 路径规划 · 装箱优化 · 岗课赛证"
-    r2.font.size = Pt(22)
-    r2.font.color.rgb = ACCENT_CYAN
-    r2.font.name = FONT_BODY
+    r2.text = "教学平台"
+    r2.font.size = Pt(56)
+    r2.font.bold = True
+    r2.font.color.rgb = CYAN
+    r2.font.name = FONT
 
-    sub = s.shapes.add_textbox(Inches(0.9), Inches(4.4), Inches(12), Inches(2))
-    tf3 = sub.text_frame
-    tf3.word_wrap = True
+    tag_tb = s.shapes.add_textbox(Inches(1), Inches(4.8), Inches(11), Inches(0.6))
+    tag_tf = tag_tb.text_frame
+    tp = tag_tf.paragraphs[0]
+    tr = tp.add_run()
+    tr.text = "🚁  AI × 无人机 × 应急物流"
+    tr.font.size = Pt(22)
+    tr.font.color.rgb = GOLD
+    tr.font.name = FONT
 
-    for line in [
-        "面向高职/本科 · 无人机物流 / 应急物流 / 智慧物流 专业",
-        "把「低空经济 + AI + 应急」搬进课堂，做可落地的工程化实训",
-    ]:
-        p = tf3.add_paragraph()
-        p.space_before = Pt(6)
-        rr = p.add_run()
-        rr.text = line
-        rr.font.size = Pt(15)
-        rr.font.color.rgb = LIGHT_GRAY
-        rr.font.name = FONT_BODY
+    desc_tb = s.shapes.add_textbox(Inches(1), Inches(5.5), Inches(11), Inches(1.5))
+    desc_tf = desc_tb.text_frame
+    desc_tf.word_wrap = True
+    lines = [
+        "用工程化的路径规划，让低空运输不再是纸上谈兵",
+        "一个平台 + 三个AI智能体 · 面向高职/本科教学实训",
+    ]
+    for i, line in enumerate(lines):
+        p = desc_tf.paragraphs[0] if i == 0 else desc_tf.add_paragraph()
+        p.space_before = Pt(8)
+        r = p.add_run()
+        r.text = line
+        r.font.size = Pt(16)
+        r.font.color.rgb = LIGHT
+        r.font.name = FONT
 
-    foot = s.shapes.add_textbox(Inches(0.9), Inches(6.4), Inches(12), Inches(0.6))
-    tf4 = foot.text_frame
-    tf4.word_wrap = True
-    labels = ["教学平台", "AI 智能体", "岗课赛证", "案例：渠洋村应急物资配送"]
-    for i, lb in enumerate(labels):
-        p = tf4.paragraphs[0] if i == 0 else tf4.add_paragraph()
-        rr = p.add_run()
-        rr.text = ("· " if i > 0 else "") + lb
-        rr.font.size = Pt(12)
-        rr.font.color.rgb = ACCENT_GOLD
-        rr.font.name = FONT_MONO
-        rr.font.bold = (i == 3)
-        if i < 3:
-            p.space_before = Pt(0)
+    side_deco = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, SLIDE_W - Inches(2), Inches(2.5), Inches(0.04), Inches(3))
+    side_deco.line.fill.background()
+    side_deco.fill.solid()
+    side_deco.fill.fore_color.rgb = CYAN_DIM
 
-    return s
+    tags = [
+        ("教学平台", CYAN),
+        ("AI 智能体", GOLD),
+        ("岗课赛证", GREEN),
+        ("案例:渠洋村", PURPLE),
+    ]
+    tag_start_x = Inches(1)
+    tag_y = Inches(6.5)
+    for i, (text, color) in enumerate(tags):
+        tb = s.shapes.add_textbox(tag_start_x + i * Inches(2.5), tag_y, Inches(2.3), Inches(0.4))
+        tf = tb.text_frame
+        p = tf.paragraphs[0]
+        r = p.add_run()
+        r.text = text
+        r.font.size = Pt(13)
+        r.font.bold = True
+        r.font.color.rgb = color
+        r.font.name = FONT_MONO
 
 
 def slide2_problem(prs, total):
     s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
-    add_top_bar(s)
-    add_heading(s, "痛点 · 为什么要做", "从真实应急救灾场景出发")
+    set_bg(s, BG_DARK)
+    add_top_accent(s)
+    add_decorative_corners(s, CYAN_DIM)
+    add_footer(s, 2, total)
+    add_title_block(s, "痛点 · 为什么要做", "三个真实问题，驱动我们的项目")
 
-    card_x = Inches(0.55)
-    card_top = Inches(1.7)
-    card_w = Inches(4.0)
-    card_h = Inches(3.6)
-    gap = Inches(0.4)
-
-    cards = [
+    items = [
         (
-            "应急物流不只是「送过去」",
-            [
-                "灾区路毁、桥梁断，地面运输卡死。",
-                "传统课堂只教理论，没有真实约束。",
-                "学生不知道一架无人机飞几趟、带多少。",
-            ],
-            ACCENT_GOLD,
+            "🚁",
+            "应急物流卡脖子",
+            "灾区路毁、桥梁断\n地面运输彻底瘫痪\n低空成唯一生命线",
+            RED_ACCENT,
         ),
         (
-            "低空经济的人才缺口",
-            [
-                "2025 年低空经济规模破 2 万亿。",
-                "无人机物流 / 应急岗位爆发。",
-                "但学校没有可实操的路径规划平台。",
-            ],
-            ACCENT_CYAN,
+            "📈",
+            "人才严重缺口",
+            "2025低空经济破2万亿\n无人机物流岗爆发\n学校缺实训平台",
+            GOLD,
         ),
         (
-            "AI 只是噱头？",
-            [
-                "不是！让 AI 当「实训助理 + 诊断老师」。",
-                "蚁群算法 CVRP + 动态能耗模型。",
-                "学生先做题，AI 再点评和打分。",
-            ],
-            ACCENT_BLUE,
+            "🎯",
+            "教学脱离实际",
+            "只教理论没有约束\n学生不知载重几趟\nAI当实训助理改作业",
+            CYAN,
         ),
     ]
 
-    for i, (t, body, ac) in enumerate(cards):
-        add_card(s, card_x + i * (card_w + gap), card_top, card_w, card_h, t, body, ac)
+    card_w = Inches(3.8)
+    card_h = Inches(3.8)
+    gap = Inches(0.5)
+    start_x = (SLIDE_W - card_w * 3 - gap * 2) / 2
+    top_y = Inches(2.2)
 
-    add_bottom_bar(s)
-    add_page_num(s, 2, total)
-    return s
-
-
-def slide3_what(prs, total):
-    s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
-    add_top_bar(s)
-    add_heading(s, "平台是什么", "一个教学平台 + 三个独立 AI 智能体")
-
-    left = s.shapes.add_textbox(Inches(0.65), Inches(1.7), Inches(4.7), Inches(5.2))
-    tf = left.text_frame
-    tf.word_wrap = True
-
-    p = tf.paragraphs[0]
-    r = p.add_run()
-    r.text = "智慧低空应急运输教学平台"
-    r.font.size = Pt(20)
-    r.font.bold = True
-    r.font.color.rgb = ACCENT_CYAN
-    r.font.name = FONT_TITLE
-
-    add_bullet(tf, "· 首页驾驶舱（ECharts 数据大屏）")
-    add_bullet(tf, "· 课程中心 + 实训任务发布/提交")
-    add_bullet(tf, "· 四主体教学智评（学生互评 / 教师 / 企业专家 / AI）")
-    add_bullet(tf, "· 学习资源库（无人机规范 / 应急案例）")
-    add_bullet(tf, "· 系统管理 + 统一登录鉴权")
-    add_bullet(tf, "· AI 助教（浮窗）")
-
-    agents_top = Inches(1.7)
-    agents_left = Inches(5.6)
-    agents_w = Inches(2.3)
-    agents_h = Inches(2.2)
-    gap_h = Inches(0.3)
-    gap_v = Inches(0.4)
-
-    agents = [
-        ("路径规划", "CVRP 蚁群算法\n动态能耗 · 载重-航程\n渠洋村案例", ACCENT_CYAN),
-        ("装箱评价", "空间利用率\n重量平衡\n安全评分", ACCENT_GOLD),
-        ("课程图谱", "知识 / 能力 / 问题 / 思政 四图谱\n学习路径推荐", RGBColor(0x80, 0xcb, 0xff)),
-    ]
-
-    for i, (t, b, ac) in enumerate(agents):
-        col = i % 3
-        row = i // 3
-        add_card(
+    for i, (icon, title, body, accent) in enumerate(items):
+        add_glow_card(
             s,
-            agents_left + col * (agents_w + gap_h),
-            agents_top + row * (agents_h + gap_v),
-            agents_w,
-            agents_h,
-            t,
-            b.split("\n"),
-            ac,
+            start_x + i * (card_w + gap),
+            top_y,
+            card_w,
+            card_h,
+            title,
+            body.split("\n"),
+            icon,
+            accent,
         )
 
-    tag = s.shapes.add_textbox(Inches(5.6), agents_top + agents_h + gap_v, Inches(7), Inches(0.5))
-    tf2 = tag.text_frame
-    tf2.word_wrap = True
-    p2 = tf2.paragraphs[0]
-    r2 = p2.add_run()
-    r2.text = "每个智能体：独立前端 + 独立后端 + API 接入平台主系统"
-    r2.font.size = Pt(11)
-    r2.font.color.rgb = SOFT_GRAY
-    r2.font.name = FONT_MONO
-    r2.font.italic = True
-
-    add_bottom_bar(s)
-    add_page_num(s, 3, total)
-    return s
-
-
-def slide4_core(prs, total):
-    s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
-    add_top_bar(s)
-    add_heading(s, "核心亮点 · 路径规划智能体", "工程化可运行的 CVRP 求解器")
-
-    top = Inches(1.7)
-    left1 = Inches(0.55)
-    w1 = Inches(3.9)
-    h1 = Inches(2.5)
-    gap = Inches(0.4)
-
-    add_card(
-        s,
-        left1 + 0 * (w1 + gap),
-        top,
-        w1,
-        h1,
-        "蚁群算法 CVRP",
-        [
-            "多无人机 · 多趟次 · 带时间窗/优先级",
-            "目标函数 = 0.4 距离 + 0.3 能耗 + 0.2 优先级 + 0.1 负载均衡",
-        ],
-        ACCENT_CYAN,
-    )
-
-    add_card(
-        s,
-        left1 + 1 * (w1 + gap),
-        top,
-        w1,
-        h1,
-        "动态能耗模型",
-        [
-            "能耗 = 距离 × (1 + 当前载重 / 最大载重)",
-            "满载去程能耗是空载返航的 2 倍",
-            "载重→航程分段线性插值（0 kg 26 km / 80 kg 6 km）",
-        ],
-        ACCENT_GOLD,
-    )
-
-    add_card(
-        s,
-        left1 + 2 * (w1 + gap),
-        top,
-        w1,
-        h1,
-        "无人机型号库 + 任务规划 Agent",
-        [
-            "内置多种无人机参数（FC100 等）",
-            "大模型驱动的无人机选型：重量 / 航程 / 抗风 / 冷链",
-            "输出完整配送计划 + 可行性评分 + 风险预警",
-        ],
-        RGBColor(0x80, 0xcb, 0xff),
-    )
-
-    # Case study box
-    case_top = top + h1 + Inches(0.5)
-    case_left = Inches(0.55)
-    case_w = Inches(5.8)
-    case_h = Inches(4.5)
-
-    add_card(
-        s,
-        case_left,
-        case_top,
-        case_w,
-        case_h,
-        "真实案例：广西渠洋村应急物资配送",
-        [
-            "配送中心：渠洋村",
-            "需求点：怀渠 / 塘麻 / 坡乐 / 东风 / 古桥 / 新和 / 怀书 / 雅力 共 8 个村",
-            "距离矩阵：已真实测算（最远村 ~27 km）",
-            "物资类别：抢修 / 生活保障 / 医疗 / 冷链 / 安置保障",
-            "",
-            "→ 学生先完成 8 个实训模块（从布点、选机、规划、诊断、报告）",
-            "→ AI 自动批改 + 生成 Word 报告 + 导出 GeoJSON 可在地图查看航线",
-        ],
-        ACCENT_CYAN,
-        bg=RGBColor(0x0a, 0x24, 0x40),
-    )
-
-    arch_left = case_left + case_w + Inches(0.35)
-    arch_w = Inches(6.2)
-    arch_h = Inches(4.5)
-
-    add_card(
-        s,
-        arch_left,
-        case_top,
-        arch_w,
-        arch_h,
-        "架构 · 单人可开发 · 学校可部署",
-        [
-            "前端  Vue 3 + Vite + Element Plus + Pinia + ECharts + 地图",
-            "后端  Django + REST（路径规划引擎原生 Python）",
-            "算法  原生蚁群 / 约束检查器 / 成本评估器 / GeoJSON · Excel 导出",
-            "AI    支持 OpenAI / DeepSeek / 通义千问 / 本地模型（可切换）",
-            "智能体接入方式：API + 独立 iframe（零耦合）",
-            "一键生成实训报告（docx / pdf）",
-            "",
-            "路线：先跑通，再逐步升级",
-        ],
-        ACCENT_GOLD,
-        bg=RGBColor(0x0a, 0x24, 0x40),
-    )
-
-    add_bottom_bar(s)
-    add_page_num(s, 4, total)
-    return s
-
-
-def slide5_demo(prs, total):
-    s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
-    add_top_bar(s)
-    add_heading(s, "5 分钟演示怎么跑", "讲者可以跟着这条故事线边操作边讲")
-
-    steps = [
-        ("① 首页驾驶舱", "登录 → 看学习/实训/AI 三大数据面板", ACCENT_CYAN),
-        ("② 进路径规划 Agent", "模块一布点：渠洋村 + 8 个需求村", ACCENT_GOLD),
-        ("③ 二-四模块", "录入物资需求（重量/优先级/冷链）→ 选无人机 → 跑蚁群算法", RGBColor(0x80, 0xcb, 0xff)),
-        ("④ 方案看地图", "GeoJSON 航线 + 每架无人机 / 每趟距离载重能耗", ACCENT_CYAN),
-        ("⑤ AI 诊断 + 报告", "AI 点评短板 → 一键导出配送计划报告（docx）", ACCENT_GOLD),
-        ("⑥ 平台闭环", "实训提交 → 四主体评价 → 看自己的能力画像", WHITE),
-    ]
-
-    box_x = Inches(0.55)
-    box_y = Inches(1.7)
-    box_w = Inches(4.0)
-    box_h = Inches(1.3)
-    gap_x = Inches(0.4)
-    gap_y = Inches(0.35)
-
-    for i, (t, b, c) in enumerate(steps):
-        col = i % 3
-        row = i // 3
-        add_card(
-            s,
-            box_x + col * (box_w + gap_x),
-            box_y + row * (box_h + gap_y),
-            box_w,
-            box_h,
-            t,
-            [b],
-            c,
-        )
-
-    add_bottom_bar(s)
-    add_page_num(s, 5, total)
-    return s
-
-
-def slide6_values(prs, total):
-    s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
-    add_top_bar(s)
-    add_heading(s, "价值主张", "对学生 · 对老师 · 对专业建设")
-
-    col_w = Inches(3.9)
-    gap = Inches(0.35)
-    top = Inches(1.7)
-
-    columns = [
-        (
-            "对学生",
-            [
-                "· 不是背公式，是亲手规划真实救灾航线",
-                "· 从菜鸟「随便飞飞」到理解载重-航程非线性关系",
-                "· 输出可就业的作品集（渠洋村案例）",
-                "· 岗课赛证：准备 1+X 无人机物流证书",
-            ],
-            ACCENT_CYAN,
-        ),
-        (
-            "对老师",
-            [
-                "· 备课素材 = 真实案例 + 真实数据",
-                "· AI 助教 7×24 答疑 + 批改",
-                "· 四主体评价形成教学闭环",
-                "· 可作为比赛/创新创业项目的底座",
-            ],
-            ACCENT_GOLD,
-        ),
-        (
-            "对专业",
-            [
-                "· 低空经济 / 应急物流 / 智慧物流 三方向通吃",
-                "· 可扩展：新增集装箱装箱、多旋翼集群、禁飞区 …",
-                "· 可申请教科研项目课题",
-                "· 企业/行业专家可接入指导",
-            ],
-            RGBColor(0x80, 0xcb, 0xff),
-        ),
-    ]
-
-    for i, (t, body, ac) in enumerate(columns):
-        add_card(
-            s,
-            Inches(0.55) + i * (col_w + gap),
-            top,
-            col_w,
-            Inches(4.5),
-            t,
-            body,
-            ac,
-            bg=RGBColor(0x0a, 0x24, 0x40),
-        )
-
-    # Bottom big quote
-    qbox = s.shapes.add_textbox(
-        Inches(0.65), Inches(6.3), Inches(12), Inches(0.9)
-    )
-    tf = qbox.text_frame
+    bottom = s.shapes.add_textbox(Inches(1), Inches(6.4), SLIDE_W - Inches(2), Inches(0.6))
+    tf = bottom.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
     r = p.add_run()
-    r.text = "一句话：让每一个想做无人机物流的学生，有一台「随时可练、随时可评」的教学飞行塔。"
+    r.text = "→ 解决方案：一套能跑、能学、能评的教学实训平台"
     r.font.size = Pt(18)
     r.font.bold = True
-    r.font.color.rgb = ACCENT_CYAN
-    r.font.name = FONT_TITLE
-    p.alignment = PP_ALIGN.LEFT
-
-    add_bottom_bar(s)
-    add_page_num(s, 6, total)
-    return s
+    r.font.color.rgb = CYAN
+    r.font.name = FONT
+    p.alignment = PP_ALIGN.CENTER
 
 
-def slide7_end(prs, total):
+def slide3_solution(prs, total):
     s = blank_slide(prs)
-    set_slide_bg(s, DARK_BG)
-    add_top_bar(s)
+    set_bg(s, BG_DARK)
+    add_top_accent(s)
+    add_decorative_corners(s, CYAN_DIM)
+    add_footer(s, 3, total)
+    add_title_block(s, "项目全貌", "1 个教学平台 + 3 个 AI 智能体")
 
-    big = s.shapes.add_textbox(Inches(1), Inches(2), Inches(11.3), Inches(1.5))
-    tf = big.text_frame
+    platform_card = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(2.1), Inches(5.5), Inches(4.5))
+    platform_card.line.color.rgb = CYAN
+    platform_card.line.width = Pt(2)
+    platform_card.fill.solid()
+    platform_card.fill.fore_color.rgb = BG_CARD
+
+    icon_tb = s.shapes.add_textbox(Inches(1.0), Inches(2.3), Inches(0.6), Inches(0.5))
+    icon_tf = icon_tb.text_frame
+    ip = icon_tf.paragraphs[0]
+    ir = ip.add_run()
+    ir.text = "🏛️"
+    ir.font.size = Pt(28)
+
+    title_tb = s.shapes.add_textbox(Inches(1.6), Inches(2.3), Inches(4.5), Inches(0.5))
+    title_tf = title_tb.text_frame
+    tp = title_tf.paragraphs[0]
+    tr = tp.add_run()
+    tr.text = "教学平台"
+    tr.font.size = Pt(22)
+    tr.font.bold = True
+    tr.font.color.rgb = CYAN
+    tr.font.name = FONT
+
+    features = [
+        "首页驾驶舱 · 数据大屏",
+        "课程中心 · 实训发布",
+        "四主体教学智评",
+        "学习资源库",
+        "AI 助教浮窗",
+    ]
+    for i, feat in enumerate(features):
+        y_pos = Inches(2.9) + i * Inches(0.5)
+        dot = s.shapes.add_shape(MSO_SHAPE.OVAL, Inches(1.1), y_pos + Inches(0.08), Inches(0.08), Inches(0.08))
+        dot.line.fill.background()
+        dot.fill.solid()
+        dot.fill.fore_color.rgb = CYAN
+
+        feat_tb = s.shapes.add_textbox(Inches(1.3), y_pos, Inches(4.8), Inches(0.4))
+        feat_tf = feat_tb.text_frame
+        fp = feat_tf.paragraphs[0]
+        fr = fp.add_run()
+        fr.text = feat
+        fr.font.size = Pt(15)
+        fr.font.color.rgb = LIGHT
+        fr.font.name = FONT
+
+    arrow_shape = s.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(6.4), Inches(3.8), Inches(0.5), Inches(0.3))
+    arrow_shape.line.color.rgb = CYAN
+    arrow_shape.line.width = Pt(1)
+    arrow_shape.fill.solid()
+    arrow_shape.fill.fore_color.rgb = CYAN_DIM
+
+    agents = [
+        (
+            "🧭",
+            "路径规划智能体",
+            "蚁群 CVRP 算法\n动态能耗模型\n渠洋村 8 村案例",
+            CYAN,
+        ),
+        (
+            "📦",
+            "装箱评价智能体",
+            "空间利用率\n重量平衡分析\n安全评分",
+            GOLD,
+        ),
+        (
+            "📚",
+            "课程图谱智能体",
+            "知识/能力/问题/思政\n学习路径推荐\n教学关联分析",
+            GREEN,
+        ),
+    ]
+
+    agent_w = Inches(2.2)
+    agent_h = Inches(2.0)
+    agent_gap = Inches(0.3)
+    agent_start_x = Inches(7.1)
+    agent_top_y = Inches(2.1)
+
+    for i, (icon, title, body, accent) in enumerate(agents):
+        add_glow_card(
+            s,
+            agent_start_x + i * (agent_w + agent_gap),
+            agent_top_y,
+            agent_w,
+            agent_h,
+            title,
+            body.split("\n"),
+            icon,
+            accent,
+        )
+
+    connector = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(6.4), Inches(5.2), Inches(6.6), Inches(0.01))
+    connector.line.color.rgb = CYAN_DIM
+    connector.line.width = Pt(0.5)
+    connector.line.transparency = 0.5
+
+    api_tb = s.shapes.add_textbox(Inches(6.4), Inches(5.3), Inches(6.6), Inches(0.5))
+    api_tf = api_tb.text_frame
+    ap = api_tf.paragraphs[0]
+    ar = ap.add_run()
+    ar.text = "API 接入 · 零耦合 · 独立开发部署"
+    ar.font.size = Pt(12)
+    ar.font.color.rgb = MUTED
+    ar.font.name = FONT_MONO
+    ap.alignment = PP_ALIGN.CENTER
+
+    bottom = s.shapes.add_textbox(Inches(1), Inches(6.2), SLIDE_W - Inches(2), Inches(0.6))
+    tf = bottom.text_frame
+    p = tf.paragraphs[0]
+    r = p.add_run()
+    r.text = "→ 学生登录平台 → 选择实训任务 → 调用智能体 → AI 评分 → 形成能力画像"
+    r.font.size = Pt(16)
+    r.font.color.rgb = LIGHT
+    r.font.name = FONT
+    p.alignment = PP_ALIGN.CENTER
+
+
+def slide4_core_tech(prs, total):
+    s = blank_slide(prs)
+    set_bg(s, BG_DARK)
+    add_top_accent(s)
+    add_decorative_corners(s, CYAN_DIM)
+    add_footer(s, 4, total)
+    add_title_block(s, "核心技术亮点", "工程化可运行的 CVRP 路径规划引擎")
+
+    algo_card = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(2.0), SLIDE_W - Inches(1.6), Inches(2.2))
+    algo_card.line.color.rgb = CYAN
+    algo_card.line.width = Pt(1.5)
+    algo_card.fill.solid()
+    algo_card.fill.fore_color.rgb = BG_CARD
+
+    algo_title = s.shapes.add_textbox(Inches(1.1), Inches(2.15), Inches(3), Inches(0.45))
+    algo_tf = algo_title.text_frame
+    ap = algo_tf.paragraphs[0]
+    ar = ap.add_run()
+    ar.text = "🐜 蚁群算法 CVRP"
+    ar.font.size = Pt(18)
+    ar.font.bold = True
+    ar.font.color.rgb = WHITE
+    ar.font.name = FONT
+
+    formula = s.shapes.add_textbox(Inches(1.1), Inches(2.65), SLIDE_W - Inches(2.2), Inches(0.6))
+    formula_tf = formula.text_frame
+    fp = formula_tf.paragraphs[0]
+    fr = fp.add_run()
+    fr.text = "目标函数"
+    fr.font.size = Pt(11)
+    fr.font.color.rgb = MUTED
+    fr.font.name = FONT
+
+    formula2 = s.shapes.add_textbox(Inches(1.1), Inches(2.95), SLIDE_W - Inches(2.2), Inches(0.5))
+    f2_tf = formula2.text_frame
+    f2p = f2_tf.paragraphs[0]
+
+    segments = [
+        ("0.4", "距离", CYAN),
+        (" + 0.3", "能耗", GOLD),
+        (" + 0.2", "优先级", RED_ACCENT),
+        (" + 0.1", "负载均衡", GREEN),
+    ]
+    for i, (weight, label, color) in enumerate(segments):
+        wr = f2p.add_run()
+        wr.text = weight
+        wr.font.size = Pt(18)
+        wr.font.bold = True
+        wr.font.color.rgb = color
+        wr.font.name = FONT_MONO
+
+        lr = f2p.add_run()
+        lr.text = f"·{label}"
+        lr.font.size = Pt(14)
+        lr.font.color.rgb = LIGHT
+        lr.font.name = FONT
+        if i < len(segments) - 1:
+            pr = f2p.add_run()
+            pr.text = "  "
+            pr.font.size = Pt(14)
+
+    tech_cards = [
+        (
+            "⚡",
+            "动态能耗模型",
+            [
+                "能耗 = 距离 × (1 + 载重/最大载重)",
+                "满载去程 = 空载返航的 2 倍",
+                "载重越高，能耗越大",
+            ],
+            GOLD,
+        ),
+        (
+            "📏",
+            "载重-航程插值",
+            [
+                "0kg → 26km（空载）",
+                "80kg → 6km（满载）",
+                "分段线性插值计算实时航程",
+            ],
+            CYAN,
+        ),
+        (
+            "🤖",
+            "AI 任务规划 Agent",
+            [
+                "大模型自动选机型",
+                "重量/航程/抗风/冷链 多维评估",
+                "输出方案 + 风险预警",
+            ],
+            PURPLE,
+        ),
+    ]
+
+    tech_w = Inches(3.8)
+    tech_h = Inches(2.5)
+    tech_gap = Inches(0.4)
+    tech_start_x = (SLIDE_W - tech_w * 3 - tech_gap * 2) / 2
+    tech_top_y = Inches(4.5)
+
+    for i, (icon, title, body, accent) in enumerate(tech_cards):
+        add_glow_card(
+            s,
+            tech_start_x + i * (tech_w + tech_gap),
+            tech_top_y,
+            tech_w,
+            tech_h,
+            title,
+            body,
+            icon,
+            accent,
+        )
+
+
+def slide5_value(prs, total):
+    s = blank_slide(prs)
+    set_bg(s, BG_DARK)
+    add_top_accent(s)
+    add_decorative_corners(s, CYAN_DIM)
+    add_footer(s, 5, total)
+    add_title_block(s, "价值主张", "三个维度，让项目真正落地")
+
+    values = [
+        (
+            "🎓",
+            "对学生",
+            [
+                "亲手规划救灾航线",
+                "理解载重-航程非线性关系",
+                "产出就业作品集",
+                "准备 1+X 证书",
+            ],
+            CYAN,
+        ),
+        (
+            "👨‍🏫",
+            "对老师",
+            [
+                "真实案例 + 真实数据",
+                "AI 助教 7×24 答疑",
+                "四主体教学闭环",
+                "创新创业项目底座",
+            ],
+            GOLD,
+        ),
+        (
+            "🏢",
+            "对专业",
+            [
+                "低空经济/应急/物流 三方向",
+                "可扩展：装箱/集群/禁飞区",
+                "可申请教科研课题",
+                "企业专家可接入",
+            ],
+            GREEN,
+        ),
+    ]
+
+    val_w = Inches(4.0)
+    val_h = Inches(4.0)
+    val_gap = Inches(0.4)
+    val_start_x = (SLIDE_W - val_w * 3 - val_gap * 2) / 2
+    val_top_y = Inches(2.1)
+
+    for i, (icon, title, body, accent) in enumerate(values):
+        add_glow_card(
+            s,
+            val_start_x + i * (val_w + val_gap),
+            val_top_y,
+            val_w,
+            val_h,
+            title,
+            body,
+            icon,
+            accent,
+        )
+
+    vision = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.5), Inches(6.3), SLIDE_W - Inches(3), Inches(0.7))
+    vision.line.color.rgb = CYAN
+    vision.line.width = Pt(1)
+    vision.fill.solid()
+    vision.fill.fore_color.rgb = RGBColor(0x0a, 0x20, 0x40)
+
+    v_tb = s.shapes.add_textbox(Inches(1.7), Inches(6.35), SLIDE_W - Inches(3.4), Inches(0.6))
+    v_tf = v_tb.text_frame
+    vp = v_tf.paragraphs[0]
+    vr = vp.add_run()
+    vr.text = "💡  让每一个想做无人机物流的学生，有一台「随时可练、随时可评」的教学飞行塔"
+    vr.font.size = Pt(16)
+    vr.font.bold = True
+    vr.font.color.rgb = CYAN
+    vr.font.name = FONT
+    vp.alignment = PP_ALIGN.CENTER
+
+
+def slide6_end(prs, total):
+    s = blank_slide(prs)
+    set_bg(s, BG_DEEP)
+    add_top_accent(s)
+    add_decorative_corners(s, CYAN)
+    add_footer(s, 6, total)
+
+    deco_line = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, SLIDE_W / 2 - Inches(1.5), Inches(1.8), Inches(3), Inches(0.03))
+    deco_line.line.fill.background()
+    deco_line.fill.solid()
+    deco_line.fill.fore_color.rgb = CYAN
+
+    deco_line2 = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, SLIDE_W / 2 - Inches(1), Inches(1.9), Inches(2), Inches(0.01))
+    deco_line2.line.fill.background()
+    deco_line2.fill.solid()
+    deco_line2.fill.fore_color.rgb = CYAN_DIM
+
+    main = s.shapes.add_textbox(Inches(1), Inches(2.2), SLIDE_W - Inches(2), Inches(1.5))
+    tf = main.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
     r = p.add_run()
-    r.text = "谢谢"
-    r.font.size = Pt(72)
+    r.text = "让低空物流"
+    r.font.size = Pt(64)
     r.font.bold = True
     r.font.color.rgb = WHITE
-    r.font.name = FONT_TITLE
-    r.font.shadow = True
+    r.font.name = FONT
     p.alignment = PP_ALIGN.CENTER
 
-    sub = s.shapes.add_textbox(Inches(1), Inches(3.7), Inches(11.3), Inches(2.4))
-    tf2 = sub.text_frame
-    tf2.word_wrap = True
-    p2 = tf2.paragraphs[0]
-    rr = p2.add_run()
-    rr.text = "提问 · 体验 · 合作开发"
-    rr.font.size = Pt(24)
-    rr.font.color.rgb = ACCENT_CYAN
-    rr.font.name = FONT_BODY
+    p2 = tf.add_paragraph()
+    p2.space_before = Pt(4)
+    r2 = p2.add_run()
+    r2.text = "飞进每一个课堂"
+    r2.font.size = Pt(56)
+    r2.font.bold = True
+    r2.font.color.rgb = CYAN
+    r2.font.name = FONT
     p2.alignment = PP_ALIGN.CENTER
 
-    for line in [
-        "案例：广西渠洋村 8 村应急物资配送",
-        "技术栈：Vue 3 · Django · Python 蚁群算法 · LLM",
-        "开源友好 · 单人可部署 · 欢迎共建",
-    ]:
-        pp = tf2.add_paragraph()
-        pp.space_before = Pt(10)
-        rrr = pp.add_run()
-        rrr.text = line
-        rrr.font.size = Pt(14)
-        rrr.font.color.rgb = LIGHT_GRAY
-        rrr.font.name = FONT_MONO
-        pp.alignment = PP_ALIGN.CENTER
+    deco_line3 = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, SLIDE_W / 2 - Inches(2), Inches(4.0), Inches(4), Inches(0.02))
+    deco_line3.line.fill.background()
+    deco_line3.fill.solid()
+    deco_line3.fill.fore_color.rgb = CYAN_DIM
 
-    add_bottom_bar(s)
-    add_page_num(s, 7, total)
-    return s
+    details = s.shapes.add_textbox(Inches(1), Inches(4.2), SLIDE_W - Inches(2), Inches(2))
+    dtf = details.text_frame
+    dtf.word_wrap = True
+
+    info = [
+        "🚁  案例：广西渠洋村 8 村应急物资配送",
+        "⚙️  技术栈：Vue 3 · Django · Python 蚁群算法 · LLM",
+        "🎯  5 分钟路演 · 创业训练项目",
+    ]
+    for i, line in enumerate(info):
+        p = dtf.paragraphs[0] if i == 0 else dtf.add_paragraph()
+        p.space_before = Pt(12)
+        r = p.add_run()
+        r.text = line
+        r.font.size = Pt(18)
+        r.font.color.rgb = LIGHT
+        r.font.name = FONT
+        p.alignment = PP_ALIGN.CENTER
+
+    thanks = s.shapes.add_textbox(Inches(1), Inches(6.3), SLIDE_W - Inches(2), Inches(0.8))
+    ttf = thanks.text_frame
+    tp = ttf.paragraphs[0]
+    tr = tp.add_run()
+    tr.text = "感 谢 聆 听"
+    tr.font.size = Pt(36)
+    tr.font.bold = True
+    tr.font.color.rgb = GOLD
+    tr.font.name = FONT
+    tp.alignment = PP_ALIGN.CENTER
 
 
 def main():
@@ -627,17 +741,16 @@ def main():
     prs.slide_width = SLIDE_W
     prs.slide_height = SLIDE_H
 
-    total = 7
+    total = 6
     slide1_cover(prs, total)
     slide2_problem(prs, total)
-    slide3_what(prs, total)
-    slide4_core(prs, total)
-    slide5_demo(prs, total)
-    slide6_values(prs, total)
-    slide7_end(prs, total)
+    slide3_solution(prs, total)
+    slide4_core_tech(prs, total)
+    slide5_value(prs, total)
+    slide6_end(prs, total)
 
     prs.save(OUT)
-    print("Saved:", OUT)
+    print("✅ Saved:", OUT)
 
 
 if __name__ == "__main__":

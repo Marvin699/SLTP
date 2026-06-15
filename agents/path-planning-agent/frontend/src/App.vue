@@ -15,6 +15,7 @@ import Module5 from './views/Module5.vue'
 import Module6 from './views/Module6.vue'
 import Module7 from './views/Module7.vue'
 import Module8 from './views/Module8.vue'
+import Module9 from './views/Module9.vue'
 
 const app = useAppStore()
 const store = usePointsStore()
@@ -62,6 +63,9 @@ onMounted(() => {
 
           <!-- 模块8：系统设置 -->
           <Module8 v-else-if="app.activeModule === 8" />
+
+          <!-- 模块9：图片管理 -->
+          <Module9 v-else-if="app.activeModule === 9" />
 
           <!-- 其他模块占位 -->
           <div
