@@ -15,7 +15,7 @@ export const useAppStore = defineStore('app', () => {
     { id: 10, label: '方案审阅', icon: '👨‍🏫' },
     { id: 7, label: '案例管理', icon: '📚' },
     { id: 8, label: '系统设置', icon: '⚙' },
-    { id: 11, label: '图片管理', icon: '🖼' },
+    { id: 11, label: '方案看板', icon: '🖼' },
   ]
 
   function setModule(id) {

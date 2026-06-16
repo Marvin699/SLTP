@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, ref, onMounted, onUnmounted } from 'vue'
 
 const groups = reactive([
   { id: 1, name: '逐日组' },
@@ -19,8 +19,28 @@ const imageData = reactive({
   6: { slot1: { imageUrl: '/images/group_images/6_1.png', alpha: '1.6', beta: '6', rho: '0.23' }, slot2: { imageUrl: '/images/group_images/6_2.png', alpha: '1.7', beta: '8', rho: '0.2' } },
 })
 
+const zoomedImage = ref(null)
+
+function openZoom(imageUrl) {
+  zoomedImage.value = imageUrl
+}
+
+function closeZoom() {
+  zoomedImage.value = null
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Escape' && zoomedImage.value) {
+    closeZoom()
+  }
+}
+
 onMounted(() => {
-  console.log('[Module11] 图片管理看板已加载')
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -39,7 +59,7 @@ onMounted(() => {
 
           <div class="slots-row">
             <div v-for="slotNum in [1, 2]" :key="slotNum" class="slot">
-              <div class="preview-box">
+              <div class="preview-box" @click="openZoom(imageData[g.id][`slot${slotNum}`].imageUrl)">
                 <img :src="imageData[g.id][`slot${slotNum}`].imageUrl" class="preview-img" alt="预览" />
               </div>
 
@@ -73,6 +93,11 @@ onMounted(() => {
           </div>
         </div>
       </div>
+    </div>
+
+    <div v-if="zoomedImage" class="modal-overlay" @click.self="closeZoom">
+      <button class="modal-close" @click="closeZoom">×</button>
+      <img :src="zoomedImage" class="modal-image" alt="放大预览" />
     </div>
   </div>
 </template>
@@ -153,14 +178,14 @@ onMounted(() => {
 
 .upload-box {
   width: 100%;
-  height: 140px;
+  height: 200px;
   border: 1.5px dashed #3a5070;
   border-radius: 10px;
   background: #0f1a2e;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   transition: all 0.3s;
 }
 
@@ -193,16 +218,20 @@ onMounted(() => {
 .preview-box {
   position: relative;
   width: 100%;
-  height: 140px;
+  height: 200px;
   border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  background: #0f1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .preview-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   border-radius: 10px;
 }
 
@@ -266,5 +295,54 @@ onMounted(() => {
 
 .param-input::placeholder {
   color: #4a5a78;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.preview-box {
+  cursor: zoom-in;
 }
 </style>
