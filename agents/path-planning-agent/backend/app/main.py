@@ -19,6 +19,7 @@ from app.api.routes.case_study import router as case_study_router
 from app.api.routes.course_graph import router as course_graph_router
 from app.api.routes.score_session import router as score_session_router
 from app.api.routes.ai_chat import router as ai_chat_router
+from app.api.routes.image_config import router as image_config_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -31,6 +32,7 @@ from app.models.llm_config import LLMConfig  # noqa: F401
 from app.models.case_study import CaseStudy  # noqa: F401
 from app.models.course_graph import CourseProject, TeachingStatus  # noqa: F401
 from app.models.score_session import ScoreSession, ScoreRecord  # noqa: F401
+from app.models.image_config import ImageConfig  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -552,6 +554,7 @@ app.include_router(case_study_router)
 app.include_router(course_graph_router)
 app.include_router(score_session_router)
 app.include_router(ai_chat_router)
+app.include_router(image_config_router)
 
 
 @app.get("/health", tags=["系统"])

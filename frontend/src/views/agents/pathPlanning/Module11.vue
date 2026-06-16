@@ -1,56 +1,27 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 
 const groups = reactive([
-  { id: 1, name: '小组 1' },
-  { id: 2, name: '小组 2' },
-  { id: 3, name: '小组 3' },
-  { id: 4, name: '小组 4' },
-  { id: 5, name: '小组 5' },
-  { id: 6, name: '小组 6' },
+  { id: 1, name: '逐日组' },
+  { id: 2, name: '长空组' },
+  { id: 3, name: '揽星组' },
+  { id: 4, name: '御风组' },
+  { id: 5, name: '巡天组' },
+  { id: 6, name: '凌云组' },
 ])
 
 const imageData = reactive({
-  1: {
-    slot1: { imageUrl: null, alpha: '0.5', beta: '0.3', rho: '0.8' },
-    slot2: { imageUrl: null, alpha: '0.6', beta: '0.35', rho: '0.75' },
-  },
-  2: {
-    slot1: { imageUrl: null, alpha: '0.6', beta: '0.4', rho: '0.7' },
-    slot2: { imageUrl: null, alpha: '0.55', beta: '0.45', rho: '0.65' },
-  },
-  3: {
-    slot1: { imageUrl: null, alpha: '0.45', beta: '0.3', rho: '0.8' },
-    slot2: { imageUrl: null, alpha: '0.55', beta: '0.65', rho: '0.6' },
-  },
-  4: {
-    slot1: { imageUrl: null, alpha: '0.7', beta: '0.25', rho: '0.9' },
-    slot2: { imageUrl: null, alpha: '0.65', beta: '0.3', rho: '0.85' },
-  },
-  5: {
-    slot1: { imageUrl: null, alpha: '0.35', beta: '0.6', rho: '0.4' },
-    slot2: { imageUrl: null, alpha: '0.55', beta: '0.55', rho: '0.55' },
-  },
-  6: {
-    slot1: { imageUrl: null, alpha: '0.55', beta: '0.45', rho: '0.75' },
-    slot2: { imageUrl: null, alpha: '0.55', beta: '0.4', rho: '0.8' },
-  },
+  1: { slot1: { imageUrl: '/images/group_images/1_1.png', alpha: '1.1', beta: '7', rho: '0.05' }, slot2: { imageUrl: '/images/group_images/1_2.png', alpha: '1.2', beta: '6', rho: '0.3' } },
+  2: { slot1: { imageUrl: '/images/group_images/2_1.png', alpha: '1.1', beta: '7', rho: '0.2' }, slot2: { imageUrl: '/images/group_images/2_2.png', alpha: '1.1', beta: '6', rho: '0.3' } },
+  3: { slot1: { imageUrl: '/images/group_images/3_1.png', alpha: '1.5', beta: '8', rho: '0.21' }, slot2: { imageUrl: '/images/group_images/3_2.png', alpha: '1.4', beta: '7', rho: '0.25' } },
+  4: { slot1: { imageUrl: '/images/group_images/4_1.png', alpha: '1.6', beta: '6', rho: '0.23' }, slot2: { imageUrl: '/images/group_images/4_2.png', alpha: '1.7', beta: '8', rho: '0.2' } },
+  5: { slot1: { imageUrl: '/images/group_images/5_1.png', alpha: '1.5', beta: '8', rho: '0.21' }, slot2: { imageUrl: '/images/group_images/5_2.png', alpha: '1.1', beta: '6', rho: '0.3' } },
+  6: { slot1: { imageUrl: '/images/group_images/6_1.png', alpha: '1.6', beta: '6', rho: '0.23' }, slot2: { imageUrl: '/images/group_images/6_2.png', alpha: '1.7', beta: '8', rho: '0.2' } },
 })
 
-function handleFileUpload(groupId, slot, event) {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imageData[groupId][slot].imageUrl = e.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-}
-
-function clearImage(groupId, slot) {
-  imageData[groupId][slot].imageUrl = null
-}
+onMounted(() => {
+  console.log('[Module11] 图片管理看板已加载')
+})
 </script>
 
 <template>
@@ -60,7 +31,6 @@ function clearImage(groupId, slot) {
         <div class="title-row">
           <h1 class="page-title">应急调度智能体看板</h1>
         </div>
-        <p class="page-desc">管理六组图片与参数配置</p>
       </div>
 
       <div class="groups-grid">
@@ -69,35 +39,34 @@ function clearImage(groupId, slot) {
 
           <div class="slots-row">
             <div v-for="slotNum in [1, 2]" :key="slotNum" class="slot">
-              <div v-if="!imageData[g.id][`slot${slotNum}`].imageUrl" class="upload-box">
-                <label class="upload-label">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    @change="handleFileUpload(g.id, `slot${slotNum}`, $event)"
-                    style="display: none"
-                  />
-                  <span class="upload-icon">↑</span>
-                  <span class="upload-text">点击上传图片</span>
-                </label>
-              </div>
-              <div v-else class="preview-box">
+              <div class="preview-box">
                 <img :src="imageData[g.id][`slot${slotNum}`].imageUrl" class="preview-img" alt="预览" />
-                <button class="clear-btn" @click="clearImage(g.id, `slot${slotNum}`)">×</button>
               </div>
 
               <div class="params">
                 <div class="param-row">
                   <span class="param-label">α</span>
-                  <input v-model="imageData[g.id][`slot${slotNum}`].alpha" type="text" class="param-input" />
+                  <input 
+                    v-model="imageData[g.id][`slot${slotNum}`].alpha" 
+                    type="text" 
+                    class="param-input"
+                  />
                 </div>
                 <div class="param-row">
                   <span class="param-label">β</span>
-                  <input v-model="imageData[g.id][`slot${slotNum}`].beta" type="text" class="param-input" />
+                  <input 
+                    v-model="imageData[g.id][`slot${slotNum}`].beta" 
+                    type="text" 
+                    class="param-input"
+                  />
                 </div>
                 <div class="param-row">
                   <span class="param-label">ρ</span>
-                  <input v-model="imageData[g.id][`slot${slotNum}`].rho" type="text" class="param-input" />
+                  <input 
+                    v-model="imageData[g.id][`slot${slotNum}`].rho" 
+                    type="text" 
+                    class="param-input"
+                  />
                 </div>
               </div>
             </div>
@@ -141,23 +110,12 @@ function clearImage(groupId, slot) {
   margin-bottom: 8px;
 }
 
-.title-icon {
-  font-size: 36px;
-}
-
 .page-title {
   font-size: 32px;
   font-weight: bold;
   color: #fff;
   margin: 0;
   letter-spacing: 2px;
-}
-
-.page-desc {
-  font-size: 16px;
-  color: #7a8ba8;
-  margin: 0;
-  letter-spacing: 1px;
 }
 
 .groups-grid {
