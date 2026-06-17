@@ -1,7 +1,7 @@
 <template>
-  <div class="graph-view-page">
+  <div class="graph-view-page" :class="{ 'light-theme': isLight }" :style="pageStyle">
     <!-- 顶部导航 -->
-    <header class="view-header">
+    <header class="view-header" :style="headerStyle">
       <div class="header-left">
         <el-button @click="goBack" class="back-btn" text>
           <el-icon><ArrowLeft /></el-icon>
@@ -36,12 +36,31 @@
           <el-radio-button value="basic">基础学习</el-radio-button>
           <el-radio-button value="advanced">进阶提升</el-radio-button>
         </el-radio-group>
-        <el-tag type="success" effect="dark" size="small">2026春学期</el-tag>
+        <div v-if="activeTab === 'course' && currentProject" class="layout-switcher">
+          <el-radio-group v-model="graphLayout" size="small" @change="handleLayoutChange">
+            <el-radio-button value="force"><el-icon><Connection /></el-icon> 力导向</el-radio-button>
+            <el-radio-button value="radial"><el-icon><Share /></el-icon> 径向树</el-radio-button>
+            <el-radio-button value="tree"><el-icon><List /></el-icon> 层级树</el-radio-button>
+          </el-radio-group>
+          <el-switch
+            v-model="autoTour"
+            active-text="自动巡检"
+            inactive-text=""
+            style="margin-left:10px"
+          />
+        </div>
+        <el-switch
+          v-model="isLight"
+          active-text="日间"
+          inactive-text="夜间"
+          style="margin-left:10px"
+          @change="toggleTheme"
+        />
       </div>
     </header>
 
     <!-- 7个图谱Tab导航 -->
-    <nav class="main-tabs">
+    <nav class="main-tabs" :style="tabsStyle">
       <div
         v-for="tab in tabs"
         :key="tab.key"
@@ -57,7 +76,7 @@
     <!-- 主体内容 -->
     <div class="view-body">
       <!-- 左侧面板 -->
-      <aside class="left-panel">
+      <aside class="left-panel" :style="panelStyle">
         <div class="panel-section">
           <h4 class="panel-title"><span class="title-bar"></span>图谱控制</h4>
           <div class="panel-group">
@@ -178,7 +197,7 @@
             <span class="stat-item"><span class="stat-num">{{ linkCount }}</span> 关系</span>
           </div>
         </div>
-        <div v-loading="loading" class="graph-container">
+        <div v-loading="loading" class="graph-container" :style="containerStyle">
           <!-- 图谱类型(力导向图) -->
           <div 
             v-show="activeTab !== 'standards' && activeTab !== 'requirements'" 
@@ -282,7 +301,7 @@
           </div>
         </div>
         <!-- 图例 -->
-        <div class="graph-legend" v-if="activeTab !== 'standards' && activeTab !== 'requirements'">
+        <div class="graph-legend" v-if="activeTab !== 'standards' && activeTab !== 'requirements'" :style="legendStyle">
           <div class="legend-group">
             <span class="legend-label">节点类型</span>
             <template v-if="activeTab === 'course'">
@@ -323,7 +342,7 @@
       </main>
 
       <!-- 右侧：详情面板(节点点击 或 基础/进阶选择) -->
-      <aside class="right-detail" v-if="selectedNode || (activeTab === 'course' && viewMode !== 'all')">
+      <aside class="right-detail" v-if="selectedNode || (activeTab === 'course' && viewMode !== 'all')" :style="panelStyle">
           <!-- 学习路径卡片（基础/进阶） -->
           <template v-if="activeTab === 'course' && viewMode !== 'all' && !selectedNode">
             <div class="detail-header">
@@ -594,6 +613,77 @@ const tabs = [
   { key: 'course', label: '课程图谱', icon: Share }
 ]
 const activeTab = ref('course')
+const graphLayout = ref('force')
+const autoTour = ref(false)
+const isLight = ref(false)
+let autoTourTimer = null
+let autoTourIndex = 0
+
+const pageStyle = computed(() => {
+  if (!isLight.value) return {}
+  return {
+    background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ddd6fe 100%)',
+    color: '#4c1d95'
+  }
+})
+
+const headerStyle = computed(() => {
+  if (!isLight.value) return {}
+  return {
+    background: 'linear-gradient(90deg, #f5f3ff 0%, #ede9fe 100%)',
+    borderBottom: '1px solid rgba(124,58,237,0.15)'
+  }
+})
+
+const tabsStyle = computed(() => {
+  if (!isLight.value) return {}
+  return {
+    background: 'rgba(245,243,255,0.9)',
+    borderBottom: '1px solid rgba(124,58,237,0.12)'
+  }
+})
+
+const panelStyle = computed(() => {
+  if (!isLight.value) return {}
+  return {
+    background: 'rgba(245,243,255,0.9)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(124,58,237,0.12)',
+    borderRadius: '12px',
+    boxShadow: '0 4px 20px rgba(124,58,237,0.08)'
+  }
+})
+
+const containerStyle = computed(() => {
+  if (!isLight.value) return {}
+  return {
+    background: 'rgba(237,233,254,0.85)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(124,58,237,0.15)',
+    borderRadius: '16px',
+    boxShadow: '0 8px 32px rgba(124,58,237,0.1)'
+  }
+})
+
+const legendStyle = computed(() => {
+  if (!isLight.value) return {}
+  return {
+    background: 'rgba(245,243,255,0.9)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(124,58,237,0.15)',
+    borderRadius: '10px',
+    color: '#4c1d95'
+  }
+})
+
+function toggleTheme() {
+  nextTick(() => {
+    if (chart) {
+      chart.dispose()
+      initChart()
+    }
+  })
+}
 
 const currentTabLabel = computed(() => {
   const t = tabs.find(t => t.key === activeTab.value)
@@ -1015,6 +1105,42 @@ function handleViewChange() {
   })
 }
 
+function handleLayoutChange() {
+  nextTick(() => {
+    if (autoTourTimer) { clearInterval(autoTourTimer); autoTourTimer = null }
+    initChart()
+    chart?.resize()
+  })
+}
+
+function startAutoTour(nodes) {
+  if (autoTourTimer) { clearInterval(autoTourTimer); autoTourTimer = null }
+  if (!autoTour.value || !nodes || !chart) return
+  const highlightable = nodes.filter(n => n._type === 'task')
+  if (!highlightable.length) return
+  autoTourIndex = 0
+  autoTourTimer = setInterval(() => {
+    if (!autoTour.value || !chart) {
+      if (autoTourTimer) { clearInterval(autoTourTimer); autoTourTimer = null }
+      return
+    }
+    const node = highlightable[autoTourIndex % highlightable.length]
+    autoTourIndex++
+    chart.dispatchAction({ type: 'highlight', seriesIndex: 0, name: node.name })
+    chart.dispatchAction({ type: 'showTip', seriesIndex: 0, name: node.name })
+    selectedNode.value = {
+      name: node.name,
+      type: node._type,
+      data: node._data,
+      taskId: node._taskId,
+      parentName: node._parentName,
+      points: node._points,
+      tasks: node._tasks,
+      hours: node._data?.hours
+    }
+  }, 1800)
+}
+
 // === 图谱初始化（分发到各tab） ===
 function initChart() {
   if (activeTab.value === 'standards' || activeTab.value === 'requirements') {
@@ -1031,7 +1157,11 @@ function initChart() {
     case 'capability': initCapabilityChart(); break
     case 'problem': initProblemChart(); break
     case 'ideological': initIdeologicalChart(); break
-    case 'course': initCourseChart(); break
+    case 'course':
+      if (graphLayout.value === 'radial') initCourseRadialTree()
+      else if (graphLayout.value === 'tree') initCourseIndentTree()
+      else initCourseChart()
+      break
   }
 }
 
@@ -1054,7 +1184,7 @@ function initKnowledgeChart() {
       id: `cat-${cat.id}`, name: cat.name, category: ci,
       symbolSize: 40,
       itemStyle: { color: cat.color, borderColor: '#fff', borderWidth: 2, shadowBlur: 12, shadowColor: cat.color + '88' },
-      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' },
+      label: { fontSize: 14, color: themeConfig.value.nodeLabel, show: true, fontWeight: 'bold' },
       _type: 'categoryCenter'
     })
   })
@@ -1066,7 +1196,7 @@ function initKnowledgeChart() {
       id: n.id, name: n.name, category: catIdx,
       symbolSize: 26,
       itemStyle: { color: knowledgeCategoryColors[n.category] || '#999', opacity: 0.85 },
-      label: { fontSize: 13, color: '#ddd', show: true, position: 'right', distance: 2 },
+      label: { fontSize: 13, color: themeConfig.value.nodeLabelSecondary, show: true, position: 'right', distance: 2 },
       _raw: n
     })
     // 连接到分类中心
@@ -1122,7 +1252,7 @@ function initCapabilityChart() {
       id: `level-${lvl}`, name: lvl, category: li,
       symbolSize: 40,
       itemStyle: { color: levelColors[lvl], borderColor: '#fff', borderWidth: 2, shadowBlur: 12, shadowColor: levelColors[lvl] + '88' },
-      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' },
+      label: { fontSize: 14, color: themeConfig.value.nodeLabel, show: true, fontWeight: 'bold' },
       _type: 'levelCenter'
     })
   })
@@ -1134,7 +1264,7 @@ function initCapabilityChart() {
       category: levels.indexOf(c.level),
       symbolSize: 26,
       itemStyle: { color: levelColors[c.level] || '#999', opacity: 0.85 },
-      label: { fontSize: 13, color: '#ddd', show: true, position: 'right', distance: 2 },
+      label: { fontSize: 13, color: themeConfig.value.nodeLabelSecondary, show: true, position: 'right', distance: 2 },
       _raw: c
     })
     links.push({
@@ -1185,7 +1315,7 @@ function initProblemChart() {
       id: taskId, name: p.task, category: 0,
       symbolSize: 42,
       itemStyle: { color: '#1a3a5c', borderColor: '#409eff', borderWidth: 2, shadowBlur: 12, shadowColor: 'rgba(64,158,255,0.4)' },
-      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' },
+      label: { fontSize: 14, color: themeConfig.value.nodeLabel, show: true, fontWeight: 'bold' },
       _type: 'taskCenter', _raw: p
     })
 
@@ -1195,7 +1325,7 @@ function initProblemChart() {
       id: problemId, name: `问题`, category: 1,
       symbolSize: 24,
       itemStyle: { color: '#e74c3c', shadowBlur: 6, shadowColor: 'rgba(231,76,60,0.3)' },
-      label: { fontSize: 13, color: '#fff', show: true },
+      label: { fontSize: 13, color: themeConfig.value.nodeLabel, show: true },
       _raw: p, _problemName: p.problem
     })
     links.push({
@@ -1210,7 +1340,7 @@ function initProblemChart() {
         id: analysisId, name: `分析`, category: 2,
         symbolSize: 22,
         itemStyle: { color: '#f39c12', shadowBlur: 5, shadowColor: 'rgba(243,156,18,0.3)' },
-        label: { fontSize: 13, color: '#fff', show: true },
+        label: { fontSize: 13, color: themeConfig.value.nodeLabel, show: true },
         _raw: analyses[i]
       })
       links.push({
@@ -1226,7 +1356,7 @@ function initProblemChart() {
         id: solutionId, name: `方案`, category: 3,
         symbolSize: 22,
         itemStyle: { color: '#2ecc71', shadowBlur: 5, shadowColor: 'rgba(46,204,113,0.3)' },
-        label: { fontSize: 13, color: '#fff', show: true },
+        label: { fontSize: 13, color: themeConfig.value.nodeLabel, show: true },
         _raw: solutions[i]
       })
       links.push({
@@ -1274,7 +1404,7 @@ function initIdeologicalChart() {
     id: 'center', name: '课程思政', category: -1,
     symbolSize: 48,
     itemStyle: { color: '#1a3a5c', borderColor: '#409eff', borderWidth: 2, shadowBlur: 15, shadowColor: 'rgba(64,158,255,0.4)' },
-    label: { fontSize: 16, color: '#fff', show: true, fontWeight: 'bold' }
+    label: { fontSize: 16, color: themeConfig.value.nodeLabel, show: true, fontWeight: 'bold' }
   })
 
   // 维度节点（中等大小）+ 元素节点（小）
@@ -1284,7 +1414,7 @@ function initIdeologicalChart() {
       id: dimId, name: dim.dimension, category: di,
       symbolSize: 36,
       itemStyle: { color: ideologicalDimColors[di], shadowBlur: 8, shadowColor: ideologicalDimColors[di] + '66' },
-      label: { fontSize: 14, color: '#fff', show: true, fontWeight: 'bold' }
+      label: { fontSize: 14, color: themeConfig.value.nodeLabel, show: true, fontWeight: 'bold' }
     })
     links.push({
       source: 'center', target: dimId,
@@ -1296,7 +1426,7 @@ function initIdeologicalChart() {
         id: el.id, name: el.id, category: di,
         symbolSize: 20,
         itemStyle: { color: ideologicalDimColors[di], opacity: 0.8 },
-        label: { fontSize: 12, color: '#ddd', show: true, position: 'right', distance: 2 },
+        label: { fontSize: 12, color: themeConfig.value.nodeLabelSecondary, show: true, position: 'right', distance: 2 },
         _raw: el
       })
       links.push({
@@ -1341,7 +1471,7 @@ function initCourseChart() {
     category: 0,
     symbolSize: 60,
     itemStyle: { color: '#e74c3c', shadowBlur: 25, shadowColor: 'rgba(231,76,60,0.5)' },
-    label: { fontSize: 16, fontWeight: 'bold', color: '#fff', show: true },
+    label: { fontSize: 16, fontWeight: 'bold', color: themeConfig.value.nodeLabel, show: true },
     _type: 'root',
     _data: currentProject.value
   })
@@ -1359,7 +1489,7 @@ function initCourseChart() {
       category: 1,
       symbolSize: 40,
       itemStyle: { color: '#e67e22', opacity, shadowBlur: visible ? 10 : 0, shadowColor: visible ? 'rgba(230,126,34,0.4)' : 'transparent' },
-      label: { fontSize: 14, fontWeight: 'bold', color: opacity === 1 ? '#fff' : 'rgba(255,255,255,0.3)', show: true },
+      label: { fontSize: 14, fontWeight: 'bold', color: opacity === 1 ? themeConfig.value.nodeLabel : themeConfig.value.nodeLabelSecondary, show: true },
       _type: 'subProject',
       _data: sp,
       _tasks: sp.tasks || []
@@ -1383,7 +1513,7 @@ function initCourseChart() {
         category: 2,
         symbolSize: 30,
         itemStyle: { color: taskBaseColor, borderColor: taskStatusColor ? taskStatusColor : 'transparent', borderWidth: taskStatusColor ? 2 : 0, opacity: taskOpacity, shadowBlur: taskVisible ? 6 : 0, shadowColor: taskVisible ? 'rgba(243,156,18,0.3)' : 'transparent' },
-        label: { fontSize: 13, color: taskOpacity === 1 ? '#fff' : 'rgba(255,255,255,0.3)', show: true },
+        label: { fontSize: 13, color: taskOpacity === 1 ? themeConfig.value.nodeLabel : themeConfig.value.nodeLabelSecondary, show: true },
         _type: 'task',
         _taskId: task.id,
         _parentName: sp.name,
@@ -1403,7 +1533,7 @@ function initCourseChart() {
           category: catIdx,
           symbolSize: 18,
           itemStyle: { color: ptColor, opacity: ptOpacity },
-          label: { fontSize: 12, color: '#ddd', position: 'right', distance: 3, show: ptOpacity === 1 },
+          label: { fontSize: 12, color: themeConfig.value.nodeLabelSecondary, position: 'right', distance: 3, show: ptOpacity === 1 },
           _type: pt.type,
           _data: pt
         })
@@ -1460,9 +1590,285 @@ function initCourseChart() {
       tasks: d._tasks,
       hours: d._data?.hours
     }
-    // 点击节点时聚焦
     if (params.data.id) {
       focusOnNode(params.data.id)
+    }
+  })
+
+  if (autoTour.value) startAutoTour(nodes)
+}
+
+// === 课程图谱 - 径向树图 ===
+function initCourseRadialTree() {
+  if (!currentProject.value?.sub_projects) return
+
+  const mode = viewMode.value
+  const subProjects = currentProject.value.sub_projects
+  const tc = themeConfig.value
+
+  const rootData = {
+    name: currentProject.value.name,
+    itemStyle: { color: '#e74c3c' },
+    label: { color: tc.nodeLabel, fontWeight: 'bold', fontSize: 15 },
+    children: []
+  }
+
+  subProjects.forEach(sp => {
+    const spChildren = []
+    ;(sp.tasks || []).forEach(task => {
+      const isBasic = task.type === 'basic'
+      const visible = mode === 'all' || (mode === 'basic' && isBasic) || (mode === 'advanced' && !isBasic)
+      if (!visible) return
+
+      const pointsChildren = (task.points || []).map(pt => ({
+        name: pt.name,
+        itemStyle: { color: typeColors[pt.type] || '#999' },
+        label: { color: tc.nodeLabelSecondary, fontSize: 11 },
+        value: 1,
+        _type: pt.type,
+        _data: pt
+      }))
+
+      spChildren.push({
+        name: task.name,
+        itemStyle: { color: '#f39c12' },
+        label: { color: tc.nodeLabel, fontSize: 12 },
+        _type: 'task',
+        _taskId: task.id,
+        _parentName: sp.name,
+        _points: task.points || [],
+        children: pointsChildren
+      })
+    })
+
+    if (spChildren.length) {
+      rootData.children.push({
+        name: sp.name,
+        itemStyle: { color: '#e67e22' },
+        label: { color: tc.nodeLabel, fontWeight: 'bold', fontSize: 13 },
+        _type: 'subProject',
+        _data: sp,
+        children: spChildren
+      })
+    }
+  })
+
+  const option = {
+    backgroundColor: tc.bg,
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: tc.tooltipBg,
+      borderColor: tc.tooltipBorder,
+      textStyle: { color: tc.tooltipText }
+    },
+    series: [{
+      type: 'tree',
+      data: [rootData],
+      top: '5%',
+      left: '10%',
+      bottom: '5%',
+      right: '20%',
+      layout: 'radial',
+      symbol: 'circle',
+      symbolSize: (value, params) => {
+        const depth = params.data.depth || 0
+        if (depth === 0) return 40
+        if (depth === 1) return 30
+        if (depth === 2) return 22
+        return 14
+      },
+      roam: true,
+      initialTreeDepth: -1,
+      expandAndCollapse: true,
+      animationDuration: 800,
+      animationEasing: 'cubicOut',
+      lineStyle: {
+        color: tc.line,
+        width: 1.5,
+        curveness: 0.5
+      },
+      label: {
+        position: 'right',
+        verticalAlign: 'middle',
+        align: 'right'
+      },
+      leaves: {
+        label: {
+          position: 'left',
+          rotate: 0
+        }
+      },
+      emphasis: {
+        focus: 'descendant',
+        itemStyle: {
+          shadowBlur: 15,
+          shadowColor: 'rgba(64,158,255,0.6)'
+        }
+      }
+    }]
+  }
+
+  chart.setOption(option)
+  nodeCount.value = rootData.children.reduce((sum, sp) => {
+    const taskCount = sp.children?.length || 0
+    return sum + 1 + taskCount + ((sp.children || []).reduce((s, t) => s + (t.children?.length || 0), 0))
+  }, 1) // +1 for root
+  linkCount.value = nodeCount.value - 1
+
+  chart.off('click')
+  chart.on('click', (params) => {
+    const d = params.data
+    selectedNode.value = {
+      name: d.name,
+      type: d._type || (d.depth === 0 ? 'root' : d.depth === 1 ? 'subProject' : d.depth === 2 ? 'task' : 'point'),
+      data: d._data,
+      taskId: d._taskId,
+      parentName: d._parentName,
+      points: d._points
+    }
+  })
+}
+
+// === 课程图谱 - 层级树（缩进树） ===
+function initCourseIndentTree() {
+  if (!currentProject.value?.sub_projects) return
+
+  const mode = viewMode.value
+  const subProjects = currentProject.value.sub_projects
+  const tc = themeConfig.value
+
+  const rootData = {
+    name: currentProject.value.name,
+    itemStyle: { color: '#e74c3c' },
+    label: { color: tc.nodeLabel, fontWeight: 'bold', fontSize: 15 },
+    _type: 'root',
+    _data: currentProject.value,
+    children: []
+  }
+
+  subProjects.forEach(sp => {
+    const spChildren = []
+    ;(sp.tasks || []).forEach(task => {
+      const isBasic = task.type === 'basic'
+      const visible = mode === 'all' || (mode === 'basic' && isBasic) || (mode === 'advanced' && !isBasic)
+      if (!visible) return
+
+      const pointsChildren = (task.points || []).map(pt => ({
+        name: pt.name,
+        itemStyle: { color: typeColors[pt.type] || '#999' },
+        label: { color: tc.nodeLabelSecondary, fontSize: 12 },
+        _type: pt.type,
+        _data: pt,
+        value: 1
+      }))
+
+      spChildren.push({
+        name: task.name,
+        itemStyle: { color: '#f39c12' },
+        label: { color: tc.nodeLabel, fontSize: 13 },
+        _type: 'task',
+        _taskId: task.id,
+        _parentName: sp.name,
+        _points: task.points || [],
+        children: pointsChildren
+      })
+    })
+
+    if (spChildren.length) {
+      rootData.children.push({
+        name: sp.name,
+        itemStyle: { color: '#e67e22' },
+        label: { color: tc.nodeLabel, fontWeight: 'bold', fontSize: 14 },
+        _type: 'subProject',
+        _data: sp,
+        children: spChildren
+      })
+    }
+  })
+
+  const option = {
+    backgroundColor: tc.bg,
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: tc.tooltipBg,
+      borderColor: tc.tooltipBorder,
+      textStyle: { color: tc.tooltipText, fontSize: 12 }
+    },
+    series: [{
+      type: 'tree',
+      data: [rootData],
+      top: '3%',
+      left: '10%',
+      bottom: '3%',
+      right: '18%',
+      layout: 'orthogonal',
+      orient: 'LR',
+      symbol: 'emptyCircle',
+      symbolSize: 10,
+      roam: true,
+      initialTreeDepth: 3,
+      expandAndCollapse: true,
+      animationDuration: 650,
+      animationDurationUpdate: 300,
+      lineStyle: {
+        color: tc.line,
+        width: 1.5,
+        curveness: 0.6
+      },
+      label: {
+        position: 'left',
+        verticalAlign: 'middle',
+        align: 'right',
+        distance: 8
+      },
+      leaves: {
+        label: {
+          position: 'right',
+          verticalAlign: 'middle',
+          align: 'left'
+        }
+      },
+      emphasis: {
+        focus: 'descendant',
+        itemStyle: {
+          shadowBlur: 12,
+          shadowColor: 'rgba(64,158,255,0.5)'
+        },
+        lineStyle: {
+          color: '#409eff',
+          width: 2.5
+        }
+      },
+      itemStyle: {
+        borderWidth: 2,
+        borderColor: 'rgba(10,22,40,0.8)'
+      }
+    }]
+  }
+
+  chart.setOption(option)
+
+  let total = 1
+  const countNodes = (nodes) => {
+    nodes.forEach(n => {
+      total++
+      if (n.children) countNodes(n.children)
+    })
+  }
+  if (rootData.children) countNodes(rootData.children)
+  nodeCount.value = total
+  linkCount.value = total - 1
+
+  chart.off('click')
+  chart.on('click', (params) => {
+    const d = params.data
+    selectedNode.value = {
+      name: d.name,
+      type: d._type || (d.depth === 0 ? 'root' : d.depth === 1 ? 'subProject' : d.depth === 2 ? 'task' : 'point'),
+      data: d._data,
+      taskId: d._taskId,
+      parentName: d._parentName,
+      points: d._points
     }
   })
 }
@@ -1516,16 +1922,34 @@ const selectedNodeTypeName = computed(() => {
   return '节点'
 })
 
+// === 主题配置 ===
+const themeConfig = computed(() => {
+  const light = isLight.value
+  return {
+    bg: 'transparent',
+    text: light ? '#4c1d95' : '#e2e8f0',
+    textSecondary: light ? '#7c3aed' : '#c0c8d4',
+    tooltipBg: light ? 'rgba(255,255,255,0.98)' : 'rgba(8,20,40,0.95)',
+    tooltipBorder: light ? 'rgba(124,58,237,0.4)' : 'rgba(64,158,255,0.35)',
+    tooltipText: light ? '#4c1d95' : '#e2e8f0',
+    line: light ? 'rgba(124,58,237,0.3)' : 'rgba(100,150,200,0.4)',
+    nodeLabel: light ? '#4c1d95' : '#fff',
+    nodeLabelSecondary: light ? '#7c3aed' : '#ddd',
+    shadowColor: light ? 'rgba(124,58,237,0.2)' : 'rgba(0,0,0,0.5)',
+  }
+})
+
 // === 通用力导向图配置 ===
 function getForceOption(nodes, links, categories, forceConfig) {
+  const t = themeConfig.value
   return {
-    backgroundColor: 'transparent',
+    backgroundColor: t.bg,
     tooltip: {
       trigger: 'item',
-      backgroundColor: 'rgba(8,20,40,0.95)',
-      borderColor: 'rgba(64,158,255,0.35)',
-      textStyle: { color: '#e2e8f0', fontSize: 12 },
-      extraCssText: 'border-radius:10px;backdrop-filter:blur(8px);box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:320px;',
+      backgroundColor: t.tooltipBg,
+      borderColor: t.tooltipBorder,
+      textStyle: { color: t.tooltipText, fontSize: 12 },
+      extraCssText: `border-radius:10px;backdrop-filter:blur(8px);box-shadow:0 8px 32px ${t.shadowColor};max-width:320px;`,
       formatter: (params) => {
         if (params.dataType === 'node') {
           const d = params.data
@@ -1536,11 +1960,11 @@ function getForceOption(nodes, links, categories, forceConfig) {
             if (desc.length > 80) desc = desc.substring(0, 80) + '...'
           }
           let extra = ''
-          if (d._raw?.level) extra += `<br/><span style="color:#718096;font-size:11px">层级: ${d._raw.level}</span>`
-          if (d._raw?.evaluation) extra += `<br/><span style="color:#718096;font-size:11px">评价: ${d._raw.evaluation}</span>`
-          if (d._raw?.method && activeTab.value === 'problem') extra += `<br/><span style="color:#718096;font-size:11px">方法: ${d._raw.method}</span>`
-          if (d._raw?.scenario) extra += `<br/><span style="color:#718096;font-size:11px">场景: ${d._raw.scenario.substring(0, 50)}</span>`
-          return `<b style="color:${color}">${d.name}</b>${extra}${desc ? `<br/><span style="color:#c0c8d4;font-size:11px;line-height:1.5">${desc}</span>` : ''}`
+          if (d._raw?.level) extra += `<br/><span style="color:${t.textSecondary};font-size:11px">层级: ${d._raw.level}</span>`
+          if (d._raw?.evaluation) extra += `<br/><span style="color:${t.textSecondary};font-size:11px">评价: ${d._raw.evaluation}</span>`
+          if (d._raw?.method && activeTab.value === 'problem') extra += `<br/><span style="color:${t.textSecondary};font-size:11px">方法: ${d._raw.method}</span>`
+          if (d._raw?.scenario) extra += `<br/><span style="color:${t.textSecondary};font-size:11px">场景: ${d._raw.scenario.substring(0, 50)}</span>`
+          return `<b style="color:${color}">${d.name}</b>${extra}${desc ? `<br/><span style="color:${t.textSecondary};font-size:11px;line-height:1.5">${desc}</span>` : ''}`
         }
         if (params.dataType === 'edge') {
           const label = params.data?.label?.formatter
@@ -1647,6 +2071,19 @@ watch([selectedNode, viewMode], () => {
   nextTick(() => {
     setTimeout(() => chart?.resize(), 350)
   })
+})
+
+watch(autoTour, (on) => {
+  if (!on) {
+    if (autoTourTimer) { clearInterval(autoTourTimer); autoTourTimer = null }
+    return
+  }
+  if (activeTab.value !== 'course' || !currentProject.value || !chart) return
+  if (graphLayout.value === 'force') {
+    const opt = chart.getOption()
+    const nodes = opt.series?.[0]?.data || []
+    startAutoTour(nodes)
+  }
 })
 
 // === 触屏手势支持 ===
@@ -1766,6 +2203,34 @@ function handleTouchEnd() {
   border-color: #409eff;
   color: #fff;
   box-shadow: -1px 0 0 0 #409eff;
+}
+
+.layout-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(13, 33, 55, 0.6);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  border-radius: 8px;
+}
+
+.layout-switcher :deep(.el-radio-button__inner) {
+  background: transparent;
+  border-color: rgba(64, 158, 255, 0.2);
+  color: #c0c8d4;
+  font-size: 12px;
+  padding: 5px 12px;
+}
+
+.layout-switcher :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: linear-gradient(135deg, #409eff, #337ecc);
+  border-color: #409eff;
+  color: #fff;
+}
+
+.layout-switcher :deep(.el-switch) {
+  --el-switch-on-color: #409eff;
 }
 
 /* 7个Tab导航 */
@@ -2392,5 +2857,144 @@ function handleTouchEnd() {
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(20px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* ===== 浅色主题 ===== */
+/* ===== 浅色主题 - 柔和紫色风 ===== */
+:deep(.graph-view-page.light-theme) {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ddd6fe 100%) !important;
+  color: #4c1d95 !important;
+}
+
+:deep(.graph-view-page.light-theme .view-header) {
+  background: linear-gradient(90deg, #f5f3ff 0%, #ede9fe 100%) !important;
+  border-bottom: 1px solid rgba(124,58,237,0.1) !important;
+  box-shadow: 0 1px 3px rgba(124,58,237,0.06) !important;
+}
+
+:deep(.graph-view-page.light-theme .header-right .el-select) {
+  --el-select-input-color: #f5f3ff !important;
+}
+
+:deep(.graph-view-page.light-theme .header-right .el-input__wrapper) {
+  background: #f5f3ff !important;
+  border-color: rgba(124,58,237,0.2) !important;
+  color: #4c1d95 !important;
+  box-shadow: 0 1px 3px rgba(124,58,237,0.05) !important;
+}
+
+:deep(.graph-view-page.light-theme .header-right .el-input__inner) {
+  color: #4c1d95 !important;
+}
+
+:deep(.graph-view-page.light-theme .header-right .el-input__wrapper:hover) {
+  border-color: #7c3aed !important;
+}
+
+:deep(.graph-view-page.light-theme .back-btn) { color: #8b5cf6 !important; }
+:deep(.graph-view-page.light-theme .back-btn:hover) { color: #7c3aed !important; }
+
+:deep(.graph-view-page.light-theme .header-divider) { background: rgba(124,58,237,0.15) !important; }
+:deep(.graph-view-page.light-theme .course-name) { color: #8b5cf6 !important; }
+:deep(.graph-view-page.light-theme .course-sep) { color: rgba(124,58,237,0.25) !important; }
+:deep(.graph-view-page.light-theme .project-name) { color: #4c1d95 !important; }
+
+:deep(.graph-view-page.light-theme .main-tabs) {
+  background: rgba(245,243,255,0.9) !important;
+  border-bottom: 1px solid rgba(124,58,237,0.1) !important;
+}
+
+:deep(.graph-view-page.light-theme .main-tab) {
+  color: #a78bfa !important;
+}
+:deep(.graph-view-page.light-theme .main-tab:hover) { 
+  color: #7c3aed !important; 
+  background: rgba(124,58,237,0.06) !important; 
+}
+:deep(.graph-view-page.light-theme .main-tab.active) {
+  color: #7c3aed !important;
+  background: linear-gradient(180deg, rgba(124,58,237,0.1) 0%, transparent 100%) !important;
+  border-bottom: 2px solid #7c3aed !important;
+}
+
+:deep(.graph-view-page.light-theme .left-panel),
+:deep(.graph-view-page.light-theme .right-detail) {
+  background: rgba(245,243,255,0.95) !important;
+  border: 1px solid rgba(124,58,237,0.12) !important;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.08) !important;
+}
+
+:deep(.graph-view-page.light-theme .panel-title),
+:deep(.graph-view-page.light-theme .detail-title),
+:deep(.graph-view-page.light-theme .graph-title) {
+  color: #4c1d95 !important;
+}
+
+:deep(.graph-view-page.light-theme .title-bar) { 
+  background: linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%) !important;
+}
+
+:deep(.graph-view-page.light-theme .info-stat-box),
+:deep(.graph-view-page.light-theme .graph-stat-row) {
+  background: rgba(237,233,254,0.8) !important;
+  border: 1px solid rgba(124,58,237,0.1) !important;
+}
+
+:deep(.graph-view-page.light-theme .info-stat-num) { color: #7c3aed !important; }
+:deep(.graph-view-page.light-theme .info-stat-label),
+:deep(.graph-view-page.light-theme .graph-stat-label) { color: #a78bfa !important; }
+
+:deep(.graph-view-page.light-theme .graph-container) {
+  background: rgba(237,233,254,0.8) !important;
+  border: 1px solid rgba(124,58,237,0.15) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.1) !important;
+}
+
+:deep(.graph-view-page.light-theme .layout-switcher) {
+  background: rgba(245,243,255,0.9) !important;
+  border: 1px solid rgba(124,58,237,0.12) !important;
+}
+
+:deep(.graph-view-page.light-theme .layout-switcher .el-radio-button__inner) {
+  background: transparent !important;
+  border-color: rgba(124,58,237,0.15) !important;
+  color: #8b5cf6 !important;
+}
+
+:deep(.graph-view-page.light-theme .graph-stats),
+:deep(.graph-view-page.light-theme .stat-item),
+:deep(.graph-view-page.light-theme .stat-num) {
+  color: #8b5cf6 !important;
+}
+
+:deep(.graph-view-page.light-theme .legend-label) { color: #a78bfa !important; }
+:deep(.graph-view-page.light-theme .legend-item) { color: #4c1d95 !important; }
+
+:deep(.graph-view-page.light-theme .detail-desc),
+:deep(.graph-view-page.light-theme .tips-title),
+:deep(.graph-view-page.light-theme .panel-tips p) {
+  color: #8b5cf6 !important;
+}
+
+:deep(.graph-view-page.light-theme .group-label) {
+  color: #a78bfa !important;
+}
+
+:deep(.graph-view-page.light-theme .ctrl-btn) {
+  background: rgba(245,243,255,0.6) !important;
+  border-color: rgba(124,58,237,0.2) !important;
+  color: #7c3aed !important;
+}
+
+:deep(.graph-view-page.light-theme .ctrl-btn:hover) {
+  border-color: #7c3aed !important;
+  color: #ffffff !important;
+  background: #7c3aed !important;
+}
+
+:deep(.graph-view-page.light-theme .panel-section) {
+  background: #ede9fe !important;
+  border: 1px solid rgba(124,58,237,0.15) !important;
 }
 </style>
