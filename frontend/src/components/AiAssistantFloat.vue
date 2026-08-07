@@ -124,9 +124,11 @@
 import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Minus, FullScreen, Promotion } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 import axios from 'axios'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const isOpen = ref(false)
 const thinking = ref(false)
@@ -186,6 +188,8 @@ async function sendChat() {
       messages: chatMessages.value
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => ({ role: m.role, content: m.content }))
+    }, {
+      headers: { Authorization: `Bearer ${userStore.token}` }
     })
     if (res.data.success) {
       chatMessages.value.push({

@@ -9,7 +9,7 @@
         </div>
         <nav class="nav-menu">
           <router-link
-            v-for="item in navItems"
+            v-for="item in visibleNavItems"
             :key="item.path"
             :to="item.path"
             class="nav-item"
@@ -23,8 +23,11 @@
         <el-badge :value="3" class="notification-badge">
           <el-icon :size="20"><Bell /></el-icon>
         </el-badge>
-        <div class="user-info">
-          <el-avatar :size="32" :style="{ background: avatarBg }">{{ avatarInitial }}</el-avatar>
+        <div class="user-info" @click="$router.push('/profile')" style="cursor: pointer;">
+          <el-avatar :size="32" :style="{ background: avatarBg }">
+            <span v-if="userStore.avatar" style="font-size: 18px; line-height: 1;">{{ userStore.avatar }}</span>
+            <span v-else>{{ avatarInitial }}</span>
+          </el-avatar>
           <div class="user-text">
             <span class="username">欢迎您，{{ userStore.greeting }}</span>
             <el-tag :type="userStore.role === 'teacher' ? 'warning' : 'success'" size="small" effect="dark" class="role-tag">
@@ -32,10 +35,22 @@
             </el-tag>
           </div>
         </div>
-        <el-button type="danger" text size="small" @click="handleLogout" class="logout-btn">
-          <el-icon><SwitchButton /></el-icon>
-          退出
-        </el-button>
+        <el-dropdown trigger="click" @command="handleCommand">
+          <el-button text size="small" class="logout-btn">
+            <el-icon><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="profile">
+                <el-icon><User /></el-icon> 个人中心
+              </el-dropdown-item>
+              <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
+              <el-dropdown-item divided command="logout" style="color: #f56c6c;">
+                <el-icon><SwitchButton /></el-icon> 退出登录
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </header>
 
@@ -52,14 +67,15 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, SwitchButton } from '@element-plus/icons-vue'
+import { Bell, SwitchButton, ArrowDown, User } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import AiAssistantFloat from '@/components/AiAssistantFloat.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const navItems = [
+// 教师端导航：完整功能
+const teacherNavItems = [
   { path: '/home', title: '首页' },
   { path: '/courses', title: '课程中心' },
   { path: '/training', title: '实训任务' },
@@ -68,8 +84,21 @@ const navItems = [
   { path: '/system', title: '系统管理' }
 ]
 
+// 学生端导航：去掉「系统管理」（无权限）
+const studentNavItems = [
+  { path: '/home', title: '首页' },
+  { path: '/courses', title: '课程中心' },
+  { path: '/training', title: '实训任务' },
+  { path: '/evaluation', title: '教学智评' },
+  { path: '/resources', title: '学习资源' }
+]
+
+const visibleNavItems = computed(() => {
+  return userStore.role === 'teacher' ? teacherNavItems : studentNavItems
+})
+
 const avatarInitial = computed(() => {
-  return userStore.role === 'teacher' ? '教' : '学'
+  return userStore.role === 'teacher' ? '教' : userStore.username?.charAt(0) || '学'
 })
 
 const avatarBg = computed(() => {
@@ -77,6 +106,16 @@ const avatarBg = computed(() => {
     ? 'linear-gradient(135deg, #e6a23c, #d48806)'
     : 'linear-gradient(135deg, #67c23a, #45a720)'
 })
+
+function handleCommand(command) {
+  if (command === 'logout') {
+    handleLogout()
+  } else if (command === 'changePassword') {
+    router.push('/change-password')
+  } else if (command === 'profile') {
+    router.push('/profile')
+  }
+}
 
 function handleLogout() {
   userStore.logout()

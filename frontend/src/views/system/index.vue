@@ -11,6 +11,13 @@
       </div>
     </div>
     <div class="card-grid">
+      <div class="manage-card" @click="$router.push('/system/students')">
+        <div class="card-icon">
+          <el-icon :size="36"><User /></el-icon>
+        </div>
+        <h3>学生管理</h3>
+        <p>批量导入学生、重置密码、查看学生列表与登录情况</p>
+      </div>
       <div class="manage-card" @click="$router.push('/system/course-data')">
         <div class="card-icon">
           <el-icon :size="36"><DataBoard /></el-icon>
@@ -23,7 +30,7 @@
 </template>
 
 <script setup>
-import { DataBoard, ArrowLeft } from '@element-plus/icons-vue'
+import { DataBoard, ArrowLeft, User } from '@element-plus/icons-vue'
 </script>
 
 <style scoped>

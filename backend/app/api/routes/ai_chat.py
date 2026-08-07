@@ -1,7 +1,19 @@
-"""AI助教对话 API"""
-from fastapi import APIRouter
+"""AI助教对话 API
+
+增强版：
+- 绑定当前登录学生（user_id）
+- 保存对话历史到 chat_histories 表
+- 支持查询历史对话
+"""
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Optional
+from sqlalchemy.orm import Session
+
+from app.core.deps import get_db, get_current_user
+from app.core.security import create_access_token  # noqa: F401 (保持兼容)
+from app.models.user import User
+from app.models.chat_history import ChatHistory
 
 router = APIRouter(prefix="/api/ai-chat", tags=["AI助教对话"])
 
@@ -17,8 +29,12 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat")
-def chat(req: ChatRequest):
-    """AI助教对话接口"""
+def chat(
+    req: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """AI助教对话接口（绑定学生身份，自动保存历史）"""
     try:
         from openai import OpenAI
         from app.core.config import settings
@@ -51,6 +67,47 @@ def chat(req: ChatRequest):
         )
 
         content = response.choices[0].message.content
+
+        # 保存对话历史：保存最后一条 user 消息 + assistant 回复
+        last_user_msg = next((m for m in reversed(req.messages) if m.role == "user"), None)
+        if last_user_msg:
+            db.add(ChatHistory(user_id=current_user.id, role="user", content=last_user_msg.content))
+            db.add(ChatHistory(user_id=current_user.id, role="assistant", content=content))
+            db.commit()
+
         return {"success": True, "reply": content}
     except Exception as e:
         return {"success": False, "message": f"AI助教响应异常: {str(e)}"}
+
+
+@router.get("/history")
+def get_history(
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """获取当前学生的对话历史"""
+    records = db.query(ChatHistory).filter(
+        ChatHistory.user_id == current_user.id
+    ).order_by(ChatHistory.id.desc()).limit(limit).all()
+
+    # 反转为时间正序
+    records = list(reversed(records))
+    return {
+        "success": True,
+        "messages": [
+            {"role": r.role, "content": r.content, "time": r.created_at.strftime("%Y-%m-%d %H:%M:%S") if r.created_at else None}
+            for r in records
+        ],
+    }
+
+
+@router.delete("/history")
+def clear_history(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """清空当前学生的对话历史"""
+    db.query(ChatHistory).filter(ChatHistory.user_id == current_user.id).delete()
+    db.commit()
+    return {"success": True, "message": "对话历史已清空"}

@@ -21,6 +21,7 @@ from app.api.routes.score_session import router as score_session_router
 from app.api.routes.ai_chat import router as ai_chat_router
 from app.api.routes.calls import router as calls_router
 from app.api.routes.ratings import router as ratings_router
+from app.api.routes.auth import router as auth_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -33,6 +34,8 @@ from app.models.llm_config import LLMConfig  # noqa: F401
 from app.models.case_study import CaseStudy  # noqa: F401
 from app.models.course_graph import CourseProject, TeachingStatus  # noqa: F401
 from app.models.score_session import ScoreSession, ScoreRecord  # noqa: F401
+from app.models.user import User  # noqa: F401
+from app.models.chat_history import ChatHistory  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -551,11 +554,57 @@ def _init_default_projects():
         print(f"初始化默认项目失败: {e}")
 
 
+def _init_default_teacher():
+    """初始化默认教师账号（兼容老前端登录）"""
+    from app.core.database import SessionLocal
+    from app.core.security import hash_password
+
+    try:
+        db = SessionLocal()
+        existing = db.query(User).filter(User.username == "teacher").first()
+        if existing:
+            db.close()
+            return
+
+        teacher = User(
+            username="teacher",
+            password_hash=hash_password("123456"),
+            role="teacher",
+            must_change_password=False,
+        )
+        db.add(teacher)
+        db.commit()
+        print("[Startup] 默认教师账号初始化成功（teacher / 123456）")
+        db.close()
+    except Exception as e:
+        print(f"初始化默认教师账号失败: {e}")
+
+
+def _migrate_user_avatar():
+    """迁移：给 users 表添加 avatar 列（兼容已存在的数据库）"""
+    from sqlalchemy import text, inspect
+
+    try:
+        inspector = inspect(engine)
+        if "users" not in inspector.get_table_names():
+            return
+        columns = [c["name"] for c in inspector.get_columns("users")]
+        if "avatar" not in columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN avatar VARCHAR(20)"))
+                conn.commit()
+            print("[Startup] users 表已添加 avatar 列")
+    except Exception as e:
+        print(f"迁移 users 表 avatar 列失败: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app):
     """应用生命周期管理"""
     _init_default_case()
     _init_default_projects()
+    _init_default_teacher()
+    _migrate_user_avatar()
     yield
 
 
@@ -591,6 +640,7 @@ app.include_router(score_session_router)
 app.include_router(ai_chat_router)
 app.include_router(calls_router)
 app.include_router(ratings_router)
+app.include_router(auth_router)
 
 
 @app.get("/health", tags=["系统"])

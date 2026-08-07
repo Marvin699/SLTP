@@ -49,18 +49,9 @@
       </el-form>
 
       <div class="login-footer">
-        <div class="account-hint">
-          <span class="hint-label">测试账号</span>
-          <div class="hint-accounts">
-            <div class="hint-account" @click="fillAccount('teacher')">
-              <span class="account-icon">👨‍🏫</span>
-              <span>教师端：teacher / 123456</span>
-            </div>
-            <div class="hint-account" @click="fillAccount('student')">
-              <span class="account-icon">👨‍🎓</span>
-              <span>学生端：student / 123456</span>
-            </div>
-          </div>
+        <div class="register-link" @click="goRegister">
+          <span>没有账号？</span>
+          <span class="link-text">学生注册 →</span>
         </div>
       </div>
     </div>
@@ -79,10 +70,8 @@ const form = reactive({ username: '', password: '' })
 const loading = ref(false)
 const errorMsg = ref('')
 
-function fillAccount(type) {
-  form.username = type
-  form.password = '123456'
-  errorMsg.value = ''
+function goRegister() {
+  router.push('/register')
 }
 
 async function handleLogin() {
@@ -97,14 +86,15 @@ async function handleLogin() {
   }
 
   loading.value = true
-  // 模拟网络延迟
-  await new Promise(r => setTimeout(r, 500))
-
-  const result = userStore.login(form.username.trim(), form.password)
+  const result = await userStore.login(form.username.trim(), form.password)
   loading.value = false
 
   if (result.success) {
-    router.push('/home')
+    if (userStore.mustChangePassword) {
+      router.push('/change-password')
+    } else {
+      router.push('/home')
+    }
   } else {
     errorMsg.value = result.message
   }
@@ -270,47 +260,25 @@ async function handleLogin() {
 .login-footer {
   border-top: 1px solid rgba(64, 158, 255, 0.12);
   padding-top: 20px;
-}
-
-.account-hint {
   text-align: center;
 }
 
-.hint-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
-  display: block;
-  margin-bottom: 10px;
-}
-
-.hint-accounts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.hint-account {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+.register-link {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s;
+  padding: 8px;
 }
 
-.hint-account:hover {
-  background: rgba(64, 158, 255, 0.1);
-  border-color: rgba(64, 158, 255, 0.25);
-  color: rgba(255, 255, 255, 0.9);
+.register-link:hover .link-text {
+  color: #67c23a;
 }
 
-.account-icon {
-  font-size: 16px;
+.link-text {
+  color: #409eff;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 /* 响应式 */

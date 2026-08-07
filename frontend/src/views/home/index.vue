@@ -4,9 +4,9 @@
     <div class="top-section">
       <!-- 左侧平台概览 -->
       <aside class="left-panel">
-        <div class="panel-title">平台概览</div>
+        <div class="panel-title">{{ userStore.role === 'teacher' ? '平台概览' : '我的学习' }}</div>
         <div class="stats-cards">
-          <div v-for="stat in platformStats" :key="stat.key" class="stat-card">
+          <div v-for="stat in visibleStats" :key="stat.key" class="stat-card">
             <div class="stat-icon" :class="stat.key">
               <el-icon :size="18"><component :is="stat.icon" /></el-icon>
             </div>
@@ -361,20 +361,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { Document, List, User, TrendCharts } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
+import axios from 'axios'
 
 const router = useRouter()
+const userStore = useUserStore()
 
-// 平台统计数据
+// 当前用户欢迎语
+const welcomeText = computed(() => {
+  if (userStore.role === 'teacher') {
+    return `${userStore.username}老师，欢迎回到教学平台`
+  }
+  return `${userStore.username}同学，欢迎开始今天的学习`
+})
+
+// 平台统计数据 - 教师看班级数据，学生看个人数据
 const platformStats = ref([
   { key: 'courses', icon: 'Document', value: '12', label: '课程总数', change: '+2' },
   { key: 'training', icon: 'List', value: '36', label: '实训任务', change: '+5' },
-  { key: 'students', icon: 'User', value: '1286', label: '学生总数', change: '+66' },
-  { key: 'score', icon: 'TrendCharts', value: '78.6%', label: '平均成绩', change: '+6.3%' }
+  { key: 'students', icon: 'User', value: '0', label: '学生总数', change: '+0' },
+  { key: 'score', icon: 'TrendCharts', value: '0%', label: '平均成绩', change: '+0%' }
 ])
+
+// 学生端：个人数据
+const studentStats = ref([
+  { key: 'courses', icon: 'Document', value: '8', label: '我的课程', change: '进行中' },
+  { key: 'training', icon: 'List', value: '5', label: '我的任务', change: '待提交' },
+  { key: 'students', icon: 'User', value: '0', label: '已完成实训', change: '本月' },
+  { key: 'score', icon: 'TrendCharts', value: '—', label: '我的成绩', change: '待评' }
+])
+
+const visibleStats = computed(() => {
+  return userStore.role === 'teacher' ? platformStats.value : studentStats.value
+})
 
 // 系统状态
 const systemStatus = ref([
@@ -382,6 +405,23 @@ const systemStatus = ref([
   { key: 'ai', label: 'AI服务', value: '在线', status: 'online' },
   { key: 'sync', label: '数据同步', value: '正常', status: 'online' }
 ])
+
+// 加载教师端学生统计
+async function loadTeacherStats() {
+  if (userStore.role !== 'teacher') return
+  try {
+    const res = await axios.get('/api/auth/stats', {
+      headers: { Authorization: `Bearer ${userStore.token}` }
+    })
+    if (res.data.success) {
+      const s = res.data.stats
+      platformStats.value[2].value = String(s.total_students)
+      platformStats.value[2].change = `今日+${s.today_new}`
+    }
+  } catch (err) {
+    console.warn('加载教师统计失败:', err)
+  }
+}
 
 // 通知公告
 const notices = ref([
@@ -421,6 +461,8 @@ const goToAgent = (path) => {
 
 // 初始化图表
 onMounted(() => {
+  // 加载教师统计（教师端）
+  loadTeacherStats()
   // 学习数据统计折线图
   const learningChart = echarts.init(learningChartRef.value)
   learningChart.setOption({

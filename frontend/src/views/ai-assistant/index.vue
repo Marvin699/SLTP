@@ -205,9 +205,11 @@
 import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, ArrowRight, Delete, Promotion, Microphone, VideoPause, CircleCheckFilled } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 import axios from 'axios'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const goBack = () => {
   if (window.history.length > 1) {
@@ -377,6 +379,8 @@ async function sendChat() {
       messages: chatMessages.value
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => ({ role: m.role, content: m.content }))
+    }, {
+      headers: { Authorization: `Bearer ${userStore.token}` }
     })
     if (res.data.success) {
       chatMessages.value.push({

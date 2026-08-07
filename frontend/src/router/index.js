@@ -8,6 +8,18 @@ const routes = [
     meta: { title: '登录', public: true }
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/login/Register.vue'),
+    meta: { title: '学生注册', public: true }
+  },
+  {
+    path: '/change-password',
+    name: 'ChangePassword',
+    component: () => import('../views/login/ChangePassword.vue'),
+    meta: { title: '修改密码' }
+  },
+  {
     path: '/',
     component: () => import('../layouts/MainLayout.vue'),
     redirect: '/home',
@@ -46,7 +58,7 @@ const routes = [
         path: 'evaluation/section/:sectionId/ai-analysis',
         name: 'AiAnalysis',
         component: () => import('../views/evaluation/AiAnalysisView.vue'),
-        meta: { title: 'AI教学分析' }
+        meta: { title: 'AI教学分析', roles: ['teacher'] }
       },
       {
         path: 'evaluation/task7',
@@ -58,7 +70,7 @@ const routes = [
         path: 'evaluation/section/task4/live',
         name: 'Section4Live',
         component: () => import('../views/evaluation/Section4Live.vue'),
-        meta: { title: '应急装载AI智能体大屏' }
+        meta: { title: '应急装载AI智能体大屏', roles: ['teacher'] }
       },
       {
         path: 'evaluation/task4/student',
@@ -70,13 +82,13 @@ const routes = [
         path: 'evaluation/task8',
         name: 'Task8Dashboard',
         component: () => import('../views/evaluation/Task8Dashboard.vue'),
-        meta: { title: '任务8大屏 · 方案优化与应急模拟演练' }
+        meta: { title: '任务8大屏 · 方案优化与应急模拟演练', roles: ['teacher'] }
       },
       {
         path: 'evaluation/task8/heatmap',
         name: 'Task8Heatmap',
         component: () => import('../views/evaluation/Task8Heatmap.vue'),
-        meta: { title: '任务8 · 班级热力图' }
+        meta: { title: '任务8 · 班级热力图', roles: ['teacher'] }
       },
       {
         path: 'evaluation/task8/rate',
@@ -94,13 +106,25 @@ const routes = [
         path: 'system',
         name: 'System',
         component: () => import('../views/system/index.vue'),
-        meta: { title: '系统管理' }
+        meta: { title: '系统管理', roles: ['teacher'] }
       },
       {
         path: 'system/course-data',
         name: 'CourseDataManage',
         component: () => import('../views/system/CourseDataManage.vue'),
-        meta: { title: '课程数据管理' }
+        meta: { title: '课程数据管理', roles: ['teacher'] }
+      },
+      {
+        path: 'system/students',
+        name: 'StudentManage',
+        component: () => import('../views/system/StudentManage.vue'),
+        meta: { title: '学生管理', roles: ['teacher'] }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('../views/profile/index.vue'),
+        meta: { title: '个人中心' }
       }
     ]
   },
@@ -177,10 +201,31 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // 检查登录状态
-  const user = JSON.parse(localStorage.getItem('sltp_user') || 'null')
-  if (!user || !user.username) {
-    next('/login')
+  // 检查登录状态（新版：使用 token + user）
+  const token = localStorage.getItem('sltp_token')
+  const userStr = localStorage.getItem('sltp_user')
+  if (!token || !userStr) {
+    // 兼容旧版 localStorage key
+    const legacyUser = localStorage.getItem('sltp_user')
+    if (!legacyUser) {
+      next('/login')
+      return
+    }
+  }
+
+  // 角色权限校验
+  const user = JSON.parse(userStr || 'null')
+  if (to.meta.roles && to.meta.roles.length > 0) {
+    if (!user || !to.meta.roles.includes(user.role)) {
+      // 无权访问，跳转首页
+      next('/home')
+      return
+    }
+  }
+
+  // 强制改密检查（除改密页本身）
+  if (user && user.must_change_password && to.path !== '/change-password') {
+    next('/change-password')
     return
   }
 
