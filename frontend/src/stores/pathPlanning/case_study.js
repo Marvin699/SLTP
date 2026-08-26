@@ -143,6 +143,17 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
     const pointsStore = pointsStoreModule.usePointsStore()
     const materialsStore = materialsStoreModule.useMaterialsStore()
 
+    // 重置上一案例的残留状态（规划结果/诊断/选型），避免旧数据污染新案例
+    const optimizerStoreModule = await import('./optimizer')
+    const optimizerStore = optimizerStoreModule.useOptimizerStore()
+    optimizerStore.resetResult()
+    const diagnosisStoreModule = await import('./diagnosis')
+    const diagnosisStore = diagnosisStoreModule.useDiagnosisStore()
+    diagnosisStore.resetResult()
+    const uavsStoreModule = await import('./uavs')
+    const uavsStore = uavsStoreModule.useUavsStore()
+    uavsStore.clearSelections()
+
     // 先清除旧的物资分配
     materialsStore.clearAssignments()
 
@@ -159,6 +170,13 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
         latitude: caseData.center_data.latitude,
       }
     )
+
+    // 刷新距离矩阵（Module3 最远距离等统计依赖它，旧案例数据必须失效）
+    try {
+      await pointsStore.loadDistanceMatrix()
+    } catch (e) {
+      console.warn('[applyCase] 距离矩阵刷新失败:', e.message)
+    }
 
     // 等待一下让模块二的watch触发完成
     await new Promise(resolve => setTimeout(resolve, 100))

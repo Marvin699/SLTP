@@ -128,6 +128,10 @@ function renderMarkdown(text) {
 onMounted(async () => {
   await uavStore.loadModels()
   uavStore.loadAIResults()
+  // 确保点位已加载（loadFromDb 按当前需求点过滤旧案例残留，点位未就绪会误清空）
+  if (ptsStore.demands.length === 0) {
+    try { await ptsStore.loadPoints() } catch (e) { /* 主视图会统一加载 */ }
+  }
   // 加载物资分配数据，确保需求总重正确显示
   await matStore.loadFromDb()
   if (uavStore.brands.length > 0) {

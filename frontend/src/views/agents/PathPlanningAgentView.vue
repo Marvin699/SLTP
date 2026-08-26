@@ -7,7 +7,7 @@ import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useUavsStore } from '@/stores/pathPlanning/uavs'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
-import TopBar from '@/components/pathPlanning/TopBar.vue'
+import StepNav from '@/components/pathPlanning/StepNav.vue'
 import MapView from '@/components/pathPlanning/MapView.vue'
 import Module1 from '@/views/agents/pathPlanning/Module1.vue'
 import Module2 from '@/views/agents/pathPlanning/Module2.vue'
@@ -18,6 +18,7 @@ import Module6 from '@/views/agents/pathPlanning/Module6.vue'
 import Module7 from '@/views/agents/pathPlanning/Module7.vue'
 import Module8 from '@/views/agents/pathPlanning/Module8.vue'
 import Module11 from '@/views/agents/pathPlanning/Module11.vue'
+import Module12 from '@/views/agents/pathPlanning/Module12.vue'
 import RoutesDetail from '@/views/agents/RoutesDetail.vue'
 import { useTeacherSolutionsStore } from '@/stores/pathPlanning/teacherSolutions'
 
@@ -32,6 +33,24 @@ const tSolStore = useTeacherSolutionsStore()
 const isLoading = computed(() => store.loading || matStore.loading || uavStore.loading)
 const isDayMode = ref(false)
 const toggleTheme = () => { isDayMode.value = !isDayMode.value }
+
+// ─── 向导步骤引导：前置步骤未完成时的提示 ───
+const stepHints = {
+  2: '先在「① 案例与配送点」中加载案例并配置需求点，才能进行物资分配',
+  3: '先在「② 物资与选型」中完成物资分配和无人机选型，才能进行路径规划',
+  4: '先在「③ 规划与诊断」中运行路径规划生成方案，才能进行辩论与优出',
+}
+const pendingHint = computed(() => {
+  if (app.activeAdmin !== null) return null
+  const step = app.activeStep
+  // 检查所有前置步骤是否完成
+  for (let i = 1; i < step; i++) {
+    if (!app.stepStatus[i]) {
+      return stepHints[step] || '请先完成前置步骤'
+    }
+  }
+  return null
+})
 
 const goBack = () => {
   router.push('/home')
@@ -75,8 +94,19 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- TopBar for module switching -->
-    <TopBar />
+    <!-- StepNav for wizard navigation -->
+    <StepNav />
+
+    <!-- 步骤引导提示条 -->
+    <div v-if="pendingHint" class="step-hint-bar">
+      <span class="hint-icon">💡</span>
+      <span>{{ pendingHint }}</span>
+      <button
+        v-if="app.activeStep > 1 && !app.stepStatus[app.activeStep - 1]"
+        class="hint-jump"
+        @click="app.gotoStep(app.activeStep - 1)"
+      >← 去完成第 {{ ['一', '二', '三', '四'][app.activeStep - 2] }} 步</button>
+    </div>
 
     <!-- Main area -->
     <div class="main-area routes-mode" v-if="app.activeModule === 9">
@@ -86,6 +116,11 @@ onMounted(() => {
     <!-- 图片管理（模块 11）- 全屏布局 -->
     <div class="main-area fullscreen" v-else-if="app.activeModule === 11">
       <Module11 />
+    </div>
+
+    <!-- 反向质询辩论室（模块 12）- 全宽布局 -->
+    <div class="main-area" v-else-if="app.activeModule === 12">
+      <Module12 />
     </div>
 
     <!-- 教师端方案审阅（模块 10）-->
@@ -305,6 +340,39 @@ onMounted(() => {
   color: var(--teal);
   margin: 0;
   letter-spacing: 0.5px;
+}
+
+/* 步骤引导提示条 */
+.step-hint-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 20px;
+  background: rgba(255, 179, 0, 0.08);
+  border-bottom: 1px solid rgba(255, 179, 0, 0.25);
+  font-size: 12px;
+  color: var(--amber);
+  flex-shrink: 0;
+}
+
+.hint-icon { font-size: 14px; }
+
+.hint-jump {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255, 179, 0, 0.5);
+  color: var(--amber);
+  font-size: 11px;
+  padding: 3px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.hint-jump:hover {
+  background: rgba(255, 179, 0, 0.15);
 }
 
 .main-area {

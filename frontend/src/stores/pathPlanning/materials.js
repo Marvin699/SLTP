@@ -14,6 +14,11 @@ export const useMaterialsStore = defineStore('materials', () => {
   const loading = ref(false)
   const error = ref(null)
 
+  // 加载版本号：防止过期响应覆盖新数据（案例切换竞态）
+  // 场景：Module2 的 watch 触发 loadFromDb()，其响应晚于 loadAssignmentFromCase() 返回，
+  // 导致旧库数据覆盖刚加载的案例物资
+  let loadVersion = 0
+
   const totalWeight = computed(() => {
     let sum = 0
     for (const a of Object.values(assignments.value)) {
@@ -46,8 +51,10 @@ export const useMaterialsStore = defineStore('materials', () => {
   }
 
   async function loadFromDb() {
+    const v = ++loadVersion
     try {
       const res = await loadSavedAssignments()
+      if (v !== loadVersion) return // 过期响应，丢弃（已被更新的加载覆盖）
       if (res.data) {
         // 规范化 risk_warnings 字段（后端存的是字符串，前端需要数组）
         for (const key of Object.keys(res.data)) {
@@ -56,10 +63,18 @@ export const useMaterialsStore = defineStore('materials', () => {
             a.risk_warnings = a.risk_warnings ? a.risk_warnings.split('；').filter(Boolean) : []
           }
         }
-        assignments.value = { ...res.data }
+        // 只保留当前案例需求点的分配：
+        // /saved 返回全表记录，旧案例的 point_id 残留会污染需求总重等统计
+        const pointsStore = usePointsStore()
+        const demandIds = new Set(pointsStore.demands.map(p => String(p.id)))
+        const filtered = {}
+        for (const [pid, a] of Object.entries(res.data)) {
+          if (demandIds.has(String(pid))) filtered[pid] = a
+        }
+        assignments.value = filtered
       }
     } catch {
-      assignments.value = {}
+      if (v === loadVersion) assignments.value = {}
     }
   }
 
@@ -282,6 +297,7 @@ export const useMaterialsStore = defineStore('materials', () => {
 
   async function loadAssignmentFromCase(caseMaterials) {
     const pointsStore = usePointsStore()
+    ++loadVersion // 作废所有进行中的 loadFromDb 响应
 
     // 清除所有现有的物资分配
     assignments.value = {}

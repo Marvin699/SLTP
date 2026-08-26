@@ -12,6 +12,8 @@ const configStore = useConfigStore()
 const caseStore = useCaseStudyStore()
 
 const showCaseDropdown = ref(false)
+// 更多工具折叠区（地址搜索/批量导入/矩阵/导出等低频功能）
+const showMore = ref(false)
 
 const inputText = ref('')
 const inputError = ref('')
@@ -246,60 +248,44 @@ function closeCaseDropdown() {
 
 <template>
   <div class="module1">
-    <!-- 地址搜索 -->
+    <!-- 快速开始：选择案例 -->
     <div class="section">
       <div class="section-title">
-        地址搜索
+        快速开始
       </div>
-      <div class="form-row search-row">
-        <input
-          v-model="searchQuery"
-          class="input-sm"
-          placeholder="输入地名搜索经纬度"
-          @keyup.enter="handleSearch"
-        />
+      <div class="section-desc">
+        选择灾情案例，自动加载配送中心与需求点
+      </div>
+      <div class="case-select-wrapper">
         <button
-          class="btn btn-search"
-          :disabled="searchLoading"
-          @click="handleSearch"
+          class="btn btn-action primary btn-block"
+          @click="toggleCaseDropdown"
         >
-          {{ searchLoading ? '...' : '搜索' }}
+          📂 选择案例
         </button>
-      </div>
-      <div
-        v-if="searchError"
-        class="error-msg"
-      >
-        {{ searchError }}
-      </div>
-      <div
-        v-if="searchResults.length > 0"
-        class="search-results"
-      >
         <div
-          v-for="(r, i) in searchResults"
-          :key="i"
-          class="search-item"
+          v-if="showCaseDropdown"
+          class="case-dropdown"
         >
-          <div class="search-item-name">
-            {{ r.name }}
+          <div
+            class="case-dropdown-item case-dropdown-header"
+          >
+            <span>选择案例加载配送点</span>
           </div>
-          <div class="search-item-coord">
-            {{ r.lng.toFixed(4) }}, {{ r.lat.toFixed(4) }}
+          <div
+            v-for="caseItem in caseStore.cases"
+            :key="caseItem.id"
+            class="case-dropdown-item"
+            @click="handleApplyCase(caseItem)"
+          >
+            <span class="case-name">{{ caseItem.name }}</span>
+            <span v-if="caseItem.is_default" class="case-default">默认</span>
           </div>
-          <div class="search-item-actions">
-            <button
-              class="btn-sm center"
-              @click="selectSearchResult(r, 'center')"
-            >
-              设为中心
-            </button>
-            <button
-              class="btn-sm demand"
-              @click="selectSearchResult(r, 'demand')"
-            >
-              设为需求点
-            </button>
+          <div
+            v-if="caseStore.cases.length === 0"
+            class="case-dropdown-empty"
+          >
+            暂无案例，请在案例管理模块添加
           </div>
         </div>
       </div>
@@ -391,39 +377,6 @@ function closeCaseDropdown() {
           @click="store.setClickMode(store.clickMode === 'demand' ? null : 'demand')"
         >
           {{ store.clickMode === 'demand' ? '取消选点' : '地图选点' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- 批量输入 -->
-    <div class="section">
-      <div class="section-title">
-        批量获取村庄坐标
-      </div>
-      <textarea
-        v-model="inputText"
-        class="input-area"
-        placeholder="每行格式: 村名 经度 纬度"
-        rows="4"
-      ></textarea>
-      <div
-        v-if="inputError"
-        class="error-msg"
-      >
-        {{ inputError }}
-      </div>
-      <div class="btn-row">
-        <button
-          class="btn btn-primary"
-          @click="handleParse"
-        >
-          解析并标注
-        </button>
-        <button
-          class="btn btn-secondary"
-          @click="handleLoadDefault"
-        >
-          加载默认案例
         </button>
       </div>
     </div>
@@ -583,78 +536,148 @@ function closeCaseDropdown() {
       </div>
     </div>
 
-    <!-- 功能按钮 -->
+    <!-- 更多工具（折叠） -->
     <div class="section">
-      <div class="section-title">
-        数据操作
-      </div>
-      <div class="btn-col">
-        <button
-          class="btn btn-action"
-          @click="handleShowCoordTable"
-        >
-          📋 坐标信息表
-        </button>
-        <button
-          class="btn btn-action"
-          :disabled="store.points.length < 2"
-          @click="handleGenMatrix"
-        >
-          📊 生成距离矩阵
-        </button>
-        <button
-          class="btn btn-action"
-          :disabled="store.points.length === 0"
-          @click="handleExport"
-        >
-          ⬇ 导出 GeoJSON
-        </button>
-        <button
-          class="btn btn-action config-btn"
-          @click="showConfig = true"
-        >
-          🤖 AI识别配置
-        </button>
-        <div class="case-select-wrapper">
-          <button
-            class="btn btn-action primary"
-            @click="toggleCaseDropdown"
-          >
-            📂 选择案例
-          </button>
+      <button
+        class="more-toggle"
+        @click="showMore = !showMore"
+      >
+        <span class="more-arrow">{{ showMore ? '▼' : '▶' }}</span>
+        <span>更多工具</span>
+        <span class="more-hint">地址搜索 · 批量导入 · 矩阵 · 导出</span>
+      </button>
+
+      <div
+        v-show="showMore"
+        class="more-body"
+      >
+        <!-- 地址搜索 -->
+        <div class="more-block">
+          <div class="more-block-title">地址搜索</div>
+          <div class="form-row search-row">
+            <input
+              v-model="searchQuery"
+              class="input-sm"
+              placeholder="输入地名搜索经纬度"
+              @keyup.enter="handleSearch"
+            />
+            <button
+              class="btn btn-search"
+              :disabled="searchLoading"
+              @click="handleSearch"
+            >
+              {{ searchLoading ? '...' : '搜索' }}
+            </button>
+          </div>
           <div
-            v-if="showCaseDropdown"
-            class="case-dropdown"
+            v-if="searchError"
+            class="error-msg"
+          >
+            {{ searchError }}
+          </div>
+          <div
+            v-if="searchResults.length > 0"
+            class="search-results"
           >
             <div
-              class="case-dropdown-item case-dropdown-header"
+              v-for="(r, i) in searchResults"
+              :key="i"
+              class="search-item"
             >
-              <span>选择案例加载配送点</span>
-            </div>
-            <div
-              v-for="caseItem in caseStore.cases"
-              :key="caseItem.id"
-              class="case-dropdown-item"
-              @click="handleApplyCase(caseItem)"
-            >
-              <span class="case-name">{{ caseItem.name }}</span>
-              <span v-if="caseItem.is_default" class="case-default">默认</span>
-            </div>
-            <div
-              v-if="caseStore.cases.length === 0"
-              class="case-dropdown-empty"
-            >
-              暂无案例，请在案例管理模块添加
+              <div class="search-item-name">
+                {{ r.name }}
+              </div>
+              <div class="search-item-coord">
+                {{ r.lng.toFixed(4) }}, {{ r.lat.toFixed(4) }}
+              </div>
+              <div class="search-item-actions">
+                <button
+                  class="btn-sm center"
+                  @click="selectSearchResult(r, 'center')"
+                >
+                  设为中心
+                </button>
+                <button
+                  class="btn-sm demand"
+                  @click="selectSearchResult(r, 'demand')"
+                >
+                  设为需求点
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        <button
-          class="btn btn-success"
-          :disabled="!store.center || store.demands.length === 0"
-          @click="handleSaveModule1"
-        >
-          📋 备份数据
-        </button>
+
+        <!-- 批量输入 -->
+        <div class="more-block">
+          <div class="more-block-title">批量获取村庄坐标</div>
+          <textarea
+            v-model="inputText"
+            class="input-area"
+            placeholder="每行格式: 村名 经度 纬度"
+            rows="4"
+          ></textarea>
+          <div
+            v-if="inputError"
+            class="error-msg"
+          >
+            {{ inputError }}
+          </div>
+          <div class="btn-row">
+            <button
+              class="btn btn-primary"
+              @click="handleParse"
+            >
+              解析并标注
+            </button>
+            <button
+              class="btn btn-secondary"
+              @click="handleLoadDefault"
+            >
+              加载默认案例
+            </button>
+          </div>
+        </div>
+
+        <!-- 数据工具 -->
+        <div class="more-block">
+          <div class="more-block-title">数据工具</div>
+          <div class="btn-col">
+            <button
+              class="btn btn-action"
+              @click="handleShowCoordTable"
+            >
+              📋 坐标信息表
+            </button>
+            <button
+              class="btn btn-action"
+              :disabled="store.points.length < 2"
+              @click="handleGenMatrix"
+            >
+              📊 生成距离矩阵
+            </button>
+            <button
+              class="btn btn-action"
+              :disabled="store.points.length === 0"
+              @click="handleExport"
+            >
+              ⬇ 导出 GeoJSON
+            </button>
+            <button
+              class="btn btn-action config-btn"
+              @click="showConfig = true"
+            >
+              🤖 AI识别配置
+            </button>
+            <button
+              class="btn btn-success"
+              :disabled="!store.center || store.demands.length === 0"
+              @click="handleSaveModule1"
+            >
+              📋 备份数据
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -689,6 +712,67 @@ function closeCaseDropdown() {
 .section {
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
+}
+
+.section-desc {
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+/* ─── 更多工具折叠区 ─── */
+.more-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px dashed var(--border2);
+  border-radius: 8px;
+  color: var(--text3);
+  font-size: 12px;
+  font-family: var(--sans);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.more-toggle:hover {
+  color: var(--text2);
+  border-color: var(--teal);
+}
+
+.more-arrow {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.more-hint {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text3);
+  opacity: 0.7;
+}
+
+.more-body {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.more-block {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.more-block-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 8px;
 }
 
 .section:last-child {
