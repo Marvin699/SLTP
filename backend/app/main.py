@@ -22,6 +22,7 @@ from app.api.routes.ai_chat import router as ai_chat_router
 from app.api.routes.calls import router as calls_router
 from app.api.routes.ratings import router as ratings_router
 from app.api.routes.auth import router as auth_router
+from app.api.routes.debate import router as debate_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -36,6 +37,7 @@ from app.models.course_graph import CourseProject, TeachingStatus  # noqa: F401
 from app.models.score_session import ScoreSession, ScoreRecord  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.chat_history import ChatHistory  # noqa: F401
+from app.models.debate import DebateSession, DebateMessage  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -641,6 +643,7 @@ app.include_router(ai_chat_router)
 app.include_router(calls_router)
 app.include_router(ratings_router)
 app.include_router(auth_router)
+app.include_router(debate_router)
 
 
 @app.get("/health", tags=["系统"])
