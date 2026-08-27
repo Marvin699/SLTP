@@ -4,7 +4,8 @@ import os
 import re
 import shutil
 import urllib.parse
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
+from app.core.deps import get_optional_user
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
@@ -27,14 +28,19 @@ class GenerateReportRequest(BaseModel):
     solution: Dict[str, Any]
     diagnosis: Optional[Dict[str, Any]] = None
     scheme_type: Optional[str] = "运输方案"
+    aco_params: Optional[Dict[str, Any]] = None  # 生成时的ACO参数，供派生重生成回填
 
 
 class UpdateReportRequest(BaseModel):
     report_data: Dict[str, Any]
 
 
+class ChooseReportRequest(BaseModel):
+    reason: str = ""
+
+
 @router.post("/generate")
-def generate_report_endpoint(req: GenerateReportRequest):
+def generate_report_endpoint(req: GenerateReportRequest, current_user=Depends(get_optional_user)):
     """
     生成方案报告（Word + PDF）
     
@@ -73,6 +79,7 @@ def generate_report_endpoint(req: GenerateReportRequest):
         # 保存到数据库
         db = SessionLocal()
         record = ReportRecord(
+            user_id=current_user.id if current_user else None,
             task_config=json.dumps(req.task, ensure_ascii=False),
             solution_data=json.dumps(req.solution, ensure_ascii=False),
             diagnosis_data=json.dumps(req.diagnosis, ensure_ascii=False) if req.diagnosis else None,
@@ -81,6 +88,7 @@ def generate_report_endpoint(req: GenerateReportRequest):
             pdf_path=result['pdf'],
             filename=result['filename'],
             scheme_type=req.scheme_type or "路径规划方案",
+            aco_params=json.dumps(req.aco_params, ensure_ascii=False) if req.aco_params else None,
         )
         db.add(record)
         db.commit()
@@ -225,6 +233,8 @@ def get_report_history(limit: int = 20):
                 "filename": record.filename,
                 "scheme_type": record.scheme_type,
                 "project_name": report_data.get('project_name', '未知项目') if isinstance(report_data, dict) else '未知项目',
+                "is_chosen": bool(record.is_chosen) if record.is_chosen is not None else False,
+                "choice_reason": record.choice_reason or "",
                 "created_at": record.created_at.isoformat() if record.created_at else None,
             })
         
@@ -262,6 +272,9 @@ def get_report_detail(report_id: int):
             "report_data": json.loads(record.report_data) if record.report_data else None,
             "task_config": json.loads(record.task_config) if record.task_config else None,
             "solution_data": json.loads(record.solution_data) if record.solution_data else None,
+            "aco_params": json.loads(record.aco_params) if record.aco_params else None,
+            "is_chosen": bool(record.is_chosen) if record.is_chosen is not None else False,
+            "choice_reason": record.choice_reason or "",
             "created_at": record.created_at.isoformat() if record.created_at else None,
         }
         
@@ -312,6 +325,39 @@ def update_report(report_id: int, req: UpdateReportRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"更新报告失败: {str(e)}")
+
+
+@router.post("/{report_id}/choose")
+def choose_report(report_id: int, req: ChooseReportRequest):
+    """择优决策：选定最终方案（全局唯一，其余自动取消），并记录决策理由"""
+    try:
+        db = SessionLocal()
+        record = db.query(ReportRecord).filter(ReportRecord.id == report_id).first()
+        if not record:
+            db.close()
+            raise HTTPException(status_code=404, detail="报告不存在")
+
+        # 先清空所有已选定标记，保证"最终方案"全局唯一
+        db.query(ReportRecord).filter(ReportRecord.is_chosen == True).update({"is_chosen": False})  # noqa: E712
+        record.is_chosen = True
+        record.choice_reason = req.reason or ""
+        db.commit()
+        chosen_id = record.id
+        filename = record.filename
+        reason = record.choice_reason
+        db.close()
+
+        return {
+            "success": True,
+            "chosen_id": chosen_id,
+            "filename": filename,
+            "choice_reason": reason,
+            "message": f"已将「{filename}」选定为最终方案",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"择优决策失败: {str(e)}")
 
 
 @router.delete("/{report_id}")

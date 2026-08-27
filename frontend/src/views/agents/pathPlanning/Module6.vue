@@ -2,20 +2,23 @@
 import { ref, computed, onMounted } from 'vue'
 import { useReportStore } from '@/stores/pathPlanning/report'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
+import { useAppStore } from '@/stores/pathPlanning/app'
 import RightPanel from '@/components/pathPlanning/RightPanel.vue'
 
 const reportStore = useReportStore()
 const optStore = useOptimizerStore()
+const appStore = useAppStore()
 
 const showRight = ref(false)
 const rightType = ref(null)
 const showEditor = ref(false)
 const editingData = ref(null)
-const selectedReports = ref([])  // 选中的报告ID
-const compareData = ref(null)    // 对比数据
+const MAX_COMPARE = 4                    // 最多支持 4 方案对比
+const selectedReports = ref([])          // 选中的报告ID
+const compareData = ref(null)            // 对比数据 { items: [...] }
 
 const canGenerate = computed(() => optStore.result && !reportStore.loading)
-const canCompare = computed(() => selectedReports.value.length === 2)
+const canCompare = computed(() => selectedReports.value.length >= 2 && selectedReports.value.length <= MAX_COMPARE)
 
 onMounted(() => {
   console.log('Module6 mounted, loading history...')
@@ -59,7 +62,7 @@ function toggleSelect(reportId) {
   const index = selectedReports.value.indexOf(reportId)
   if (index > -1) {
     selectedReports.value.splice(index, 1)
-  } else if (selectedReports.value.length < 2) {
+  } else if (selectedReports.value.length < MAX_COMPARE) {
     selectedReports.value.push(reportId)
   }
 }
@@ -69,32 +72,56 @@ function isSelected(reportId) {
 }
 
 async function handleCompare() {
-  if (selectedReports.value.length !== 2) return
-  
-  // 获取两个报告的详情
-  const report1 = await reportStore.viewReportDetail(selectedReports.value[0])
-  const report2 = await reportStore.viewReportDetail(selectedReports.value[1])
-  
-  if (report1 && report2) {
-    compareData.value = {
-      report1: {
-        id: report1.id,
-        name: report1.report_data?.project_name || '方案1',
-        scheme_type: report1.report_data?.scheme_type || '',
-        stats: report1.report_data?.stats || {},
-        scores: report1.report_data?.scores || {},
-      },
-      report2: {
-        id: report2.id,
-        name: report2.report_data?.project_name || '方案2',
-        scheme_type: report2.report_data?.scheme_type || '',
-        stats: report2.report_data?.stats || {},
-        scores: report2.report_data?.scores || {},
-      }
-    }
-    rightType.value = 'compare'
-    showRight.value = true
+  if (selectedReports.value.length < 2) return
+
+  // 拉取 N 个报告详情，对比结构改为数组（支持 2~4 个方案）
+  const details = await Promise.all(selectedReports.value.map(id => reportStore.viewReportDetail(id)))
+  const items = details.filter(Boolean).map((r, i) => ({
+    id: r.id,
+    name: r.report_data?.project_name || `方案${i + 1}`,
+    scheme_type: r.report_data?.scheme_type || '',
+    stats: r.report_data?.stats || {},
+    scores: r.report_data?.scores || {},
+    aco_params: r.aco_params || null,     // 派生重生成用
+    is_chosen: r.is_chosen || false,
+    choice_reason: r.choice_reason || '',
+  }))
+  if (items.length < 2) return
+  compareData.value = { items }
+  rightType.value = 'compare'
+  showRight.value = true
+}
+
+/** 择优决策：选定最终方案并记录理由 */
+async function handleChoose(item) {
+  const reason = prompt(
+    `选定「${item.name}」为最终方案。\n请简述决策理由（将随报告存档）：`,
+    item.scores && Object.keys(item.scores).length ? '综合四维评分最优' : ''
+  )
+  if (reason === null) return
+  const res = await reportStore.chooseReportItem(item.id, reason)
+  if (res) {
+    // 同步更新对比面板与本地徽标
+    compareData.value.items.forEach(it => {
+      it.is_chosen = it.id === item.id
+      it.choice_reason = it.id === item.id ? res.choice_reason : ''
+    })
   }
+}
+
+/** 从此方案派生重生成：回填当时的 ACO 参数到路径规划面板 */
+function handleDerive(item) {
+  if (!item.aco_params) {
+    alert('该报告生成于旧版本，未记录 ACO 参数；\n请以当前规划面板的参数为基础手动调整。')
+    appStore.setModule(4)
+    return
+  }
+  optStore.acoParams = JSON.parse(JSON.stringify(item.aco_params))
+  optStore.regenHints = {
+    hints: [`已从报告「${item.name}」回填当时的 ACO 参数（蚂蚁数/迭代次数等），可在此基础微调后重新规划`],
+    params: null,
+  }
+  appStore.setModule(4)
 }
 
 async function handleDelete(reportId) {
@@ -158,9 +185,27 @@ function scoreClass(score) {
   return 'bad'
 }
 
-function getDiffClass(val1, val2) {
-  if (!val1 || !val2) return ''
-  return val1 < val2 ? 'better' : (val1 > val2 ? 'worse' : 'same')
+// ─── 对比表格定义（指标行配置） ───
+const statRows = [
+  { label: '总飞行距离 (km)', get: r => r.stats?.total_distance || 0, better: 'min' },
+  { label: '总飞行时间 (分钟)', get: r => r.stats?.total_time || 0, better: 'min' },
+  { label: '总趟次', get: r => r.stats?.total_trips || 0, better: 'min' },
+  { label: '无人机数量', get: r => r.stats?.drone_count || 0, better: 'min' },
+  { label: '配送村庄数', get: r => r.stats?.village_count || 0, better: 'max' },
+]
+const scoreRows = [
+  { label: '安全评分', get: r => r.scores?.safety, better: 'max' },
+  { label: '时效评分', get: r => r.scores?.timeliness, better: 'max' },
+  { label: '经济评分', get: r => r.scores?.economy, better: 'max' },
+  { label: '可行评分', get: r => r.scores?.feasibility, better: 'max' },
+]
+
+/** 该单元格是否为该行最优 */
+function isBest(row, value) {
+  const vals = compareData.value.items.map(row.get).filter(v => v !== undefined && v !== null && v !== '')
+  if (vals.length < 2 || value === undefined || value === null || value === '') return false
+  const best = row.better === 'min' ? Math.min(...vals) : Math.max(...vals)
+  return Number(value) === Number(best)
 }
 
 function formatDiff(val1, val2) {
@@ -171,41 +216,48 @@ function formatDiff(val1, val2) {
   return `${sign}${diff.toFixed(2)}`
 }
 
+/** 差值方向类（含最优方向语义） */
+function diffClass(row, val1, val2) {
+  if (val1 === undefined || val2 === undefined || val1 === val2) return 'same'
+  const firstBetter = row.better === 'min' ? val1 < val2 : val1 > val2
+  return firstBetter ? 'better' : 'worse'
+}
+
 function generateCompareSummary() {
-  if (!compareData.value) return ''
-  
-  const r1 = compareData.value.report1
-  const r2 = compareData.value.report2
-  
-  const distanceDiff = (r1.stats?.total_distance || 0) - (r2.stats?.total_distance || 0)
-  const timeDiff = (r1.stats?.total_time || 0) - (r2.stats?.total_time || 0)
-  const tripsDiff = (r1.stats?.total_trips || 0) - (r2.stats?.total_trips || 0)
-  
-  let summary = []
-  
-  if (distanceDiff < 0) {
-    summary.push(`方案1的总飞行距离更短，节省 ${Math.abs(distanceDiff).toFixed(2)} km`)
-  } else if (distanceDiff > 0) {
-    summary.push(`方案2的总飞行距离更短，节省 ${Math.abs(distanceDiff).toFixed(2)} km`)
+  if (!compareData.value?.items?.length) return ''
+  const items = compareData.value.items
+
+  if (items.length === 2) {
+    // 双方案：逐项比较给文字结论
+    const [r1, r2] = items
+    const distanceDiff = (r1.stats?.total_distance || 0) - (r2.stats?.total_distance || 0)
+    const timeDiff = (r1.stats?.total_time || 0) - (r2.stats?.total_time || 0)
+    const tripsDiff = (r1.stats?.total_trips || 0) - (r2.stats?.total_trips || 0)
+    const summary = []
+    if (distanceDiff < 0) summary.push(`${r1.name}的总飞行距离更短，节省 ${Math.abs(distanceDiff).toFixed(2)} km`)
+    else if (distanceDiff > 0) summary.push(`${r2.name}的总飞行距离更短，节省 ${Math.abs(distanceDiff).toFixed(2)} km`)
+    if (timeDiff < 0) summary.push(`${r1.name}的总飞行时间更短，节省 ${Math.abs(timeDiff).toFixed(2)} 分钟`)
+    else if (timeDiff > 0) summary.push(`${r2.name}的总飞行时间更短，节省 ${Math.abs(timeDiff).toFixed(2)} 分钟`)
+    if (tripsDiff < 0) summary.push(`${r1.name}的总趟次更少，减少 ${Math.abs(tripsDiff)} 趟`)
+    else if (tripsDiff > 0) summary.push(`${r2.name}的总趟次更少，减少 ${Math.abs(tripsDiff)} 趟`)
+    return summary.length === 0 ? '两个方案在核心指标上表现相同' : summary.join('；') + '。'
   }
-  
-  if (timeDiff < 0) {
-    summary.push(`方案1的总飞行时间更短，节省 ${Math.abs(timeDiff).toFixed(2)} 分钟`)
-  } else if (timeDiff > 0) {
-    summary.push(`方案2的总飞行时间更短，节省 ${Math.abs(timeDiff).toFixed(2)} 分钟`)
+
+  // 多方案（3~4 个）：按指标指出最优者
+  const summary = []
+  for (const row of [...statRows.slice(0, 3), ...scoreRows]) {
+    const vals = items.map(it => ({ name: it.name, v: row.get(it) })).filter(x => x.v !== undefined && x.v !== null && x.v !== '')
+    if (vals.length < 2) continue
+    const best = row.better === 'min'
+      ? Math.min(...vals.map(x => x.v))
+      : Math.max(...vals.map(x => x.v))
+    const winners = vals.filter(x => Number(x.v) === Number(best)).map(x => x.name)
+    if (winners.length === 1) {
+      const unit = scoreRows.includes(row) ? `（${best}分）` : ''
+      summary.push(`「${row.label}」最优：${winners[0]}${unit}`)
+    }
   }
-  
-  if (tripsDiff < 0) {
-    summary.push(`方案1的总趟次更少，减少 ${Math.abs(tripsDiff)} 趟`)
-  } else if (tripsDiff > 0) {
-    summary.push(`方案2的总趟次更少，减少 ${Math.abs(tripsDiff)} 趟`)
-  }
-  
-  if (summary.length === 0) {
-    return '两个方案在核心指标上表现相同'
-  }
-  
-  return summary.join('；') + '。'
+  return summary.length === 0 ? '各方案在主要指标上表现接近' : summary.join('；') + '。'
 }
 </script>
 
@@ -306,7 +358,10 @@ function generateCompareSummary() {
               />
             </div>
             <div class="history-content" @click="handleViewHistory(item.id)">
-              <div class="history-name">{{ item.project_name || item.filename }}</div>
+              <div class="history-name">
+                {{ item.project_name || item.filename }}
+                <span v-if="item.is_chosen" class="chosen-badge inline" :title="item.choice_reason">🏆 最终方案</span>
+              </div>
               <div class="history-meta">
                 <span class="history-type">{{ item.scheme_type }}</span>
                 <span class="history-time">{{ formatTime(item.created_at) }}</span>
@@ -465,82 +520,98 @@ function generateCompareSummary() {
         </div>
     </RightPanel>
     
-    <!-- 对比面板 -->
-    <RightPanel v-if="showRight && rightType === 'compare'" title="方案对比" @close="closeRight">
+    <!-- 对比面板（2~4 方案） -->
+    <RightPanel v-if="showRight && rightType === 'compare'" title="方案对比与择优" @close="closeRight">
       <div v-if="compareData" class="compare-container">
         <div class="compare-header">
-          <div class="compare-item">
-            <h4>{{ compareData.report1.name }}</h4>
-            <p class="compare-scheme">{{ compareData.report1.scheme_type }}</p>
-          </div>
-          <div class="compare-vs">VS</div>
-          <div class="compare-item">
-            <h4>{{ compareData.report2.name }}</h4>
-            <p class="compare-scheme">{{ compareData.report2.scheme_type }}</p>
+          <div
+            v-for="item in compareData.items"
+            :key="item.id"
+            class="compare-item"
+            :class="{ chosen: item.is_chosen }"
+          >
+            <h4>{{ item.name }}</h4>
+            <p class="compare-scheme">{{ item.scheme_type }}</p>
+            <div v-if="item.is_chosen" class="chosen-badge">🏆 最终方案</div>
+            <div class="compare-actions">
+              <button
+                class="cmp-btn choose"
+                :disabled="item.is_chosen"
+                :title="item.is_chosen ? `已选定：${item.choice_reason}` : '选定此方案为最终方案'"
+                @click="handleChoose(item)"
+              >
+                {{ item.is_chosen ? '已选定' : '✓ 选定此方案' }}
+              </button>
+              <button
+                class="cmp-btn derive"
+                title="回填该方案生成时的 ACO 参数并跳到路径规划"
+                @click="handleDerive(item)"
+              >↻ 派生重生成</button>
+            </div>
           </div>
         </div>
-        
+
         <div class="compare-section">
-          <h3>核心指标对比</h3>
+          <h3>核心指标对比（绿色为该行最优）</h3>
           <table class="compare-table">
             <thead>
               <tr>
                 <th>指标</th>
-                <th>方案1</th>
-                <th>方案2</th>
-                <th>差值</th>
+                <th v-for="it in compareData.items" :key="it.id">{{ it.name.slice(0, 8) }}</th>
+                <th v-if="compareData.items.length === 2">差值</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>总飞行距离</td>
-                <td>{{ compareData.report1.stats?.total_distance || 0 }} km</td>
-                <td>{{ compareData.report2.stats?.total_distance || 0 }} km</td>
-                <td :class="getDiffClass(compareData.report1.stats?.total_distance, compareData.report2.stats?.total_distance)">
-                  {{ formatDiff(compareData.report1.stats?.total_distance, compareData.report2.stats?.total_distance) }}
-                </td>
-              </tr>
-              <tr>
-                <td>总飞行时间</td>
-                <td>{{ compareData.report1.stats?.total_time || 0 }} 分钟</td>
-                <td>{{ compareData.report2.stats?.total_time || 0 }} 分钟</td>
-                <td :class="getDiffClass(compareData.report1.stats?.total_time, compareData.report2.stats?.total_time)">
-                  {{ formatDiff(compareData.report1.stats?.total_time, compareData.report2.stats?.total_time) }}
-                </td>
-              </tr>
-              <tr>
-                <td>总趟次</td>
-                <td>{{ compareData.report1.stats?.total_trips || 0 }}</td>
-                <td>{{ compareData.report2.stats?.total_trips || 0 }}</td>
-                <td :class="getDiffClass(compareData.report1.stats?.total_trips, compareData.report2.stats?.total_trips)">
-                  {{ formatDiff(compareData.report1.stats?.total_trips, compareData.report2.stats?.total_trips) }}
-                </td>
-              </tr>
-              <tr>
-                <td>无人机数量</td>
-                <td>{{ compareData.report1.stats?.drone_count || 0 }}</td>
-                <td>{{ compareData.report2.stats?.drone_count || 0 }}</td>
-                <td :class="getDiffClass(compareData.report1.stats?.drone_count, compareData.report2.stats?.drone_count)">
-                  {{ formatDiff(compareData.report1.stats?.drone_count, compareData.report2.stats?.drone_count) }}
-                </td>
-              </tr>
-              <tr>
-                <td>配送村庄数</td>
-                <td>{{ compareData.report1.stats?.village_count || 0 }}</td>
-                <td>{{ compareData.report2.stats?.village_count || 0 }}</td>
-                <td :class="getDiffClass(compareData.report1.stats?.village_count, compareData.report2.stats?.village_count)">
-                  {{ formatDiff(compareData.report1.stats?.village_count, compareData.report2.stats?.village_count) }}
+              <tr v-for="row in statRows" :key="row.label">
+                <td>{{ row.label }}</td>
+                <td
+                  v-for="it in compareData.items"
+                  :key="it.id"
+                  :class="{ better: isBest(row, row.get(it)) }"
+                >{{ row.get(it) }}</td>
+                <td
+                  v-if="compareData.items.length === 2"
+                  :class="diffClass(row, row.get(compareData.items[0]), row.get(compareData.items[1]))"
+                >
+                  {{ formatDiff(row.get(compareData.items[0]), row.get(compareData.items[1])) }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        
+
+        <div class="compare-section" v-if="compareData.items.some(it => it.scores && Object.keys(it.scores).length)">
+          <h3>四维评分对比</h3>
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>维度</th>
+                <th v-for="it in compareData.items" :key="it.id">{{ it.name.slice(0, 8) }}</th>
+                <th v-if="compareData.items.length === 2">差值</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in scoreRows" :key="row.label">
+                <td>{{ row.label }}</td>
+                <td
+                  v-for="it in compareData.items"
+                  :key="it.id"
+                  :class="{ better: isBest(row, row.get(it)) }"
+                >{{ row.get(it) ?? '-' }}</td>
+                <td
+                  v-if="compareData.items.length === 2 && row.get(compareData.items[0]) != null && row.get(compareData.items[1]) != null"
+                  :class="diffClass(row, row.get(compareData.items[0]), row.get(compareData.items[1]))"
+                >
+                  {{ formatDiff(row.get(compareData.items[0]), row.get(compareData.items[1])) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <div class="compare-summary">
           <h3>对比结论</h3>
-          <div class="summary-text">
-            {{ generateCompareSummary() }}
-          </div>
+          <div class="summary-text">{{ generateCompareSummary() }}</div>
         </div>
       </div>
     </RightPanel>
@@ -1069,6 +1140,61 @@ function generateCompareSummary() {
   font-weight: bold;
   color: #1890ff;
   padding: 0 16px;
+}
+
+/* 择优决策相关 */
+.compare-item.chosen {
+  outline: 2px solid #faad14;
+  border-radius: 6px;
+  background: rgba(250, 173, 20, 0.06);
+}
+
+.chosen-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: bold;
+  color: #d48806;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 10px;
+  padding: 2px 10px;
+}
+
+.chosen-badge.inline {
+  margin-left: 6px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.compare-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.cmp-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cmp-btn:hover:not(:disabled) { opacity: 0.85; }
+.cmp-btn:disabled { opacity: 0.55; cursor: default; }
+
+.cmp-btn.choose {
+  background: #faad14;
+  color: white;
+  font-weight: bold;
+}
+
+.cmp-btn.derive {
+  background: #722ed1;
+  color: white;
 }
 
 .compare-section {

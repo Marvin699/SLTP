@@ -6,6 +6,7 @@ import {
   getReportDetail as apiDetail,
   updateReport as apiUpdate,
   deleteReport as apiDelete,
+  chooseReport as apiChoose,
   downloadWordUrl,
   downloadPdfUrl,
 } from '@/api/pathPlanning/report'
@@ -46,7 +47,7 @@ export const useReportStore = defineStore('report', () => {
       const solution = optStore.result
       const diagnosis = diagStore.result || null
 
-      const res = await apiGenerate(task, solution, diagnosis, schemeType.value)
+      const res = await apiGenerate(task, solution, diagnosis, schemeType.value, optStore.acoParams)
       currentReport.value = res.data
 
       await loadHistory()
@@ -95,6 +96,22 @@ export const useReportStore = defineStore('report', () => {
       const res = await apiUpdate(currentReport.value.id, reportData)
       // 更新本地数据
       currentReport.value.data = reportData
+      return res.data
+    } catch (e) {
+      error.value = e.response?.data?.detail || e.message
+      return null
+    }
+  }
+
+  /** 择优决策：选定最终方案（全局唯一），并同步本地列表徽标 */
+  async function chooseReportItem(reportId, reason) {
+    try {
+      const res = await apiChoose(reportId, reason)
+      history.value = history.value.map(r => ({
+        ...r,
+        is_chosen: r.id === reportId,
+        choice_reason: r.id === reportId ? res.data.choice_reason : '',
+      }))
       return res.data
     } catch (e) {
       error.value = e.response?.data?.detail || e.message
@@ -156,6 +173,7 @@ export const useReportStore = defineStore('report', () => {
     viewReportDetail,
     updateReportData,
     deleteReportItem,
+    chooseReportItem,
     setSchemeType,
     resetReport,
     getWordDownloadUrl,

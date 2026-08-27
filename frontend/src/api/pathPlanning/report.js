@@ -7,8 +7,13 @@ const api = axios.create({
 })
 
 /** 生成报告 */
-export function generateReport(task, solution, diagnosis = null, schemeType = '运输方案') {
-  return api.post('/report/generate', { task, solution, diagnosis, scheme_type: schemeType })
+export function generateReport(task, solution, diagnosis = null, schemeType = '运输方案', acoParams = null) {
+  return api.post('/report/generate', { task, solution, diagnosis, scheme_type: schemeType, aco_params: acoParams })
+}
+
+/** 择优决策：选定最终方案（全局唯一），记录决策理由 */
+export function chooseReport(reportId, reason = '') {
+  return api.post(`/report/${reportId}/choose`, { reason })
 }
 
 /** 获取报告历史 */

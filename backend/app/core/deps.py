@@ -58,3 +58,19 @@ def require_teacher(current_user: User = Depends(get_current_user)) -> User:
             detail="仅教师可访问此接口",
         )
     return current_user
+
+
+def get_optional_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """可选鉴权：token 有效则返回用户，否则返回 None（用于埋点归属，不阻断匿名请求）"""
+    if not credentials or not credentials.credentials:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+        user_id = int(payload.get("sub", 0))
+        user = db.query(User).filter(User.id == user_id, User.is_active == True).first()  # noqa: E712
+        return user
+    except Exception:
+        return None
