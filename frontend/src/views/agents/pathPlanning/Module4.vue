@@ -140,6 +140,13 @@ async function deleteHistory(recordId) {
     <!-- 错误提示 -->
     <div v-if="optStore.error" class="error-msg">{{ optStore.error }}</div>
 
+    <!-- 合规核验回填提示条 -->
+    <div v-if="optStore.regenHints" class="regen-banner">
+      <div class="rb-title">⚡ 已按合规核验建议回填参数</div>
+      <div v-for="(h, i) in optStore.regenHints.hints" :key="i" class="rb-hint">{{ h }}</div>
+      <button class="rb-close" @click="optStore.clearRegenHints()">✕ 知道了</button>
+    </div>
+
     <!-- 加载状态 -->
     <div v-if="optStore.loading" class="loading-bar"><div class="loading-bar-inner" /></div>
 
@@ -633,6 +640,38 @@ async function deleteHistory(recordId) {
   padding: 10px 14px;
   border-radius: 4px;
 }
+
+/* 合规核验回填提示条 */
+.regen-banner {
+  position: relative;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+.rb-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+}
+.rb-hint {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-top: 4px;
+}
+.rb-close {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-size: 11px;
+  cursor: pointer;
+}
+.rb-close:hover { color: var(--text); }
 
 .loading-bar {
   height: 3px;

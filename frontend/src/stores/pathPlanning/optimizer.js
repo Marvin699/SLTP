@@ -24,6 +24,7 @@ export const useOptimizerStore = defineStore('optimizer', () => {
   const history = ref([])
   const historyLoading = ref(false)
   const selectedDroneId = ref(null) // 当前选中查看路线的无人机ID
+  const regenHints = ref(null)      // 合规核验回填的提示（{hints:[], params:{}}），Module4 展示后清除
 
   // ─── Getters ───
   const summary = computed(() => result.value?.summary || {})
@@ -226,6 +227,11 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     selectedDroneId.value = droneId
   }
 
+  /** 清除核验回填提示 */
+  function clearRegenHints() {
+    regenHints.value = null
+  }
+
   return {
     loading,
     error,
@@ -235,6 +241,7 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     history,
     historyLoading,
     selectedDroneId,
+    regenHints,
     summary,
     routeTable,
     villageTable,
@@ -264,5 +271,6 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     viewHistoryDetail,
     deleteRecord,
     setSelectedDroneId,
+    clearRegenHints,
   }
 })

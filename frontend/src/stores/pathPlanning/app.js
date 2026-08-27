@@ -16,6 +16,7 @@ export const useAppStore = defineStore('app', () => {
     { id: 4, label: '路径规划', icon: '🗺' },
     { id: 9, label: '航线详情', icon: '🛰️' },
     { id: 5, label: '方案诊断', icon: '🔍' },
+    { id: 13, label: '合规核验', icon: '✅' },
     { id: 12, label: '反向质询', icon: '🎭' },
     { id: 6, label: '方案优出', icon: '📊' },
     { id: 10, label: '方案审阅', icon: '👨‍🏫' },
@@ -28,7 +29,7 @@ export const useAppStore = defineStore('app', () => {
   const wizardSteps = [
     { id: 1, title: '案例与配送点', icon: '📍', desc: '加载灾情案例，配置配送中心与需求点', modules: [1] },
     { id: 2, title: '物资与选型', icon: '📦', desc: '配置物资需求，完成无人机选型', modules: [2, 3] },
-    { id: 3, title: '规划与诊断', icon: '🗺', desc: '蚁群算法路径规划，规则+AI双诊断', modules: [4, 9, 5] },
+    { id: 3, title: '规划与诊断', icon: '🗺', desc: '蚁群算法路径规划，诊断与合规核验', modules: [4, 9, 5, 13] },
     { id: 4, title: '辩论与优出', icon: '🎭', desc: '反向质询辩论，生成最优方案报告', modules: [12, 6, 10] },
   ]
 

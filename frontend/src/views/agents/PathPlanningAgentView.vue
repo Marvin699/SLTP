@@ -19,6 +19,7 @@ import Module7 from '@/views/agents/pathPlanning/Module7.vue'
 import Module8 from '@/views/agents/pathPlanning/Module8.vue'
 import Module11 from '@/views/agents/pathPlanning/Module11.vue'
 import Module12 from '@/views/agents/pathPlanning/Module12.vue'
+import Module13 from '@/views/agents/pathPlanning/Module13.vue'
 import RoutesDetail from '@/views/agents/RoutesDetail.vue'
 import { useTeacherSolutionsStore } from '@/stores/pathPlanning/teacherSolutions'
 
@@ -121,6 +122,11 @@ onMounted(() => {
     <!-- 反向质询辩论室（模块 12）- 全宽布局 -->
     <div class="main-area" v-else-if="app.activeModule === 12">
       <Module12 />
+    </div>
+
+    <!-- 合规性核验（模块 13）- 全宽布局 -->
+    <div class="main-area" v-else-if="app.activeModule === 13">
+      <Module13 />
     </div>
 
     <!-- 教师端方案审阅（模块 10）-->
