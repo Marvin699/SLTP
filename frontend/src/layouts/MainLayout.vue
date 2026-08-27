@@ -80,6 +80,7 @@ const teacherNavItems = [
   { path: '/courses', title: '课程中心' },
   { path: '/training', title: '实训任务' },
   { path: '/evaluation', title: '教学智评' },
+  { path: '/teacher/monitor', title: '教学监控' },
   { path: '/resources', title: '学习资源' },
   { path: '/system', title: '系统管理' }
 ]
@@ -143,7 +144,7 @@ function handleLogout() {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 24px;
 }
 
 .logo {
@@ -166,14 +167,16 @@ function handleLogout() {
 
 .nav-menu {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .nav-item {
-  padding: 8px 16px;
+  padding: 6px 11px;
+  font-size: 13.5px;
   color: #c0c8d4;
   text-decoration: none;
   border-radius: 4px;
+  white-space: nowrap;
   transition: all 0.3s;
 }
 

@@ -45,6 +45,9 @@ logs/
 # Uploads
 backend/uploads/
 
+# Generated reports (runtime artifacts)
+backend/app/reports/
+
 # Non-project files
 参考文件/
 服务器部署情况/

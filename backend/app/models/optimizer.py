@@ -8,6 +8,7 @@ class OptimizationRecord(Base):
     __tablename__ = "optimization_records"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=True, index=True)  # 归属用户（教师监控用）
     task_config = Column(Text)           # 任务配置JSON
     solution_data = Column(Text)         # 方案数据JSON
     aco_params = Column(Text)            # ACO参数JSON

@@ -23,6 +23,8 @@ from app.api.routes.calls import router as calls_router
 from app.api.routes.ratings import router as ratings_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.debate import router as debate_router
+from app.api.routes.verification import router as verification_router
+from app.api.routes.teacher import router as teacher_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -38,6 +40,7 @@ from app.models.score_session import ScoreSession, ScoreRecord  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.chat_history import ChatHistory  # noqa: F401
 from app.models.debate import DebateSession, DebateMessage  # noqa: F401
+from app.models.verification import VerificationRecord  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -65,6 +68,24 @@ def _migrate():
             conn.commit()
         except Exception:
             pass  # 列已存在则忽略
+
+        # T2 多方案对比增强：报告表加择优决策与 ACO 参数列
+        for _ddl in (
+            "ALTER TABLE report_records ADD COLUMN aco_params TEXT",
+            "ALTER TABLE report_records ADD COLUMN is_chosen BOOLEAN",
+            "ALTER TABLE report_records ADD COLUMN choice_reason TEXT",
+            "UPDATE report_records SET is_chosen = 0 WHERE is_chosen IS NULL",
+            # T6 教师监控：数据归属埋点
+            "ALTER TABLE optimization_records ADD COLUMN user_id INTEGER",
+            "ALTER TABLE report_records ADD COLUMN user_id INTEGER",
+            "CREATE INDEX IF NOT EXISTS ix_optimization_records_user_id ON optimization_records (user_id)",
+            "CREATE INDEX IF NOT EXISTS ix_report_records_user_id ON report_records (user_id)",
+        ):
+            try:
+                conn.execute(sqlalchemy.text(_ddl))
+                conn.commit()
+            except Exception:
+                pass  # 列已存在则忽略
         
         # 更新现有记录的delivery_mode为大写枚举值
         try:
@@ -644,6 +665,8 @@ app.include_router(calls_router)
 app.include_router(ratings_router)
 app.include_router(auth_router)
 app.include_router(debate_router)
+app.include_router(verification_router)
+app.include_router(teacher_router)
 
 
 @app.get("/health", tags=["系统"])

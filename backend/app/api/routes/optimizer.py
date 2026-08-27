@@ -1,5 +1,6 @@
 """模块四：路径规划 API 路由"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from app.core.deps import get_optional_user
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
@@ -28,7 +29,7 @@ class DefaultParamsRequest(BaseModel):
 
 
 @router.post("/run")
-def run_optimize(req: OptimizeRequest):
+def run_optimize(req: OptimizeRequest, current_user=Depends(get_optional_user)):
     """
     运行路径优化。
 
@@ -52,6 +53,7 @@ def run_optimize(req: OptimizeRequest):
             db = SessionLocal()
             summary = result.get("summary", {})
             record = OptimizationRecord(
+                user_id=current_user.id if current_user else None,
                 task_config=json.dumps(req.task, ensure_ascii=False),
                 solution_data=json.dumps(result, ensure_ascii=False),
                 aco_params=json.dumps(req.aco_params, ensure_ascii=False) if req.aco_params else None,
