@@ -76,6 +76,38 @@ export const useAppStore = defineStore('app', () => {
     gotoStep(activeStep.value || 1)
   }
 
+  // ─── 灾情参数卡（T1）：推算物资需求的教学输入，localStorage 持久化 ───
+  const DISASTER_KEY = 'sltp_disaster_params'
+  const _loadDisaster = () => {
+    try { return JSON.parse(localStorage.getItem(DISASTER_KEY)) || {} } catch { return {} }
+  }
+  const disasterParams = ref({
+    population: null,      // 受灾人口（人）
+    coefficient: 1.0,      // 人均日消耗（kg/人·日）
+    duration: 3,           // 保障时长（天）
+    coldShelfHours: 24,    // 冷链物资时限（小时）
+    windSpeed: 3,          // 风速（m/s）
+    precipitation: 0,      // 降水（mm/h）
+    ..._loadDisaster(),
+  })
+
+  /** 气象是否超限（教学约束：风速 >8 m/s 或降水 >10 mm/h 建议停飞） */
+  const weatherExceeded = computed(() => {
+    const d = disasterParams.value
+    return (d.windSpeed || 0) > 8 || (d.precipitation || 0) > 10
+  })
+
+  /** 灾情总物资需求（kg）= 人口 × 人均日消耗 × 保障时长 */
+  const totalDemandKg = computed(() => {
+    const d = disasterParams.value
+    if (!d.population || !d.coefficient || !d.duration) return 0
+    return d.population * d.coefficient * d.duration
+  })
+
+  function saveDisasterParams() {
+    localStorage.setItem(DISASTER_KEY, JSON.stringify(disasterParams.value))
+  }
+
   // ─── 各步骤完成状态（依据业务数据自动判定） ───
   const stepStatus = computed(() => {
     const pts = usePointsStore()
@@ -98,5 +130,6 @@ export const useAppStore = defineStore('app', () => {
     activeModule, modules, setModule,
     wizardSteps, adminTools, activeStep, activeAdmin,
     stepStatus, gotoStep, openAdmin, backToWizard,
+    disasterParams, totalDemandKg, saveDisasterParams, weatherExceeded,
   }
 })

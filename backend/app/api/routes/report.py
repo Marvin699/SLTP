@@ -15,6 +15,7 @@ from pathlib import Path
 from app.services.report_service import generate_report, generate_report_data, generate_word_report
 from app.core.database import SessionLocal
 from app.models.report import ReportRecord
+from app.models.activity_log import log_activity, ACTION_REPORT, ACTION_CHOOSE
 
 router = APIRouter(prefix="/api/path-planning/report", tags=["模块六-方案优出"])
 
@@ -95,6 +96,11 @@ def generate_report_endpoint(req: GenerateReportRequest, current_user=Depends(ge
         db.refresh(record)
         
         report_id = record.id
+        # 交互日志（T8）
+        log_activity(
+            db, current_user.id if current_user else None, ACTION_REPORT,
+            payload={"filename": result['filename'], "scheme_type": req.scheme_type},
+        )
         db.close()
         
         logger.info(f"报告保存到数据库，ID={report_id}")
@@ -345,6 +351,11 @@ def choose_report(report_id: int, req: ChooseReportRequest):
         chosen_id = record.id
         filename = record.filename
         reason = record.choice_reason
+        # 交互日志（T8）
+        log_activity(
+            db, record.user_id, ACTION_CHOOSE,
+            payload={"report_id": record.id, "filename": filename, "reason": reason},
+        )
         db.close()
 
         return {

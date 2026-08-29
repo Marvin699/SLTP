@@ -107,8 +107,12 @@ onMounted(async () => {
     debateStore.loadSessions(),
     reportStore.loadHistory(),
   ])
-  // 自动选中最近一个活跃会话
-  if (!debateStore.currentSession && debateStore.sessions.length > 0) {
+  if (debateStore.currentSession) {
+    // 已有会话也重新拉取，同步教师介入等新消息
+    await debateStore.loadSession(debateStore.currentSession.id)
+    scrollBottom()
+  } else if (debateStore.sessions.length > 0) {
+    // 自动选中最近一个活跃会话
     const active = debateStore.sessions.find(s => s.status === 'active') || debateStore.sessions[0]
     await debateStore.loadSession(active.id)
     scrollBottom()

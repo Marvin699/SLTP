@@ -4,12 +4,50 @@ import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useUavsStore } from '@/stores/pathPlanning/uavs'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
+import { useAppStore } from '@/stores/pathPlanning/app'
 import RightPanel from '@/components/pathPlanning/RightPanel.vue'
 
 const ptsStore = usePointsStore()
 const matStore = useMaterialsStore()
 const uavStore = useUavsStore()
 const optStore = useOptimizerStore()
+const appStore = useAppStore()
+
+// ─── 环境约束展示区（T1）───
+const showConstraints = ref(true)
+const env = computed(() => appStore.disasterParams)
+
+/** 载重校验：总物资重 vs 现有无人机理论总运力（单程） */
+const payloadCheck = computed(() => {
+  const totalWeight = taskStats.value.totalWeight
+  const capacity = uavStore.totalPayload || 0
+  if (!capacity) return { ok: false, text: '请先在步骤②完成无人机选型' }
+  const tripsNeeded = Math.ceil(totalWeight / capacity)
+  return { ok: true, text: `总重 ${totalWeight.toFixed(0)} kg / 机队单程运力 ${capacity.toFixed(0)} kg ≈ 需 ${tripsNeeded} 趟` }
+})
+
+/** 冷链超时预警：最短冷链时限 vs 估算最长单程飞行时间 */
+const coldCheck = computed(() => {
+  const shelfHours = appStore.disasterParams.coldShelfHours || 24
+  let minShelf = shelfHours * 60
+  for (const a of Object.values(matStore.assignments)) {
+    for (const it of (a.items || [])) {
+      if (it.category_id === 'cold' && it.shelf_hours) {
+        minShelf = Math.min(minShelf, it.shelf_hours * 60)
+      }
+    }
+  }
+  if (!optStore.result || !optStore.totalTrips) {
+    return { level: 'info', text: `冷链时限约束：${minShelf} 分钟（规划后自动校验）` }
+  }
+  // 无分趟数据时按平均趟次时间 × 1.8 估最长飞行
+  const avgTrip = optStore.totalTime / optStore.totalTrips
+  const maxTripEst = avgTrip * 1.8
+  if (maxTripEst > minShelf) {
+    return { level: 'bad', text: `⚠ 冷链超时风险：估算最长单程约 ${maxTripEst.toFixed(0)} 分钟 > 时限 ${minShelf} 分钟，建议缩短配送半径或增开临时起降点` }
+  }
+  return { level: 'good', text: `✓ 冷链时效满足：估算最长单程约 ${maxTripEst.toFixed(0)} 分钟 ≤ 时限 ${minShelf} 分钟` }
+})
 
 const showRight = ref(false)
 const rightType = ref(null)
@@ -124,6 +162,42 @@ async function deleteHistory(recordId) {
       <div class="stat-item">
         <span class="stat-value">{{ taskStats.uavCount }}</span>
         <span class="stat-label">无人机</span>
+      </div>
+    </div>
+
+    <!-- 环境约束展示区（T1） -->
+    <div class="section constraint-section">
+      <div class="section-header" @click="showConstraints = !showConstraints">
+        <span>🌐 环境与运行约束</span>
+        <span class="chevron" :class="{ open: showConstraints }">▸</span>
+      </div>
+      <div v-if="showConstraints" class="section-body">
+        <div class="weather-row">
+          <label class="w-field">
+            <span class="w-label">风速 (m/s)</span>
+            <input v-model.number="env.windSpeed" type="number" min="0" step="1" class="param-input" @change="appStore.saveDisasterParams()" />
+          </label>
+          <label class="w-field">
+            <span class="w-label">降水 (mm/h)</span>
+            <input v-model.number="env.precipitation" type="number" min="0" step="1" class="param-input" @change="appStore.saveDisasterParams()" />
+          </label>
+        </div>
+        <div v-if="appStore.weatherExceeded" class="weather-warn">
+          ⚠ 气象超限：风速 >8 m/s 或降水 >10 mm/h 时不建议起飞，请结合真实场景调整执行时间窗
+        </div>
+        <div v-else class="weather-ok">✓ 气象条件在安全飞行范围内</div>
+        <div class="constraint-item">
+          <span class="c-label">载重</span>
+          <span class="c-text" :class="{ warn: !payloadCheck.ok }">{{ payloadCheck.text }}</span>
+        </div>
+        <div class="constraint-item">
+          <span class="c-label">冷链</span>
+          <span class="c-text" :class="coldCheck.level === 'bad' ? 'warn' : coldCheck.level === 'good' ? 'good' : ''">{{ coldCheck.text }}</span>
+        </div>
+        <div class="constraint-item">
+          <span class="c-label">空域</span>
+          <span class="c-text">禁飞区已在地图中标注（步骤①），规划自动避让</span>
+        </div>
       </div>
     </div>
 
@@ -711,6 +785,45 @@ async function deleteHistory(recordId) {
   user-select: none;
 }
 .chevron { transition: transform 0.2s; font-size: 11px; color: var(--text3); }
+
+/* ─── 环境约束展示区（T1）─── */
+.constraint-section .chevron.open { transform: rotate(90deg); }
+.constraint-section .chevron { display: inline-block; }
+.weather-row { display: flex; gap: 10px; margin-bottom: 8px; }
+.w-field { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.w-label { font-size: 11px; color: var(--text3); }
+.weather-warn {
+  font-size: 11px;
+  color: #ffb300;
+  background: rgba(255, 179, 0, 0.08);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.weather-ok {
+  font-size: 11px;
+  color: #67c23a;
+  margin-bottom: 8px;
+}
+.constraint-item {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 11px;
+  padding: 4px 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+}
+.c-label {
+  flex-shrink: 0;
+  color: var(--text3);
+  width: 28px;
+  text-align: right;
+}
+.c-text { color: var(--text2, #c0c8d4); line-height: 1.5; }
+.c-text.warn { color: #ff5b5b; }
+.c-text.good { color: #67c23a; }
 .chevron.open { transform: rotate(90deg); }
 .badge {
   font-size: 11px;

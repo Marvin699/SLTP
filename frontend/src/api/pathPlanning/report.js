@@ -6,6 +6,13 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+// 自动携带登录 token（报告归属 + 择优日志需要）
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('sltp_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
 /** 生成报告 */
 export function generateReport(task, solution, diagnosis = null, schemeType = '运输方案', acoParams = null) {
   return api.post('/report/generate', { task, solution, diagnosis, scheme_type: schemeType, aco_params: acoParams })

@@ -3,6 +3,8 @@ import { ref, computed, onUnmounted, onMounted, watch } from 'vue'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useConfigStore } from '@/stores/pathPlanning/config'
 import { useCaseStudyStore } from '@/stores/pathPlanning/case_study'
+import { useMaterialsStore } from '@/stores/pathPlanning/materials'
+import { useAppStore } from '@/stores/pathPlanning/app'
 import CoordTable from './CoordTable.vue'
 import DistMatrix from './DistMatrix.vue'
 import ConfigPanel from '@/components/pathPlanning/ConfigPanel.vue'
@@ -10,6 +12,47 @@ import ConfigPanel from '@/components/pathPlanning/ConfigPanel.vue'
 const store = usePointsStore()
 const configStore = useConfigStore()
 const caseStore = useCaseStudyStore()
+const matStore = useMaterialsStore()
+const appStore = useAppStore()
+
+// ─── 灾情参数卡（T1）───
+const showDisaster = ref(false)
+const disaster = appStore.disasterParams
+// computed 动态取 store 的推算值（不能捕获快照，否则输入变化后不更新）
+const disasterTotal = computed(() => appStore.totalDemandKg)
+// 各供应类别的参考配比（应急配送教学标准配比）
+const DEMAND_RATIO = [
+  { key: 'life', label: '生活物资类', ratio: 0.55 },
+  { key: 'medical', label: '医疗物资类', ratio: 0.15 },
+  { key: 'cold', label: '冷链医疗类', ratio: 0.12 },
+  { key: 'repair', label: '抢修设备类', ratio: 0.10 },
+  { key: 'settle', label: '安置物资类', ratio: 0.08 },
+]
+
+/** 将灾情推算的总需求按需求点均分，等比校准各点已配置的物资数量 */
+async function applyDisasterDemand() {
+  const total = disasterTotal.value
+  if (!total) {
+    alert('请先填写受灾人口、人均日消耗和保障时长')
+    return
+  }
+  const assigned = store.demands.filter(p => matStore.getAssignment(p.id))
+  if (!assigned.length) {
+    alert('还没有需求点配置物资。\n请先在步骤②「物资需求选择」为需求点勾选物资类别，再回来推算。')
+    return
+  }
+  const perPoint = total / assigned.length
+  let ok = 0
+  for (const p of assigned) {
+    if (matStore.calibrateDemand(p.id, perPoint)) ok++
+  }
+  appStore.saveDisasterParams()
+  alert(
+    `已按灾情需求校准 ${ok} 个需求点的物资数量：\n` +
+    `总需求 ${total.toFixed(0)} kg ÷ ${assigned.length} 个需求点 ≈ 每点 ${perPoint.toFixed(0)} kg\n` +
+    `可在步骤②查看明细并微调。`
+  )
+}
 
 const showCaseDropdown = ref(false)
 // 更多工具折叠区（地址搜索/批量导入/矩阵/导出等低频功能）
@@ -287,6 +330,45 @@ function closeCaseDropdown() {
           >
             暂无案例，请在案例管理模块添加
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 灾情参数卡（T1）：推算物资需求 -->
+    <div class="section">
+      <div class="section-title disaster-title" @click="showDisaster = !showDisaster" style="cursor: pointer;">
+        <span>🌀 灾情参数推算 <span v-if="disasterTotal" class="disaster-total">≈ {{ disasterTotal.toFixed(0) }} kg</span></span>
+        <span class="chevron" :class="{ open: showDisaster }">▸</span>
+      </div>
+      <div v-if="showDisaster" class="disaster-card">
+        <div class="form-row cols-3">
+          <label class="d-field">
+            <span class="d-label">受灾人口(人)</span>
+            <input v-model.number="disaster.population" type="number" min="0" class="input-sm" placeholder="如 5000" @change="appStore.saveDisasterParams()" />
+          </label>
+          <label class="d-field">
+            <span class="d-label">人均日消耗(kg)</span>
+            <input v-model.number="disaster.coefficient" type="number" min="0.1" step="0.1" class="input-sm" @change="appStore.saveDisasterParams()" />
+          </label>
+          <label class="d-field">
+            <span class="d-label">保障时长(天)</span>
+            <input v-model.number="disaster.duration" type="number" min="1" class="input-sm" @change="appStore.saveDisasterParams()" />
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="d-field">
+            <span class="d-label">冷链时限(小时)</span>
+            <input v-model.number="disaster.coldShelfHours" type="number" min="1" class="input-sm" @change="appStore.saveDisasterParams()" />
+          </label>
+        </div>
+        <div v-if="disasterTotal" class="d-result">
+          <div class="d-sum">总物资需求：<b>{{ disasterTotal.toFixed(0) }} kg</b>（人口 × 人均日消耗 × 时长）</div>
+          <div class="d-ratio">
+            <span v-for="r in DEMAND_RATIO" :key="r.key" class="d-chip">{{ r.label }} {{ (r.ratio * 100).toFixed(0) }}%</span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-block" @click="applyDisasterDemand">🧮 按灾情需求校准各点物资</button>
         </div>
       </div>
     </div>
@@ -785,6 +867,74 @@ function closeCaseDropdown() {
   color: var(--text);
   margin-bottom: 10px;
   letter-spacing: 0.5px;
+}
+
+/* ─── 灾情参数卡（T1）─── */
+.disaster-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.disaster-total {
+  font-size: 11px;
+  color: var(--primary, #409eff);
+  background: rgba(64, 158, 255, 0.12);
+  border-radius: 8px;
+  padding: 1px 8px;
+}
+.chevron {
+  transition: transform 0.2s;
+  color: var(--text3, #8a97a8);
+}
+.chevron.open {
+  transform: rotate(90deg);
+}
+.disaster-card {
+  background: rgba(64, 158, 255, 0.05);
+  border: 1px solid rgba(64, 158, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+}
+.form-row.cols-3 {
+  display: flex;
+  gap: 8px;
+}
+.d-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.d-label {
+  font-size: 11px;
+  color: var(--text3, #8a97a8);
+}
+.d-result {
+  margin: 8px 0;
+  padding: 8px;
+  background: rgba(103, 194, 58, 0.08);
+  border-radius: 6px;
+}
+.d-sum {
+  font-size: 12px;
+  color: var(--text, #e2e8f0);
+}
+.d-sum b {
+  color: #67c23a;
+  font-size: 14px;
+}
+.d-ratio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.d-chip {
+  font-size: 10px;
+  color: var(--text3, #8a97a8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1px 7px;
 }
 
 /* Form */

@@ -13,6 +13,7 @@ from app.services.optimizer.algorithms.aco.colony import solve_with_aco
 from app.services.optimizer.outputs.excel_exporter import export_excel
 from app.core.database import SessionLocal
 from app.models.optimizer import OptimizationRecord
+from app.models.activity_log import log_activity, ACTION_PLAN_GENERATE
 import json
 from datetime import datetime
 
@@ -67,6 +68,13 @@ def run_optimize(req: OptimizeRequest, current_user=Depends(get_optional_user)):
             db.add(record)
             db.commit()
             db.refresh(record)
+            # 交互日志（T8）
+            log_activity(
+                db, current_user.id if current_user else None, ACTION_PLAN_GENERATE,
+                payload={"total_distance": summary.get("total_distance"), "total_trips": summary.get("total_trips"),
+                         "drone_count": summary.get("drone_count"), "village_count": summary.get("village_count")},
+                plan_record_id=record.id,
+            )
             db.close()
         except Exception as e:
             print(f"[Optimizer] 保存记录失败: {e}")

@@ -266,6 +266,22 @@ export const useMaterialsStore = defineStore('materials', () => {
     assignments.value = {}
   }
 
+  /** T1 灾情参数推算：按目标重量等比校准某需求点的物资数量（保持学生已选的类别结构） */
+  function calibrateDemand(pointId, targetWeight) {
+    const a = assignments.value[pointId]
+    if (!a || !a.items || !a.items.length) return false
+    const current = a.items.reduce((s, i) => s + (i.subtotal || 0), 0)
+    if (current <= 0) return false
+    const k = targetWeight / current
+    for (const it of a.items) {
+      it.qty = Math.max(1, Math.round((it.qty || 1) * k))
+      it.subtotal = (it.unit_weight || 0) * it.qty
+    }
+    _recalculateTotal(pointId)
+    _saveToDb(pointId)
+    return true
+  }
+
   async function loadDefaultCase() {
     loading.value = true
     error.value = null
@@ -376,5 +392,6 @@ export const useMaterialsStore = defineStore('materials', () => {
     updatePriority,
     updateDeliveryMode,
     clearAssignments,
+    calibrateDemand,
   }
 })

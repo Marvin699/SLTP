@@ -4,11 +4,13 @@ import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useConfigStore } from '@/stores/pathPlanning/config'
 import { useCaseStudyStore } from '@/stores/pathPlanning/case_study'
+import { useAppStore } from '@/stores/pathPlanning/app'
 import ConfigPanel from '@/components/pathPlanning/ConfigPanel.vue'
 import RightPanel from '@/components/pathPlanning/RightPanel.vue'
 
 const pointsStore = usePointsStore()
 const matStore = useMaterialsStore()
+const appStore = useAppStore()
 const configStore = useConfigStore()
 const caseStore = useCaseStudyStore()
 
@@ -118,6 +120,12 @@ const editingAssignment = computed(() => {
   if (!editingPointId.value) return null
   return matStore.getAssignment(editingPointId.value)
 })
+
+// ─── 冷链时效（T1）：冷链条目可设置时限，默认取灾情参数卡的冷链时限 ───
+const hasColdItem = computed(() =>
+  editingAssignment.value?.items?.some(i => i.category_id === 'cold') || false
+)
+const editingColdShelf = computed(() => appStore.disasterParams.coldShelfHours || 24)
 
 function priorityLabel(p) {
   const map = { 1: '紧急', 2: '高', 3: '中', 4: '低', 5: '普通' }
@@ -421,6 +429,7 @@ function toggleCaseDropdown() {
                   <th>单重</th>
                   <th>数量</th>
                   <th>小计</th>
+                  <th v-if="hasColdItem">冷链时限(h)</th>
                   <th></th>
                 </tr>
               </thead>
@@ -456,6 +465,17 @@ function toggleCaseDropdown() {
                     />
                   </td>
                   <td class="mono">{{ item.subtotal }}</td>
+                  <td v-if="hasColdItem">
+                    <input
+                      v-if="item.category_id === 'cold'"
+                      :value="item.shelf_hours ?? editingColdShelf"
+                      type="number"
+                      min="1"
+                      class="cell-input narrow cold-input"
+                      @input="matStore.updateItem(editingPointId, ii, 'shelf_hours', parseFloat($event.target.value) || undefined)"
+                    />
+                    <span v-else class="cold-na">—</span>
+                  </td>
                   <td>
                     <button
                       class="btn-remove"
@@ -942,6 +962,17 @@ function toggleCaseDropdown() {
 
 .cell-input.narrow {
   width: 50px;
+}
+
+/* 冷链时限列（T1） */
+.cold-input {
+  border-color: rgba(64, 158, 255, 0.4);
+  color: #409eff;
+}
+.cold-na {
+  color: var(--text3, #8a97a8);
+  text-align: center;
+  display: block;
 }
 
 .btn-remove {

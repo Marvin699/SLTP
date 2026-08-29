@@ -6,6 +6,7 @@ import {
   getStudentVerifications,
   getStudentDebateSessions,
   getDebateReplay,
+  getStudentActivities,
   sendTeacherNote,
 } from '@/api/pathPlanning/teacher'
 
@@ -44,6 +45,7 @@ function selectStudent(s) {
   selected.value = s
   replay.value = null
   if (activeTab.value === 'debate') loadDebateSessions()
+  else if (activeTab.value === 'timeline') loadActivities()
   else loadVerifications()
 }
 
@@ -53,6 +55,7 @@ watch(activeTab, (t) => {
   if (!selected.value) return
   if (t === 'verify') loadVerifications()
   else if (t === 'debate') { loadDebateSessions(); replay.value = null }
+  else if (t === 'timeline') loadActivities()
 })
 
 // ─── 核验记录 ───
@@ -144,6 +147,27 @@ async function submitNote() {
     sendingNote.value = false
   }
 }
+
+// ─── 学习时间线（T8 交互日志） ───
+const actLoading = ref(false)
+const activities = ref([])          // 日志条目（倒序）
+const actStats = ref({})            // 动作分布统计
+
+async function loadActivities() {
+  if (!selected.value) return
+  actLoading.value = true
+  try {
+    const res = await getStudentActivities(selected.value.user_id)
+    activities.value = res.data.activities || []
+    actStats.value = res.data.stats || {}
+  } catch (e) {
+    ElMessage.error(e.response?.data?.detail || e.message)
+  } finally {
+    actLoading.value = false
+  }
+}
+
+const statEntries = computed(() => Object.entries(actStats.value))
 
 const summaryCards = computed(() => [
   { label: '学生总数', value: summary.value.student_total ?? '-', icon: '👥' },
@@ -321,6 +345,34 @@ onMounted(loadDashboard)
                 </div>
               </div>
             </el-tab-pane>
+
+            <!-- ════ 学习时间线（T8）════ -->
+            <el-tab-pane label="🕐 学习时间线" name="timeline">
+              <div v-loading="actLoading" class="tab-body">
+                <el-empty v-if="!activities.length" description="暂无学习记录" :image-size="70" />
+                <template v-else>
+                  <!-- 动作分布统计 -->
+                  <div v-if="statEntries.length" class="act-stats">
+                    <span
+                      v-for="[act, cnt] in statEntries"
+                      :key="act"
+                      class="act-chip"
+                    >{{ act }} × {{ cnt }}</span>
+                  </div>
+                  <!-- 倒序时间线 -->
+                  <div class="timeline">
+                    <div v-for="a in activities" :key="a.id" class="tl-row">
+                      <span class="tl-icon" :style="{ background: a.color + '22', borderColor: a.color + '55' }">{{ a.icon }}</span>
+                      <div class="tl-main">
+                        <b :style="{ color: a.color }">{{ a.action }}</b>
+                        <span class="tl-summary">{{ a.summary }}</span>
+                      </div>
+                      <span class="tl-time dim">{{ a.created_at }}</span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </el-tab-pane>
           </el-tabs>
         </template>
 
@@ -493,4 +545,47 @@ export default { name: 'TeachingMonitor' }
 .monitor-tabs :deep(.el-tabs__nav-wrap::after) {
   background: rgba(255, 255, 255, 0.08);
 }
+
+/* ─── 学习时间线（T8）─── */
+.act-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.act-chip {
+  font-size: 12px;
+  color: #c0c8d4;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 3px 12px;
+}
+.timeline {
+  position: relative;
+  padding-left: 6px;
+}
+.tl-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+.tl-row:last-child { border-bottom: none; }
+.tl-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.tl-main { flex: 1; min-width: 0; }
+.tl-main b { font-size: 13px; margin-right: 8px; }
+.tl-summary { font-size: 12.5px; color: #aeb9c8; }
+.tl-time { font-size: 11px; flex-shrink: 0; padding-top: 2px; }
 </style>

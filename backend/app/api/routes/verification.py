@@ -207,6 +207,12 @@ def submit_check(req: CheckRequest, current_user: User = Depends(get_current_use
     db.commit()
     db.refresh(record)
 
+    # 交互日志（T8）
+    from app.models.activity_log import log_activity, ACTION_VERIFICATION
+    log_activity(db, current_user.id, ACTION_VERIFICATION,
+                 payload={"score": score, "verdict": verdict, "mismatch_count": mismatch_count},
+                 plan_record_id=record.plan_record_id)
+
     return {
         "record_id": record.id,
         "score": score,

@@ -41,6 +41,7 @@ from app.models.user import User  # noqa: F401
 from app.models.chat_history import ChatHistory  # noqa: F401
 from app.models.debate import DebateSession, DebateMessage  # noqa: F401
 from app.models.verification import VerificationRecord  # noqa: F401
+from app.models.activity_log import ActivityLog  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)

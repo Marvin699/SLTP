@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_db, get_current_user
 from app.models.user import User
 from app.models.debate import DebateSession, DebateMessage
+from app.models.activity_log import log_activity, ACTION_DEBATE
 from app.services import llm_service
 
 router = APIRouter(prefix="/api/debate", tags=["反向质询辩论"])
@@ -212,6 +213,11 @@ def create_session(
     db.add(DebateMessage(session_id=session.id, role="ai", content=opener, stage="hypothesis", challenge_type="assumption"))
     db.commit()
 
+    # 交互日志（T8）
+    log_activity(db, current_user.id, ACTION_DEBATE,
+                 payload={"event": "创建会话", "group": req.group_name},
+                 plan_record_id=req.plan_record_id)
+
     return {"success": True, "session": _session_to_dict(session, db)}
 
 
@@ -319,6 +325,12 @@ def challenge(
     db.add(ai_msg)
     db.commit()
     db.refresh(ai_msg)
+
+    # 交互日志（T8）
+    log_activity(db, current_user.id, ACTION_DEBATE,
+                 payload={"event": "提交陈述", "stage": session.stage, "challenge_type": ctype,
+                          "dimensions": req.judgment_dimensions, "confidence": req.judgment_confidence},
+                 plan_record_id=session.plan_record_id)
 
     return {
         "success": True,

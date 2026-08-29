@@ -33,6 +33,11 @@ export function getDebateReplay(sessionId) {
   return api.get(`/debate-session/${sessionId}`)
 }
 
+/** 某学生的全流程学习时间线（交互日志，T8） */
+export function getStudentActivities(userId, limit = 50) {
+  return api.get(`/student/${userId}/activities`, { params: { limit } })
+}
+
 /** 教师介入留言（复用辩论模块接口） */
 export function sendTeacherNote(sessionId, content) {
   return axios.post(
