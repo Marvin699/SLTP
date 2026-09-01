@@ -7,6 +7,8 @@ from app.services.uav_service import (
     get_all_models,
     get_model_by_id,
     update_model,
+    create_model,
+    delete_model,
     assess_selection,
     assess_with_llm,
 )
@@ -54,6 +56,39 @@ class UAVParamUpdate(BaseModel):
 def list_brands():
     """获取所有无人机品牌"""
     return get_all_brands()
+
+
+class UAVModelCreate(BaseModel):
+    brand: Optional[str] = "自定义"
+    brand_en: Optional[str] = ""
+    model: Optional[str] = "未命名机型"
+    max_payload: Optional[float] = 10
+    range_km: Optional[float] = 20
+    max_speed: Optional[float] = 60
+    cabin_volume: Optional[float] = None
+    wind_resist: Optional[int] = None
+    ip_rating: Optional[str] = ""
+    drop_mode: Optional[str] = ""
+    features: Optional[list] = None
+    suitable_for: Optional[list] = None
+    description: Optional[str] = ""
+    range_points: Optional[list] = None
+
+
+@router.post("/models")
+def create_uav_model(data: UAVModelCreate):
+    """新建无人机型号（型号 ID 自动生成，冲突自动加后缀）"""
+    payload = {k: v for k, v in data.model_dump().items() if v is not None}
+    result = create_model(payload)
+    return result
+
+
+@router.delete("/models/{model_id}")
+def remove_uav_model(model_id: str):
+    """删除无人机型号"""
+    if not delete_model(model_id):
+        raise HTTPException(status_code=404, detail="未找到该无人机型号")
+    return {"ok": True, "message": "机型已删除"}
 
 
 @router.get("/models")

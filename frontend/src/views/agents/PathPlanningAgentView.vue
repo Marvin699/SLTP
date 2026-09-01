@@ -119,6 +119,16 @@ onMounted(() => {
       <Module11 />
     </div>
 
+    <!-- 信息管理（模块 7）- 全宽布局：案例/机型库管理不需要地图 -->
+    <div class="main-area admin-fullwidth" v-else-if="app.activeModule === 7">
+      <Module7 />
+    </div>
+
+    <!-- 系统设置（模块 8）- 全宽布局 -->
+    <div class="main-area admin-fullwidth" v-else-if="app.activeModule === 8">
+      <Module8 />
+    </div>
+
     <!-- 反向质询辩论室（模块 12）- 全宽布局 -->
     <div class="main-area" v-else-if="app.activeModule === 12">
       <Module12 />
@@ -199,12 +209,6 @@ onMounted(() => {
 
           <!-- Module 7: Case Management -->
           <Module7 v-else-if="app.activeModule === 7" />
-
-          <!-- Module 8: System Settings -->
-          <Module8 v-else-if="app.activeModule === 8" />
-
-          <!-- Module 11: Image Management -->
-          <Module11 v-else-if="app.activeModule === 11" />
 
           <!-- Placeholder for other modules -->
           <div
@@ -395,6 +399,21 @@ onMounted(() => {
   background: var(--navy2);
   width: 100%;
   align-items: center;
+}
+
+/* 信息管理（模块 7）：全宽布局，居中限宽 */
+.main-area.admin-fullwidth {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--navy2);
+  width: 100%;
+}
+.main-area.admin-fullwidth > * {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 /* Left side panel */

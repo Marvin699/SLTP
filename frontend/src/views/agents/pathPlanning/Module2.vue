@@ -267,7 +267,7 @@ function toggleCaseDropdown() {
             v-if="caseStore.cases.length === 0"
             class="case-dropdown-empty"
           >
-            暂无案例，请在案例管理模块添加
+            暂无案例，请在「信息管理 → 案例管理」添加
           </div>
         </div>
       </div>

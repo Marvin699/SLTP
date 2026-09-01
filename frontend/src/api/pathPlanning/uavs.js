@@ -32,6 +32,16 @@ export function updateUAVModel(modelId, data) {
   return api.put(`/uavs/models/${modelId}`, data)
 }
 
+/** 新建无人机型号（型号 ID 自动生成） */
+export function createUAVModel(data) {
+  return api.post('/uavs/models', data)
+}
+
+/** 删除无人机型号 */
+export function deleteUAVModel(modelId) {
+  return api.delete(`/uavs/models/${modelId}`)
+}
+
 /** 规则引擎评估 */
 export function assessUAVs(payload) {
   return api.post('/uavs/assess', payload)

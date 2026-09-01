@@ -20,7 +20,7 @@ export const useAppStore = defineStore('app', () => {
     { id: 12, label: '反向质询', icon: '🎭' },
     { id: 6, label: '方案优出', icon: '📊' },
     { id: 10, label: '方案审阅', icon: '👨‍🏫' },
-    { id: 7, label: '案例管理', icon: '📚' },
+    { id: 7, label: '信息管理', icon: '🗂' },
     { id: 8, label: '系统设置', icon: '⚙' },
     { id: 11, label: '方案看板', icon: '🖼' },
   ]
@@ -34,7 +34,7 @@ export const useAppStore = defineStore('app', () => {
   ]
 
   const adminTools = [
-    { id: 7, label: '案例管理', icon: '📚' },
+    { id: 7, label: '信息管理', icon: '🗂' },
     { id: 8, label: '系统设置', icon: '⚙' },
     { id: 11, label: '方案看板', icon: '🖼' },
   ]

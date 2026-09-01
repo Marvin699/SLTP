@@ -3,8 +3,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useCaseStudyStore } from '@/stores/pathPlanning/case_study'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
+import UavLibrary from './UavLibrary.vue'
 
 const caseStore = useCaseStudyStore()
+
+// 子页签：cases=案例管理 | uavs=机型库管理
+const subTab = ref('cases')
 const pointsStore = usePointsStore()
 const matStore = useMaterialsStore()
 
@@ -434,11 +438,21 @@ function parseCsvLine(line) {
 
 <template>
   <div class="module7-container">
-    <div class="module-header">
-      <h2>案例管理</h2>
-      <p class="module-desc">管理案例数据，支持查看、编辑、删除和保存案例</p>
-    </div>
+    <!-- 左侧导航 + 右侧内容 -->
+    <div class="info-layout">
+      <aside class="info-side">
+        <div class="info-side-title">🗂 信息管理</div>
+        <button class="side-btn" :class="{ active: subTab === 'cases' }" @click="subTab = 'cases'">
+          <span class="side-icon">📚</span> 案例管理
+        </button>
+        <button class="side-btn" :class="{ active: subTab === 'uavs' }" @click="subTab = 'uavs'">
+          <span class="side-icon">🚁</span> 机型库管理
+        </button>
+      </aside>
 
+      <div class="info-main">
+    <!-- 案例管理子页 -->
+    <template v-if="subTab === 'cases'">
     <div class="action-bar">
       <button class="btn btn-primary" @click="openAddModal">+ 添加案例</button>
       <button class="btn btn-secondary" @click="saveCurrentAsCase">保存当前为案例</button>
@@ -504,6 +518,12 @@ function parseCsvLine(line) {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    </template>
+
+    <!-- 机型库管理子页 -->
+    <UavLibrary v-if="subTab === 'uavs'" />
       </div>
     </div>
 
@@ -713,12 +733,59 @@ function parseCsvLine(line) {
 
 <style scoped>
 .module7-container {
+  /* 补齐缺失的设计变量（此前未定义导致卡片/弹窗透明） */
+  --panel: #101b33;
+  --border: rgba(255, 255, 255, 0.12);
+  --border2: rgba(255, 255, 255, 0.18);
   padding: 18px;
 }
 
 .module-header {
   margin-bottom: 16px;
 }
+
+/* 信息管理：左侧导航 + 右侧内容 */
+.info-layout {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.info-side {
+  width: 150px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.info-side-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text, #e2e8f0);
+  margin-bottom: 6px;
+}
+.side-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text2, #c0c8d4);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.side-btn:hover { border-color: var(--teal, #2dd4bf); color: #fff; }
+.side-btn.active {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: var(--teal, #2dd4bf);
+  color: var(--teal, #2dd4bf);
+  font-weight: 600;
+}
+.side-icon { font-size: 15px; }
+.info-main { flex: 1; min-width: 0; }
 
 .module-header h2 {
   margin: 0 0 4px 0;
@@ -814,11 +881,11 @@ function parseCsvLine(line) {
 
 .btn {
   padding: 8px 14px;
-  border-radius: 4px;
-  border: none;
+  border-radius: 5px;
+  border: 1px solid transparent;
   cursor: pointer;
   font-size: 13px;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, border-color 0.2s;
 }
 
 .btn:hover {
@@ -831,7 +898,8 @@ function parseCsvLine(line) {
 }
 
 .btn-secondary {
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
   color: var(--text);
 }
 
@@ -861,6 +929,16 @@ function parseCsvLine(line) {
 }
 
 .modal-overlay {
+  /* Teleport 到 body 后脱离主题变量继承链，需在此重新定义（否则按钮/文字颜色全部失效） */
+  --teal: #2dd4bf;
+  --navy: #0b1428;
+  --navy2: #0d1930;
+  --panel: #101b33;
+  --border: rgba(255, 255, 255, 0.12);
+  --border2: rgba(255, 255, 255, 0.18);
+  --text: #e2e8f0;
+  --text2: #c0c8d4;
+  --text3: #8a97a8;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
@@ -871,8 +949,9 @@ function parseCsvLine(line) {
 }
 
 .modal-content {
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: #101b33;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   width: 560px;
   max-height: 80vh;
@@ -887,13 +966,26 @@ function parseCsvLine(line) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
+  background: rgba(45, 212, 191, 0.06);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
+  color: var(--text, #e2e8f0);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-header h3::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--teal, #2dd4bf);
 }
 
 .modal-close {
@@ -922,9 +1014,10 @@ function parseCsvLine(line) {
 
 .form-group label {
   display: block;
-  font-size: 13px;
-  margin-bottom: 4px;
-  color: var(--text2);
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: #9fb0c3;
+  letter-spacing: 0.3px;
 }
 
 .form-group.checkbox label {
@@ -937,19 +1030,26 @@ function parseCsvLine(line) {
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--navy2);
-  color: var(--text);
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text, #e2e8f0);
   font-size: 13px;
   box-sizing: border-box;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #5a6b80;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--teal);
+  border-color: var(--teal, #2dd4bf);
+  background: rgba(45, 212, 191, 0.05);
 }
 
 .form-row {
@@ -973,6 +1073,23 @@ function parseCsvLine(line) {
   border-bottom: 1px solid var(--border);
 }
 
+.form-section > h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--teal, #2dd4bf);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.form-section > h4::before {
+  content: '';
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--teal, #2dd4bf);
+}
+
 .form-section:last-of-type {
   border-bottom: none;
 }
@@ -990,9 +1107,9 @@ function parseCsvLine(line) {
 }
 
 .btn-outline {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #c0c8d4;
 }
 
 .btn-outline:hover {
@@ -1003,6 +1120,18 @@ function parseCsvLine(line) {
 .section-header h4 {
   margin: 0;
   font-size: 14px;
+  color: var(--teal, #2dd4bf);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.section-header h4::before {
+  content: '';
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--teal, #2dd4bf);
 }
 
 .demand-list {
@@ -1013,8 +1142,10 @@ function parseCsvLine(line) {
 
 .demand-item {
   padding: 14px;
-  background: var(--navy2);
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .demand-item-header {

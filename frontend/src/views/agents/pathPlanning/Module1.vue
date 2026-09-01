@@ -29,27 +29,55 @@ const DEMAND_RATIO = [
   { key: 'settle', label: '安置物资类', ratio: 0.08 },
 ]
 
-/** 将灾情推算的总需求按需求点均分，等比校准各点已配置的物资数量 */
-async function applyDisasterDemand() {
+/** 已分配总重量（实时，来自各点物资配置） */
+const assignedTotal = computed(() =>
+  store.demands.reduce((s, p) => s + (matStore.getAssignment(p.id)?.total_weight || 0), 0)
+)
+// 差距：>0 缺口（还没分够），<0 超配，≈0 满足
+const demandGap = computed(() => (disasterTotal.value || 0) - assignedTotal.value)
+const gapPercent = computed(() =>
+  disasterTotal.value ? Math.min(100, (assignedTotal.value / disasterTotal.value) * 100) : 0
+)
+const gapClass = computed(() =>
+  Math.abs(demandGap.value) < 1 ? 'ok' : (demandGap.value > 0 ? 'lack' : 'over')
+)
+
+/** 校准预览：按比例缩放各点已有配置（保留学生差异化分配意图），确认后才生效 */
+const showCalibPreview = ref(false)
+const calibPreview = ref([]) // [{ id, name, current, target }]
+
+function buildCalibPreview() {
   const total = disasterTotal.value
   if (!total) {
     alert('请先填写受灾人口、人均日消耗和保障时长')
     return
   }
-  const assigned = store.demands.filter(p => matStore.getAssignment(p.id))
+  const assigned = store.demands.filter(p => (matStore.getAssignment(p.id)?.total_weight || 0) > 0)
   if (!assigned.length) {
     alert('还没有需求点配置物资。\n请先在步骤②「物资需求选择」为需求点勾选物资类别，再回来推算。')
     return
   }
-  const perPoint = total / assigned.length
+  const list = assigned.map(p => {
+    const a = matStore.getAssignment(p.id)
+    return { id: p.id, name: p.name, current: a.total_weight, target: 0 }
+  })
+  const cur = list.reduce((s, x) => s + x.current, 0)
+  const k = total / cur
+  for (const x of list) x.target = x.current * k
+  calibPreview.value = list
+  showCalibPreview.value = true
+}
+
+async function confirmCalibrate() {
   let ok = 0
-  for (const p of assigned) {
-    if (matStore.calibrateDemand(p.id, perPoint)) ok++
+  for (const x of calibPreview.value) {
+    if (matStore.calibrateDemand(x.id, x.target)) ok++
   }
   appStore.saveDisasterParams()
+  showCalibPreview.value = false
   alert(
-    `已按灾情需求校准 ${ok} 个需求点的物资数量：\n` +
-    `总需求 ${total.toFixed(0)} kg ÷ ${assigned.length} 个需求点 ≈ 每点 ${perPoint.toFixed(0)} kg\n` +
+    `已按灾情需求校准 ${ok} 个需求点的物资数量（保持各点占比不变）：\n` +
+    `总需求 ${disasterTotal.value.toFixed(0)} kg，各点数量已等比调整。\n` +
     `可在步骤②查看明细并微调。`
   )
 }
@@ -328,7 +356,7 @@ function closeCaseDropdown() {
             v-if="caseStore.cases.length === 0"
             class="case-dropdown-empty"
           >
-            暂无案例，请在案例管理模块添加
+            暂无案例，请在「信息管理 → 案例管理」添加
           </div>
         </div>
       </div>
@@ -366,9 +394,38 @@ function closeCaseDropdown() {
           <div class="d-ratio">
             <span v-for="r in DEMAND_RATIO" :key="r.key" class="d-chip">{{ r.label }} {{ (r.ratio * 100).toFixed(0) }}%</span>
           </div>
+          <!-- 分配差距进度条（T9 细化）：实时对比已分配 vs 灾情需求 -->
+          <div class="gap-row">
+            <div class="gap-bar"><div class="gap-bar-inner" :class="gapClass" :style="{ width: gapPercent + '%' }"></div></div>
+            <div class="gap-text" :class="gapClass">
+              已分配 {{ assignedTotal.toFixed(0) }} / 需求 {{ disasterTotal.toFixed(0) }} kg ·
+              <template v-if="Math.abs(demandGap) < 1">✓ 已满足</template>
+              <template v-else-if="demandGap > 0">还差 {{ demandGap.toFixed(0) }} kg</template>
+              <template v-else>超出 {{ (-demandGap).toFixed(0) }} kg</template>
+            </div>
+          </div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-block" @click="applyDisasterDemand">🧮 按灾情需求校准各点物资</button>
+          <button class="btn btn-block" @click="buildCalibPreview">🧮 按灾情需求校准各点物资</button>
+        </div>
+        <!-- 校准预览面板：确认后才生效 -->
+        <div v-if="showCalibPreview" class="calib-preview">
+          <div class="cp-title">校准预览（各点按比例缩放，物资种类不变）</div>
+          <div class="cp-list">
+            <div v-for="x in calibPreview" :key="x.id" class="cp-row">
+              <span class="cp-name">{{ x.name }}</span>
+              <span class="cp-change">
+                {{ x.current.toFixed(0) }} → <b>{{ x.target.toFixed(0) }}</b> kg
+                <span class="cp-delta" :class="x.target >= x.current ? 'up' : 'down'">
+                  {{ x.target >= x.current ? '↑' : '↓' }}{{ Math.abs(x.target - x.current).toFixed(0) }}
+                </span>
+              </span>
+            </div>
+          </div>
+          <div class="cp-actions">
+            <button class="btn cp-ok" @click="confirmCalibrate">✓ 确认校准</button>
+            <button class="btn cp-cancel" @click="showCalibPreview = false">取消</button>
+          </div>
         </div>
       </div>
     </div>
@@ -936,6 +993,47 @@ function closeCaseDropdown() {
   border-radius: 8px;
   padding: 1px 7px;
 }
+
+/* 分配差距进度条（T9） */
+.gap-row { margin-top: 8px; }
+.gap-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.gap-bar-inner { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.gap-bar-inner.lack { background: #f56c6c; }
+.gap-bar-inner.over { background: #e6a23c; }
+.gap-bar-inner.ok { background: #67c23a; }
+.gap-text { margin-top: 4px; font-size: 11px; }
+.gap-text.lack { color: #f56c6c; }
+.gap-text.over { color: #e6a23c; }
+.gap-text.ok { color: #67c23a; }
+
+/* 校准预览面板（T9） */
+.calib-preview {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(45, 212, 191, 0.06);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  border-radius: 6px;
+}
+.cp-title { font-size: 12px; color: var(--teal, #2dd4bf); margin-bottom: 6px; }
+.cp-list { max-height: 160px; overflow-y: auto; }
+.cp-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--text2, #c0c8d4);
+  padding: 3px 0; border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+.cp-row:last-child { border-bottom: none; }
+.cp-name { color: var(--text, #e2e8f0); }
+.cp-delta.up { color: #f56c6c; }
+.cp-delta.down { color: #67c23a; }
+.cp-actions { display: flex; gap: 8px; margin-top: 8px; }
+.cp-ok { flex: 1; background: var(--teal, #2dd4bf); color: #04211d; }
+.cp-cancel { flex: 1; }
+
 
 /* Form */
 .form-row {

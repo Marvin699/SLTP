@@ -263,6 +263,62 @@ def update_model(model_id: str, data: dict) -> Optional[dict]:
         db.close()
 
 
+def create_model(data: dict) -> dict:
+    """新建无人机型号（model_id 冲突时自动加后缀）"""
+    from app.models.uav_param import UavParam
+    db = _get_db()
+    try:
+        base_id = (data.get("model_id") or "").strip()
+        if not base_id:
+            # 无指定 ID 时按拼音风格自动生成：uav-{时间戳}
+            base_id = f"uav-{int(__import__('time').time())}"
+        model_id = base_id
+        n = 1
+        while db.query(UavParam).filter(UavParam.model_id == model_id).first():
+            n += 1
+            model_id = f"{base_id}-{n}"
+
+        row = UavParam(
+            model_id=model_id,
+            brand=(data.get("brand") or "自定义").strip(),
+            brand_en=data.get("brand_en", ""),
+            model=(data.get("model") or "未命名机型").strip(),
+            max_payload=float(data.get("max_payload") or 10),
+            range_km=float(data.get("range_km") or 20),
+            max_speed=float(data.get("max_speed") or 60),
+            cabin_volume=data.get("cabin_volume"),
+            wind_resist=data.get("wind_resist"),
+            ip_rating=data.get("ip_rating", ""),
+            drop_mode=data.get("drop_mode", ""),
+            features=json.dumps(data.get("features", []), ensure_ascii=False),
+            suitable_for=json.dumps(data.get("suitable_for", []), ensure_ascii=False),
+            description=data.get("description", ""),
+            raw_params=data.get("raw_params", ""),
+            range_points=json.dumps(data.get("range_points", []), ensure_ascii=False),
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return _row_to_dict(row)
+    finally:
+        db.close()
+
+
+def delete_model(model_id: str) -> bool:
+    """删除无人机型号"""
+    from app.models.uav_param import UavParam
+    db = _get_db()
+    try:
+        row = db.query(UavParam).filter(UavParam.model_id == model_id).first()
+        if not row:
+            return False
+        db.delete(row)
+        db.commit()
+        return True
+    finally:
+        db.close()
+
+
 def assess_selection(selections: list, demands: list, distance_matrix: dict = None):
     """
     评估无人机选择方案（使用数据库中的最新参数）
