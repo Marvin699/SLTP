@@ -25,6 +25,7 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes.debate import router as debate_router
 from app.api.routes.verification import router as verification_router
 from app.api.routes.teacher import router as teacher_router
+from app.api.routes.evaluation import router as evaluation_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -668,6 +669,7 @@ app.include_router(auth_router)
 app.include_router(debate_router)
 app.include_router(verification_router)
 app.include_router(teacher_router)
+app.include_router(evaluation_router)
 
 
 @app.get("/health", tags=["系统"])

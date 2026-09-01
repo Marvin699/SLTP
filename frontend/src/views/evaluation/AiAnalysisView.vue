@@ -6,9 +6,32 @@
         <h1 class="header-title">AI助教 · 方案点评</h1>
         <p class="header-sub">AI提取关键词 + 智能风险识别</p>
       </div>
-      <el-button class="back-btn" @click="goBack">
-        <el-icon><ArrowLeft /></el-icon> 返回首页
+      <div class="header-right">
+        <el-radio-group v-model="mode" size="small" class="mode-switch">
+          <el-radio-button value="demo">演示数据</el-radio-button>
+          <el-radio-button value="real">真实方案</el-radio-button>
+        </el-radio-group>
+        <el-button class="back-btn" @click="goBack">
+          <el-icon><ArrowLeft /></el-icon> 返回首页
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 真实方案模式：方案选择器 -->
+    <div class="plan-picker" v-if="mode === 'real'">
+      <span class="pp-label">方案对比：</span>
+      <el-select v-model="planIdA" placeholder="选择方案 A" size="small" style="width: 220px" clearable>
+        <el-option v-for="p in planOptions" :key="p.id" :label="planLabel(p)" :value="p.id" :disabled="p.id === planIdB" />
+      </el-select>
+      <span class="pp-vs">VS</span>
+      <el-select v-model="planIdB" placeholder="选择方案 B（可选）" size="small" style="width: 220px" clearable>
+        <el-option v-for="p in planOptions" :key="p.id" :label="planLabel(p)" :value="p.id" :disabled="p.id === planIdA" />
+      </el-select>
+      <el-button type="primary" size="small" :loading="loadingComment" :disabled="!planIdA && !planIdB" @click="loadComment(true)">
+        生成AI点评
       </el-button>
+      <el-tag v-if="commentSource === 'rule'" type="warning" size="small">AI模型繁忙，当前为规则点评</el-tag>
+      <span v-if="!planOptions.length && !plansLoading" class="pp-empty">暂无课前方案，请学生先在课前生成方案</span>
     </div>
 
     <!-- 主内容区 -->
@@ -22,11 +45,11 @@
         <div class="panel-body">
           <!-- 左右双栏词云 -->
           <div class="cloud-columns">
-            <!-- 左栏：御风组（橙色） -->
+            <!-- 左栏（橙色） -->
             <div class="cloud-col cloud-col-orange">
               <div class="col-header">
                 <span class="col-dot dot-orange"></span>
-                <span class="col-name">{{ groupB }}</span>
+                <span class="col-name">{{ nameB }}</span>
               </div>
               <div class="col-keywords">
                 <span v-for="kw in keywordsB" :key="kw.text"
@@ -38,11 +61,11 @@
             </div>
             <!-- 分割线 -->
             <div class="cloud-divider"></div>
-            <!-- 右栏：揽星组（蓝色） -->
+            <!-- 右栏（蓝色） -->
             <div class="cloud-col cloud-col-blue">
               <div class="col-header">
                 <span class="col-dot dot-blue"></span>
-                <span class="col-name">{{ groupA }}</span>
+                <span class="col-name">{{ nameA }}</span>
               </div>
               <div class="col-keywords">
                 <span v-for="kw in keywordsA" :key="kw.text"
@@ -56,14 +79,14 @@
           <!-- 底部分析结论 -->
           <div class="cloud-conclusion">
             <div class="conclusion-row">
-              <span class="conclusion-label orange">{{ groupB }}：</span>
-              <span class="conclusion-text">高频出现"{{ getTop3(groupB) }}"</span>
-              <span class="conclusion-tag tag-orange-light">胜在系统整合</span>
+              <span class="conclusion-label orange">{{ nameB }}：</span>
+              <span class="conclusion-text">{{ conclusionB.text }}</span>
+              <span class="conclusion-tag tag-orange-light">{{ conclusionB.highlight }}</span>
             </div>
             <div class="conclusion-row">
-              <span class="conclusion-label blue">{{ groupA }}：</span>
-              <span class="conclusion-text">高频出现"{{ getTop3(groupA) }}"</span>
-              <span class="conclusion-tag tag-blue-light">胜在技术深度</span>
+              <span class="conclusion-label blue">{{ nameA }}：</span>
+              <span class="conclusion-text">{{ conclusionA.text }}</span>
+              <span class="conclusion-tag tag-blue-light">{{ conclusionA.highlight }}</span>
             </div>
           </div>
         </div>
@@ -77,20 +100,20 @@
           <span class="risk-count-badge">{{ riskAlerts.length }} 条</span>
         </div>
         <div class="panel-body">
-          <!-- 揽星组 -->
+          <!-- 方案A -->
           <div class="risk-group-section">
-            <div class="risk-group-title grp-blue">{{ groupA }}</div>
-            <div v-for="(risk, i) in riskAlerts.filter(r => r.group === groupA)" :key="'a-' + i" class="risk-item">
+            <div class="risk-group-title grp-blue">{{ nameA }}</div>
+            <div v-for="(risk, i) in risksA" :key="'a-' + i" class="risk-item">
               <div class="risk-top">
                 <span class="risk-level" :class="'level-' + risk.level">{{ risk.levelLabel }}</span>
               </div>
               <div class="risk-desc">{{ risk.description }}</div>
             </div>
           </div>
-          <!-- 御风组 -->
+          <!-- 方案B -->
           <div class="risk-group-section">
-            <div class="risk-group-title grp-orange">{{ groupB }}</div>
-            <div v-for="(risk, i) in riskAlerts.filter(r => r.group === groupB)" :key="'b-' + i" class="risk-item">
+            <div class="risk-group-title grp-orange">{{ nameB }}</div>
+            <div v-for="(risk, i) in risksB" :key="'b-' + i" class="risk-item">
               <div class="risk-top">
                 <span class="risk-level" :class="'level-' + risk.level">{{ risk.levelLabel }}</span>
               </div>
@@ -105,27 +128,23 @@
     <div class="bottom-summary">
       <div class="summary-card card-blue">
         <div class="sc-top">
-          <span class="sc-rank">#1</span>
-          <span class="sc-name">{{ groupA }}</span>
+          <span class="sc-rank">#{{ sumA.rank ?? '-' }}</span>
+          <span class="sc-name">{{ nameA }}</span>
         </div>
         <div class="sc-body">
-          <div class="sc-tag">技术深度</div>
-          <div class="sc-tag">安全冗余量化</div>
-          <div class="sc-tag">动态航程约束建模</div>
+          <div v-for="t in sumA.tags" :key="t" class="sc-tag">{{ t }}</div>
         </div>
-        <div class="sc-comment">方案数学建模扎实，数据支撑充分；但总耗时偏长，实际应急中需再压缩</div>
+        <div class="sc-comment">{{ sumA.comment }}</div>
       </div>
-      <div class="summary-card card-orange">
+      <div class="summary-card card-orange" v-if="sumB">
         <div class="sc-top">
-          <span class="sc-rank">#2</span>
-          <span class="sc-name">{{ groupB }}</span>
+          <span class="sc-rank">#{{ sumB.rank ?? '-' }}</span>
+          <span class="sc-name">{{ nameB }}</span>
         </div>
         <div class="sc-body">
-          <div class="sc-tag">系统整合</div>
-          <div class="sc-tag">三层冗余备份</div>
-          <div class="sc-tag">多机协同设计</div>
+          <div v-for="t in sumB.tags" :key="t" class="sc-tag">{{ t }}</div>
         </div>
-        <div class="sc-comment">协同设计有前瞻性，效率优先策略清晰；但数据口径必须统一，这是企业汇报基本要求</div>
+        <div class="sc-comment">{{ sumB.comment }}</div>
       </div>
     </div>
 
@@ -138,12 +157,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import { fetchPlanLibrary, fetchAiComment } from '@/api/evaluation'
 
 const route = useRoute()
 const router = useRouter()
+
+// ─── 模式：demo=比赛演示数据（保留） | real=真实方案数据（正式使用） ───
+const mode = ref('demo')
 
 const groupA = computed(() => route.query.groupA || '揽星组')
 const groupB = computed(() => route.query.groupB || '御风组')
@@ -154,7 +178,7 @@ function getKwSizeClass(weight) {
   return 'kw-sm'
 }
 
-// 关键词数据
+// ═══ 演示模式静态数据（比赛/展览用，保留） ═══
 const wordCloudData = {
   '揽星组': [
     { text: '非线性', weight: 95 },
@@ -192,44 +216,113 @@ const wordCloudData = {
   ],
 }
 
-const keywordsA = computed(() => {
-  return (wordCloudData[groupA.value] || []).slice().sort((a, b) => b.weight - a.weight)
-})
-const keywordsB = computed(() => {
-  return (wordCloudData[groupB.value] || []).slice().sort((a, b) => b.weight - a.weight)
-})
+function demoKeywords(groupName) {
+  return (wordCloudData[groupName] || []).slice().sort((a, b) => b.weight - a.weight)
+}
 
 function getTop3(groupName) {
   return (wordCloudData[groupName] || []).slice(0, 3).map(w => w.text).join('、')
 }
 
-// 风险数据 — 按组聚合，组名作为一级标题
-const riskAlerts = computed(() => [
-  {
-    group: groupA.value,
-    level: 'high',
-    levelLabel: '高风险',
-    description: `揽星组冗余设计导致时效偏低`,
-  },
-  {
-    group: groupA.value,
-    level: 'low',
-    levelLabel: '低风险',
-    description: `索降和吊装模式物资损坏概率缺少量化依据，仅有定性判断`,
-  },
-  {
-    group: groupB.value,
-    level: 'high',
-    levelLabel: '高风险',
-    description: `极限压缩时间带来安全裕度不足`,
-  },
-  {
-    group: groupB.value,
-    level: 'medium',
-    levelLabel: '中风险',
-    description: `雅力村索降方案未考虑风速超过安全阈值的应对措施`,
-  },
-])
+// ═══ 真实方案模式 ═══
+const planOptions = ref([])
+const plansLoading = ref(false)
+const planIdA = ref(null)
+const planIdB = ref(null)
+const commentData = ref(null)
+const commentSource = ref(null)
+const loadingComment = ref(false)
+
+function planLabel(p) {
+  const name = p.student_name || `方案#${p.id}`
+  const dist = p.total_distance != null ? ` ${p.total_distance.toFixed?.(1) ?? p.total_distance}km` : ''
+  const chosen = p.is_chosen ? ' [已择优]' : ''
+  return `${name} - ${p.drone_count ?? '?'}机${p.total_trips ?? '?'}趟${dist}${chosen}`
+}
+
+async function loadPlanOptions() {
+  plansLoading.value = true
+  try {
+    const res = await fetchPlanLibrary({ limit: 50 })
+    planOptions.value = res.data?.plans || []
+  } catch {
+    planOptions.value = []
+  } finally {
+    plansLoading.value = false
+  }
+}
+
+async function loadComment(manual = false) {
+  const ids = [planIdA.value, planIdB.value].filter(Boolean)
+  if (!ids.length) return
+  loadingComment.value = true
+  try {
+    const res = await fetchAiComment(ids)
+    commentData.value = res.data || null
+    commentSource.value = res.data?.source || null
+  } catch {
+    if (manual) ElMessage.error('AI点评生成失败，请稍后重试')
+    commentData.value = null
+    commentSource.value = null
+  } finally {
+    loadingComment.value = false
+  }
+}
+
+// 切换方案自动重新生成
+watch([planIdA, planIdB], () => loadComment(false))
+
+// 切到真实模式时加载方案列表
+watch(mode, (m) => {
+  if (m === 'real' && !planOptions.value.length) loadPlanOptions()
+})
+
+onMounted(() => {
+  if (mode.value === 'real') loadPlanOptions()
+})
+
+// ─── 统一的数据出口（模板统一读取，双模式自适应） ───
+const RISK_LABELS = { high: '高风险', medium: '中风险', low: '低风险' }
+
+const realA = computed(() => commentData.value?.groups?.find(g => g.plan_id === planIdA.value) || null)
+const realB = computed(() => commentData.value?.groups?.find(g => g.plan_id === planIdB.value) || null)
+
+const nameA = computed(() => mode.value === 'demo' ? groupA.value : (realA.value?.name || '方案A'))
+const nameB = computed(() => mode.value === 'demo' ? groupB.value : (realB.value?.name || '方案B'))
+
+const keywordsA = computed(() =>
+  mode.value === 'demo' ? demoKeywords(groupA.value) : (realA.value?.keywords || []))
+const keywordsB = computed(() =>
+  mode.value === 'demo' ? demoKeywords(groupB.value) : (realB.value?.keywords || []))
+
+const conclusionA = computed(() => mode.value === 'demo'
+  ? { text: `高频出现"${getTop3(groupA.value)}"`, highlight: '胜在技术深度' }
+  : { text: realA.value?.conclusion || '选择方案后自动生成', highlight: realA.value?.highlight || '—' })
+const conclusionB = computed(() => mode.value === 'demo'
+  ? { text: `高频出现"${getTop3(groupB.value)}"`, highlight: '胜在系统整合' }
+  : { text: realB.value?.conclusion || '选择方案后自动生成', highlight: realB.value?.highlight || '—' })
+
+function mapRisks(list) {
+  return (list || []).map(r => ({ ...r, levelLabel: RISK_LABELS[r.level] || '风险' }))
+}
+
+const risksA = computed(() => mode.value === 'demo'
+  ? [{ group: groupA.value, level: 'high', levelLabel: '高风险', description: `揽星组冗余设计导致时效偏低` },
+     { group: groupA.value, level: 'low', levelLabel: '低风险', description: `索降和吊装模式物资损坏概率缺少量化依据，仅有定性判断` }]
+  : mapRisks(realA.value?.risks))
+const risksB = computed(() => mode.value === 'demo'
+  ? [{ group: groupB.value, level: 'high', levelLabel: '高风险', description: `极限压缩时间带来安全裕度不足` },
+     { group: groupB.value, level: 'medium', levelLabel: '中风险', description: `雅力村索降方案未考虑风速超过安全阈值的应对措施` }]
+  : mapRisks(realB.value?.risks))
+
+const riskAlerts = computed(() => [...risksA.value, ...risksB.value])
+
+const sumA = computed(() => mode.value === 'demo'
+  ? { rank: 1, tags: ['技术深度', '安全冗余量化', '动态航程约束建模'], comment: '方案数学建模扎实，数据支撑充分；但总耗时偏长，实际应急中需再压缩' }
+  : { rank: realA.value?.rank, tags: realA.value?.tags || [], comment: realA.value?.comment || '生成AI点评后展示' })
+const sumB = computed(() => mode.value === 'demo'
+  ? { rank: 2, tags: ['系统整合', '三层冗余备份', '多机协同设计'], comment: '协同设计有前瞻性，效率优先策略清晰；但数据口径必须统一，这是企业汇报基本要求' }
+  : (realB.value ? { rank: realB.value?.rank, tags: realB.value?.tags || [], comment: realB.value?.comment || '' } : null))
 
 function goBack() {
   const sectionId = route.params.sectionId
@@ -280,6 +373,42 @@ function goBack() {
   background: rgba(255,255,255,0.1);
   color: #fff;
   border-color: rgba(255,255,255,0.2);
+}
+
+/* ===== 顶部右侧：模式切换 ===== */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 0.7vw, 18px);
+}
+.mode-switch :deep(.el-radio-button__inner) {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  color: #c0c8d4;
+}
+.mode-switch :deep(.el-radio-button__original-checked .el-radio-button__inner),
+.mode-switch :deep(.el-radio-button.is-active .el-radio-button__inner) {
+  background: rgba(59,130,246,0.35);
+  border-color: rgba(59,130,246,0.5);
+  color: #fff;
+}
+
+/* ===== 真实方案选择器 ===== */
+.plan-picker {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 0.7vw, 16px);
+  background: rgba(15, 25, 50, 0.8);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: clamp(8px, 0.7vw, 16px);
+  padding: clamp(8px, 0.7vw, 16px) clamp(12px, 1vw, 24px);
+}
+.pp-label { color: #64748b; font-size: clamp(13px, 1.1vw, 22px); }
+.pp-vs { color: #f59e0b; font-weight: 700; font-size: clamp(13px, 1.2vw, 24px); }
+.pp-empty { color: #64748b; font-size: clamp(12px, 1vw, 20px); }
+.plan-picker :deep(.el-select__wrapper),
+.plan-picker :deep(.el-input__wrapper) {
+  background: rgba(255,255,255,0.05);
 }
 
 /* ===== 主内容 ===== */

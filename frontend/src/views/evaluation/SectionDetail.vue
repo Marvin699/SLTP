@@ -76,6 +76,9 @@
       <div class="func-tab" :class="{ active: viewMode === 'ai' }" @click="switchToAI">
         <el-icon><Monitor /></el-icon> 智能体评分
       </div>
+      <div v-if="sectionId === 'section1'" class="func-tab" :class="{ active: viewMode === 'plans' }" @click="viewMode = 'plans'">
+        <el-icon><Files /></el-icon> 课前方案
+      </div>
     </div>
 
     <!-- ========== 评分链接Tab ========== -->
@@ -310,6 +313,73 @@
       </div>
     </div>
 
+    <!-- ========== 课前方案Tab（T5 课前课中贯通，环节一专属） ========== -->
+    <div class="tab-content" v-show="viewMode === 'plans'">
+      <div class="plans-grid">
+        <!-- 左侧：方案库列表 -->
+        <div class="ov-card plans-left">
+          <div class="ov-card-title">课前方案库</div>
+          <el-table :data="planList" v-loading="planLoading" size="small" highlight-current-row
+            @row-click="selectPlan" style="width:100%" height="500">
+            <el-table-column label="学生" width="80">
+              <template #default="{ row }">{{ row.student_name || '匿名' }}</template>
+            </el-table-column>
+            <el-table-column label="总距离(km)" width="95" align="center">
+              <template #default="{ row }">{{ row.total_distance?.toFixed?.(1) ?? '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="drone_count" label="无人机" width="70" align="center" />
+            <el-table-column prop="total_trips" label="趟次" width="60" align="center" />
+            <el-table-column label="生成时间" align="center">
+              <template #default="{ row }">{{ formatPlanTime(row.created_at) }}</template>
+            </el-table-column>
+            <el-table-column label="状态" width="80" align="center">
+              <template #default="{ row }">
+                <el-tag v-if="row.is_chosen" type="success" size="small">已择优</el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!planLoading && !planList.length" class="plans-empty">
+            暂无课前方案，请学生先在「无人机应急调度智能体」中生成方案
+          </div>
+        </div>
+        <!-- 右侧：方案详情 -->
+        <div class="plans-right">
+          <template v-if="selectedPlan">
+            <div class="ov-card">
+              <div class="ov-card-title">
+                {{ selectedPlan.student_name || '匿名' }} 的运输方案
+                <el-tag v-if="selectedPlan.is_chosen" type="success" size="small" style="margin-left:8px;">最终选定</el-tag>
+              </div>
+              <div class="plan-stats">
+                <div class="plan-stat"><div class="ps-value">{{ selectedPlan.total_distance?.toFixed?.(1) ?? '—' }}</div><div class="ps-label">总距离 (km)</div></div>
+                <div class="plan-stat"><div class="ps-value">{{ selectedPlan.drone_count ?? '—' }}</div><div class="ps-label">无人机 (架)</div></div>
+                <div class="plan-stat"><div class="ps-value">{{ selectedPlan.total_trips ?? '—' }}</div><div class="ps-label">总趟次</div></div>
+                <div class="plan-stat"><div class="ps-value">{{ selectedPlan.village_count ?? '—' }}</div><div class="ps-label">需求点 (个)</div></div>
+              </div>
+              <div class="plan-scores" v-if="Object.keys(selectedPlan.scores || {}).length">
+                <span class="plan-scores-label">四维评分：</span>
+                <el-tag v-for="(v, k) in selectedPlan.scores" :key="k" size="small" style="margin-right:6px;">
+                  {{ scoreName(k) }} {{ v }}
+                </el-tag>
+              </div>
+              <div class="plan-scores" v-else>
+                <span class="plan-scores-label">四维评分：该学生暂未生成方案报告</span>
+              </div>
+            </div>
+            <div class="ov-card plan-map-card">
+              <div class="ov-card-title">航线图</div>
+              <div class="plan-map-wrap" v-loading="planGeoLoading">
+                <PlanRouteMap :geojson="planGeo" />
+              </div>
+            </div>
+          </template>
+          <div v-else class="empty-overview">
+            <el-empty description="从左侧选择一个课前方案，投影展示供汇报引用" :image-size="120" />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 创建链接弹窗 -->
     <el-dialog v-model="createDialogVisible" title="生成评分链接" width="420px" destroy-on-close>
       <el-form :model="createForm" label-width="80px">
@@ -340,9 +410,12 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, ArrowLeft, Link, DataAnalysis, Monitor, Delete, VideoPlay, VideoPause } from '@element-plus/icons-vue'
+import { Plus, ArrowLeft, Link, DataAnalysis, Monitor, Files, Delete, VideoPlay, VideoPause } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { fetchSections, fetchSessions, createSession, deleteSession, fetchSummary, fetchDashboard, clearSectionScores } from '@/api/scoreSession'
+import { fetchPlanLibrary } from '@/api/evaluation'
+import { getOptimizationDetail } from '@/api/pathPlanning/optimizer'
+import PlanRouteMap from './PlanRouteMap.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -435,6 +508,48 @@ function goAIAnalysis() {
     path: `/evaluation/section/${sectionId.value}/ai-analysis`,
     query: { groupA: compareGroupA.value, groupB: compareGroupB.value }
   })
+}
+
+// --- 课前方案Tab（T5 课前课中贯通） ---
+const planList = ref([])
+const planLoading = ref(false)
+const selectedPlan = ref(null)
+const planGeo = ref(null)
+const planGeoLoading = ref(false)
+const PLAN_SCORE_NAMES = { safety: '安全性', timeliness: '时效性', economy: '经济性', feasibility: '可行性' }
+
+function scoreName(key) {
+  return PLAN_SCORE_NAMES[key] || key
+}
+
+function formatPlanTime(t) {
+  return t ? String(t).slice(5, 16).replace('T', ' ') : '-'
+}
+
+async function loadPlanLibrary() {
+  planLoading.value = true
+  try {
+    const res = await fetchPlanLibrary({ limit: 50 })
+    planList.value = res.data?.plans || []
+  } catch {
+    planList.value = []
+  } finally {
+    planLoading.value = false
+  }
+}
+
+async function selectPlan(row) {
+  selectedPlan.value = row
+  planGeo.value = null
+  planGeoLoading.value = true
+  try {
+    const res = await getOptimizationDetail(row.id)
+    planGeo.value = res.data?.solution_data?.geojson || null
+  } catch {
+    planGeo.value = null
+  } finally {
+    planGeoLoading.value = false
+  }
 }
 
 // --- 成绩总览Tab（新图表） ---
@@ -1353,6 +1468,10 @@ function goBackToGraph() {
 onMounted(async () => {
   await loadSections()
   await loadSessions()
+  // 课前方案库（环节一专属，T5）
+  if (sectionId.value === 'section1') {
+    loadPlanLibrary()
+  }
   if (viewMode.value === 'overview') {
     await loadDashboard()
     await nextTick()
@@ -1619,4 +1738,18 @@ onUnmounted(() => {
   --el-button-hover-border-color: rgba(64,158,255,0.4);
   --el-button-hover-text-color: #66b1ff;
 }
+
+/* === 课前方案Tab（T5） === */
+.plans-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 14px; height: 100%; }
+.plans-left { overflow: hidden; }
+.plans-empty { text-align: center; color: #64748b; font-size: 13px; padding: 20px 0; }
+.plans-right { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.plan-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
+.plan-stat { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; text-align: center; padding: 12px 6px; }
+.ps-value { font-size: 22px; font-weight: 700; color: #60a5fa; }
+.ps-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+.plan-scores { font-size: 13px; color: #c0c8d4; display: flex; align-items: center; flex-wrap: wrap; }
+.plan-scores-label { color: #64748b; margin-right: 4px; }
+.plan-map-card { flex: 1; display: flex; flex-direction: column; min-height: 380px; }
+.plan-map-wrap { flex: 1; min-height: 340px; }
 </style>

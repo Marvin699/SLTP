@@ -56,6 +56,36 @@ const localParams = ref({})
 const activeTab = ref('route') // 'route' | 'village' | 'drone' | 'feasibility'
 const selectedTripIndex = ref(-1) // 当前选中的航次索引
 
+// ─── T7 参数预设档位（快速/标准/精细，localStorage 持久化） ───
+const PRESETS = [
+  { key: 'fast', name: '快速', icon: '⚡', num_ants: 30, max_iterations: 50, desc: '课堂演示首选，几秒出结果' },
+  { key: 'standard', name: '标准', icon: '⚖', num_ants: 30, max_iterations: 100, desc: '平衡速度与方案质量' },
+  { key: 'fine', name: '精细', icon: '🎯', num_ants: 80, max_iterations: 200, desc: '质量优先，约需 1-2 分钟' },
+]
+const preset = ref(localStorage.getItem('sltp_aco_preset') || 'fast')
+const currentPreset = computed(() => PRESETS.find(p => p.key === preset.value) || PRESETS[0])
+const loadingText = computed(() => ({
+  fast: '快速计算中...',
+  standard: '标准规划中...',
+  fine: '精细求解中（约 1-2 分钟）...',
+}[preset.value] || '规划中...'))
+
+function setPreset(key) {
+  preset.value = key
+  localStorage.setItem('sltp_aco_preset', key)
+  applyPreset()
+}
+
+/** 把档位的蚂蚁数/迭代数写入当前参数（不覆盖 α/β 等已调参数） */
+function applyPreset() {
+  if (!localParams.value || !Object.keys(localParams.value).length) return
+  localParams.value = {
+    ...localParams.value,
+    num_ants: currentPreset.value.num_ants,
+    max_iterations: currentPreset.value.max_iterations,
+  }
+}
+
 function toggleDroneRoute(droneId) {
   if (optStore.selectedDroneId === droneId) {
     optStore.setSelectedDroneId(null)
@@ -88,12 +118,17 @@ onMounted(async () => {
   if (optStore.acoParams) {
     localParams.value = { ...optStore.acoParams }
   }
+  applyPreset() // T7 初始应用档位
   // 自动加载历史记录
   await optStore.loadHistory()
 })
 
 watch(() => optStore.acoParams, (p) => {
-  if (p) localParams.value = { ...p }
+  if (p) {
+    localParams.value = { ...p }
+    // 合规核验回填会刻意提高迭代数，此时不覆盖
+    if (!optStore.regenHints) applyPreset()
+  }
 }, { immediate: true })
 
 async function handleRun() {
@@ -201,10 +236,21 @@ async function deleteHistory(recordId) {
       </div>
     </div>
 
+    <!-- T7 计算档位选择 -->
+    <div class="section preset-section">
+      <div class="preset-row">
+        <button v-for="p in PRESETS" :key="p.key" class="preset-btn"
+          :class="{ active: preset === p.key }" @click="setPreset(p.key)">
+          {{ p.icon }} {{ p.name }}
+        </button>
+      </div>
+      <div class="preset-desc">{{ currentPreset.desc }}</div>
+    </div>
+
     <!-- 操作按钮 -->
     <div class="action-row">
       <button class="btn-primary" :disabled="!canRun" @click="handleRun">
-        {{ optStore.loading ? '规划中...' : '开始规划' }}
+        {{ optStore.loading ? loadingText : '开始规划' }}
       </button>
       <button class="btn-secondary" :disabled="!optStore.result" @click="handleReset">
         重置
@@ -673,6 +719,30 @@ async function deleteHistory(recordId) {
 
 /* 操作按钮 */
 .action-row { display: flex; gap: 10px; }
+
+/* T7 计算档位 */
+.preset-section { margin-bottom: 10px; }
+.preset-row { display: flex; gap: 8px; }
+.preset-btn {
+  flex: 1;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #c0c8d4;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover { border-color: var(--teal, #2dd4bf); color: #fff; }
+.preset-btn.active {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: var(--teal, #2dd4bf);
+  color: var(--teal, #2dd4bf);
+  font-weight: 600;
+}
+.preset-desc { margin-top: 6px; font-size: 12px; color: #64748b; }
+
 
 .btn-primary {
   flex: 1;
