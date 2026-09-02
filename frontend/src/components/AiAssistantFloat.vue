@@ -6,33 +6,8 @@
       :class="{ 'is-open': isOpen }"
       @click="togglePanel"
     >
-      <!-- 和原AI助教页面一样的数字人，整体缩小 -->
-      <div class="mini-digital-avatar" :class="{ idle: true, thinking: thinking }">
-        <div class="mini-avatar-glow"></div>
-        <div class="mini-avatar-head">
-          <div class="mini-avatar-face">
-            <div class="mini-eyes">
-              <div class="mini-eye"><div class="mini-pupil"></div></div>
-              <div class="mini-eye"><div class="mini-pupil"></div></div>
-            </div>
-            <div class="mini-mouth" :class="{ talking: thinking }">
-              <div class="mini-mouth-shape"></div>
-            </div>
-          </div>
-          <div class="mini-antenna">
-            <div class="mini-antenna-line"></div>
-            <div class="mini-antenna-dot"></div>
-          </div>
-        </div>
-        <div class="mini-avatar-body">
-          <div class="mini-body-core">
-            <div class="mini-core-ring"></div>
-            <div class="mini-core-dot"></div>
-          </div>
-          <div class="mini-wing mini-left-wing"></div>
-          <div class="mini-wing mini-right-wing"></div>
-        </div>
-      </div>
+      <!-- Q版小翼无人机形象 -->
+      <XiaoYiAvatar :size="52" :state="thinking ? 'thinking' : 'idle'" class="float-xiaoyi" />
       <span class="float-label">小翼</span>
     </div>
 
@@ -41,8 +16,8 @@
       <div v-if="isOpen" class="float-panel">
         <div class="panel-header">
           <div class="panel-title">
-            <div class="panel-avatar">翼</div>
-            <span class="panel-name">小翼 · AI智能助教</span>
+              <XiaoYiAvatar :size="30" class="panel-avatar-xy" />
+              <span class="panel-name">小翼 · AI智能助教</span>
             <el-tag type="success" size="small" effect="dark">在线</el-tag>
           </div>
           <div class="panel-actions">
@@ -67,7 +42,8 @@
             :class="msg.role"
           >
             <div class="msg-avatar" :class="msg.role">
-              {{ msg.role === 'user' ? '我' : '翼' }}
+              <XiaoYiAvatar v-if="msg.role !== 'user'" :size="26" :state="chatLoading ? 'thinking' : 'idle'" />
+              <template v-else>我</template>
             </div>
             <div class="msg-body">
               <div v-if="msg.tools && msg.tools.length" class="msg-tools">
@@ -78,7 +54,7 @@
             </div>
           </div>
           <div v-if="chatLoading" class="msg-item assistant">
-            <div class="msg-avatar assistant">翼</div>
+            <div class="msg-avatar assistant"><XiaoYiAvatar :size="26" state="thinking" /></div>
             <div class="msg-body">
               <div class="msg-bubble typing">
                 <span></span><span></span><span></span>
@@ -129,6 +105,7 @@ import { useRouter } from 'vue-router'
 import { Minus, FullScreen, Promotion } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import axios from 'axios'
+import XiaoYiAvatar from './XiaoYiAvatar.vue'
 
 const router = useRouter()
 const userStore = useUserStore()

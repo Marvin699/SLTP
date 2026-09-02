@@ -23,45 +23,8 @@
       <!-- 左侧数字人区域 -->
       <div class="avatar-section">
         <div class="avatar-stage">
-          <!-- 数字人主体 -->
-          <div class="digital-avatar" :class="avatarState">
-            <!-- 光晕背景 -->
-            <div class="avatar-glow"></div>
-            <!-- 头部 -->
-            <div class="avatar-head">
-              <!-- 脸部 -->
-              <div class="avatar-face">
-                <!-- 眼睛 -->
-                <div class="eyes">
-                  <div class="eye left">
-                    <div class="pupil"></div>
-                  </div>
-                  <div class="eye right">
-                    <div class="pupil"></div>
-                  </div>
-                </div>
-                <!-- 嘴巴 -->
-                <div class="mouth" :class="{ talking: avatarState === 'talking' }">
-                  <div class="mouth-shape"></div>
-                </div>
-              </div>
-              <!-- 天线/信号 -->
-              <div class="antenna">
-                <div class="antenna-line"></div>
-                <div class="antenna-dot"></div>
-              </div>
-            </div>
-            <!-- 身体 -->
-            <div class="avatar-body">
-              <div class="body-core">
-                <div class="core-ring"></div>
-                <div class="core-dot"></div>
-              </div>
-              <!-- 翅膀/手臂 -->
-              <div class="wing left-wing"></div>
-              <div class="wing right-wing"></div>
-            </div>
-          </div>
+          <!-- Q版小翼无人机形象 -->
+          <XiaoYiAvatar :size="190" :state="avatarState" />
 
           <!-- 状态文字 -->
           <div class="avatar-status">
@@ -151,7 +114,8 @@
           <div v-for="(msg, i) in chatMessages" :key="i" class="message" :class="msg.role">
             <div class="msg-avatar-wrap">
               <div class="msg-avatar" :class="msg.role">
-                {{ msg.role === 'user' ? '我' : '翼' }}
+                <XiaoYiAvatar v-if="msg.role !== 'user'" :size="30" />
+                <template v-else>我</template>
               </div>
             </div>
             <div class="msg-body">
@@ -165,7 +129,7 @@
           </div>
           <div v-if="chatLoading" class="message assistant">
             <div class="msg-avatar-wrap">
-              <div class="msg-avatar assistant">翼</div>
+              <div class="msg-avatar assistant"><XiaoYiAvatar :size="30" state="thinking" /></div>
             </div>
             <div class="msg-body">
               <div class="msg-name">小翼</div>
@@ -210,6 +174,7 @@ import { useRouter } from 'vue-router'
 import { ArrowLeft, ArrowRight, Delete, Promotion, Microphone, VideoPause, CircleCheckFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import axios from 'axios'
+import XiaoYiAvatar from '@/components/XiaoYiAvatar.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
