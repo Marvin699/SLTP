@@ -29,12 +29,31 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat")
-def chat(
+async def chat(
     req: ChatRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """AI助教对话接口（绑定学生身份，自动保存历史）"""
+    """AI助教对话接口（绑定学生身份，自动保存历史）
+
+    优先走 pydantic-ai 工具调用智能体（可查方案/核验/统计/手册），
+    异常时自动降级为纯对话模式，保证课堂不中断。
+    """
+    msgs = [{"role": m.role, "content": m.content} for m in req.messages]
+    if not msgs:
+        return {"success": False, "message": "消息为空"}
+
+    # ── 优先：工具调用智能体 ──
+    try:
+        from app.services.wing_agent import run_wing_chat
+
+        result = await run_wing_chat(msgs, current_user, db)
+        _save_history(db, current_user, msgs, result["reply"])
+        return result
+    except Exception:
+        pass  # 静默降级
+
+    # ── 降级：纯对话模式（原逻辑） ──
     try:
         from openai import OpenAI
         from app.core.config import settings
@@ -56,8 +75,8 @@ def chat(
         )
 
         full_messages = [{"role": "system", "content": system_msg}]
-        for m in req.messages:
-            full_messages.append({"role": m.role, "content": m.content})
+        for m in msgs:
+            full_messages.append({"role": m["role"], "content": m["content"]})
 
         response = client.chat.completions.create(
             model=model,
@@ -69,15 +88,20 @@ def chat(
         content = response.choices[0].message.content
 
         # 保存对话历史：保存最后一条 user 消息 + assistant 回复
-        last_user_msg = next((m for m in reversed(req.messages) if m.role == "user"), None)
-        if last_user_msg:
-            db.add(ChatHistory(user_id=current_user.id, role="user", content=last_user_msg.content))
-            db.add(ChatHistory(user_id=current_user.id, role="assistant", content=content))
-            db.commit()
+        _save_history(db, current_user, msgs, content)
 
-        return {"success": True, "reply": content}
+        return {"success": True, "reply": content, "tools_used": []}
     except Exception as e:
         return {"success": False, "message": f"AI助教响应异常: {str(e)}"}
+
+
+def _save_history(db: Session, current_user: User, msgs: list, reply: str):
+    """保存最后一条 user 消息 + assistant 回复"""
+    last_user_msg = next((m for m in reversed(msgs) if m["role"] == "user"), None)
+    if last_user_msg:
+        db.add(ChatHistory(user_id=current_user.id, role="user", content=last_user_msg["content"]))
+        db.add(ChatHistory(user_id=current_user.id, role="assistant", content=reply))
+        db.commit()
 
 
 @router.get("/history")
