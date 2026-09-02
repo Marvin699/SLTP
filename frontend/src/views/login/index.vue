@@ -1,17 +1,11 @@
 <template>
-  <div class="login-page">
-    <div class="login-bg">
-      <div class="bg-circle c1"></div>
-      <div class="bg-circle c2"></div>
-      <div class="bg-circle c3"></div>
-    </div>
-
-    <div class="login-card">
+  <div class="login-page page-aurora">
+    <div class="login-card fade-up">
       <div class="login-header">
         <div class="login-logo">
           <span class="logo-icon">✈</span>
         </div>
-        <h1 class="login-title">智慧低空应急运输教学平台</h1>
+        <h1 class="login-title glow-text">智慧低空应急运输教学平台</h1>
         <p class="login-subtitle">Smart Low-Altitude Emergency Transportation</p>
       </div>
 
@@ -40,7 +34,7 @@
         <el-button
           type="primary"
           size="large"
-          class="login-btn"
+          class="login-btn btn-glow"
           :loading="loading"
           @click="handleLogin"
         >
@@ -108,74 +102,20 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0a1628;
   position: relative;
   overflow: hidden;
 }
 
-/* 背景装饰 */
-.login-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-}
-
-.bg-circle.c1 {
-  width: 400px;
-  height: 400px;
-  background: rgba(64, 158, 255, 0.12);
-  top: -100px;
-  right: -100px;
-  animation: float1 8s ease-in-out infinite;
-}
-
-.bg-circle.c2 {
-  width: 300px;
-  height: 300px;
-  background: rgba(0, 229, 255, 0.1);
-  bottom: -80px;
-  left: -80px;
-  animation: float2 10s ease-in-out infinite;
-}
-
-.bg-circle.c3 {
-  width: 200px;
-  height: 200px;
-  background: rgba(103, 194, 58, 0.08);
-  top: 50%;
-  left: 60%;
-  animation: float3 12s ease-in-out infinite;
-}
-
-@keyframes float1 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-30px, 30px); }
-}
-
-@keyframes float2 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(20px, -20px); }
-}
-
-@keyframes float3 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-15px, 15px); }
-}
-
-/* 登录卡片 */
+/* 登录卡片：哑光暗面板 */
 .login-card {
   width: 420px;
-  background: linear-gradient(180deg, rgba(13, 33, 55, 0.95) 0%, rgba(10, 22, 40, 0.98) 100%);
-  border: 1px solid rgba(64, 158, 255, 0.25);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
   padding: 40px 36px 32px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
   position: relative;
   z-index: 10;
 }
@@ -190,13 +130,14 @@ async function handleLogin() {
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  background: linear-gradient(135deg, rgba(64, 158, 255, 0.2), rgba(103, 194, 58, 0.2));
-  border: 1px solid rgba(64, 158, 255, 0.3);
-  border-radius: 50%;
+  background: rgba(34, 211, 238, 0.06);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30px;
+  color: #22d3ee;
 }
 
 .login-title {
@@ -220,15 +161,15 @@ async function handleLogin() {
 }
 
 .login-form :deep(.el-input__wrapper) {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(64, 158, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 10px !important;
   padding: 4px 12px;
 }
 
 .login-form :deep(.el-input__wrapper:focus-within) {
-  border-color: rgba(64, 158, 255, 0.5) !important;
-  box-shadow: 0 0 12px rgba(64, 158, 255, 0.15) !important;
+  border-color: rgba(34, 211, 238, 0.5) !important;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.12) !important;
 }
 
 .login-form :deep(.el-input__inner) {
@@ -258,7 +199,7 @@ async function handleLogin() {
 
 /* 底部提示 */
 .login-footer {
-  border-top: 1px solid rgba(64, 158, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 20px;
   text-align: center;
 }
@@ -272,11 +213,11 @@ async function handleLogin() {
 }
 
 .register-link:hover .link-text {
-  color: #67c23a;
+  color: #67e8f9;
 }
 
 .link-text {
-  color: #409eff;
+  color: #22d3ee;
   font-weight: 500;
   transition: color 0.2s;
 }

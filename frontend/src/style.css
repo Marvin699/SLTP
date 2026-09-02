@@ -1,6 +1,29 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* ============ 本地字体：Rajdhani（航空仪表数字/拉丁字） ============ */
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./assets/fonts/Rajdhani-Medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./assets/fonts/Rajdhani-SemiBold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/Rajdhani-Bold.ttf') format('truetype');
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -28,13 +51,13 @@ body {
 :root {
   --el-fill-color-blank: rgba(0, 0, 0, 0.4);
   --el-fill-color: rgba(0, 0, 0, 0.3);
-  --el-bg-color: #0a1628;
-  --el-bg-color-overlay: #0d2137;
-  --el-bg-color-page: #0a1628;
+  --el-bg-color: #050a14;
+  --el-bg-color-overlay: #0a1628;
+  --el-bg-color-page: #050a14;
   --el-text-color-regular: #e2e8f0;
   --el-text-color-placeholder: rgba(160, 174, 192, 0.5);
-  --el-border-color: rgba(255, 255, 255, 0.12);
-  --el-border-color-light: rgba(255, 255, 255, 0.08);
+  --el-border-color: rgba(255, 255, 255, 0.08);
+  --el-border-color-light: rgba(255, 255, 255, 0.06);
   --el-color-primary: #3b82f6;
 }
 
@@ -250,4 +273,344 @@ html body .el-popper { background: rgba(10,25,50,0.95) !important; border: 1px s
   background: #0b1628;
   color: #cdd9f0;
   border: 1px solid #1e3560;
+}
+
+/* ============================================================
+   智能体平台设计基座（Design Tokens + 工具类）· 深空极简风
+   原则：更暗、更静、更细 —— 单主色 + 多级灰阶，光效只留给焦点
+   ============================================================ */
+:root {
+  /* 品牌色板：青色是全站唯一强调色 */
+  --brand-bg: #050a14;
+  --brand-bg-deep: #030710;
+  --brand-panel: rgba(255, 255, 255, 0.03);
+  --brand-primary: #22d3ee;
+  --brand-secondary: #3b82f6;
+  --brand-accent: #8b5cf6;
+  --brand-success: #34d399;
+  --brand-warn: #fbbf24;
+  --brand-danger: #f87171;
+  --brand-text: #f2f6fa;
+  --brand-text-dim: rgba(242, 246, 250, 0.55);
+  --brand-text-faint: rgba(242, 246, 250, 0.35);
+
+  /* 面板：暗中之暗的哑光面板，1px 细线边框 */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(34, 211, 238, 0.35);
+  --glass-blur: blur(12px);
+  --radius-lg: 14px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-glow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  --shadow-glow-strong: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* ── 面板容器：哑光暗面板，hover 仅提亮边框 ── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.glass-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ── 标题文字：冰感渐变，极简克制 ── */
+.glow-text {
+  background: linear-gradient(90deg, #f2f6fa, #7dd3fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── 状态呼吸点 ── */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-success);
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+  animation: pulseDot 2s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+/* ── 入场动效：配合 v-for 或页面区块使用 ── */
+.fade-up {
+  animation: fadeUp 0.45s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 骨架屏（加载占位，代替转圈） ── */
+.skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease infinite;
+}
+@keyframes skeletonShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ── 主按钮：极淡呼吸光，只做点睛 ── */
+.btn-glow {
+  animation: btnGlow 3.2s ease-in-out infinite;
+}
+@keyframes btnGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(34, 211, 238, 0.12); }
+  50% { box-shadow: 0 0 18px rgba(34, 211, 238, 0.24); }
+}
+
+/* ── 极光背景：仅保留两团极淡光晕，几乎不可察觉的氛围层 ── */
+.page-aurora {
+  position: relative;
+  background: transparent;
+  overflow: hidden;
+}
+.page-aurora::before,
+.page-aurora::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  pointer-events: none;
+  z-index: 0;
+}
+.page-aurora::before {
+  width: 560px; height: 560px;
+  top: -200px; right: -140px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.05), transparent 65%);
+  animation: auroraDrift 20s ease-in-out infinite alternate;
+}
+.page-aurora::after {
+  width: 480px; height: 480px;
+  bottom: -180px; left: -120px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.045), transparent 65%);
+  animation: auroraDrift 26s ease-in-out infinite alternate-reverse;
+}
+@keyframes auroraDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(36px, 26px) scale(1.1); }
+}
+/* 极光背景下内容层需要 position 抬高 */
+.page-aurora > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   世界层：全站统一星空背景
+   所有页面漂浮在同一个"深空世界"里，形成连续的空间感
+   ============================================================ */
+body {
+  background: var(--brand-bg);
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 第一层：细小星尘（缓慢漂移 + 闪烁） */
+body::before {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, 0.5), transparent 100%),
+    radial-gradient(1px 1px at 68% 8%, rgba(255, 255, 255, 0.35), transparent 100%),
+    radial-gradient(1.5px 1.5px at 42% 64%, rgba(255, 255, 255, 0.4), transparent 100%),
+    radial-gradient(1px 1px at 86% 44%, rgba(255, 255, 255, 0.3), transparent 100%),
+    radial-gradient(1px 1px at 26% 84%, rgba(255, 255, 255, 0.35), transparent 100%),
+    radial-gradient(1.5px 1.5px at 92% 78%, rgba(255, 255, 255, 0.3), transparent 100%),
+    radial-gradient(1px 1px at 55% 36%, rgba(255, 255, 255, 0.25), transparent 100%),
+    radial-gradient(1px 1px at 5% 56%, rgba(255, 255, 255, 0.3), transparent 100%);
+  background-size: 640px 640px;
+  background-repeat: repeat;
+  animation:
+    starDrift640 140s linear infinite,
+    starTwinkle 7s ease-in-out infinite alternate;
+}
+
+/* 第二层：青蓝色亮星（更稀疏、更慢、反向） */
+body::after {
+  background-image:
+    radial-gradient(2px 2px at 30% 40%, rgba(34, 211, 238, 0.35), transparent 100%),
+    radial-gradient(2px 2px at 78% 16%, rgba(125, 211, 252, 0.3), transparent 100%),
+    radial-gradient(2.5px 2.5px at 60% 72%, rgba(34, 211, 238, 0.25), transparent 100%),
+    radial-gradient(2px 2px at 10% 76%, rgba(125, 211, 252, 0.25), transparent 100%);
+  background-size: 900px 900px;
+  background-repeat: repeat;
+  animation: starDrift900 220s linear infinite;
+}
+
+@keyframes starDrift640 {
+  from { background-position: 0 0; }
+  to { background-position: 640px 640px; }
+}
+@keyframes starDrift900 {
+  from { background-position: 0 0; }
+  to { background-position: 900px 900px; }
+}
+@keyframes starTwinkle {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
+   页面标题仪式：任务简报式开场（大标题 + 弱化副标题）
+   用法：<div class="page-hero"><h1>页面名</h1><p>副标题说明</p></div>
+   ============================================================ */
+.page-hero {
+  padding: 28px 4px 20px;
+}
+.page-hero h1 {
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--brand-text);
+  position: relative;
+  padding-left: 16px;
+  line-height: 1.2;
+}
+/* 标题左侧主色竖线 */
+.page-hero h1::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--brand-primary), rgba(34, 211, 238, 0.2));
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+.page-hero p {
+  margin-top: 8px;
+  padding-left: 19px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--brand-text-faint);
+}
+
+/* ============================================================
+   大屏驾驶舱 HUD 工具类（塔台管制视觉词汇）
+   ============================================================ */
+:root {
+  --font-display: 'Rajdhani', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ── HUD 标签：等宽大写小字（模块眉标/编号用） ── */
+.hud-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(34, 211, 238, 0.75);
+}
+
+/* ── 数字读数：仪表盘风格 ── */
+.hud-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+/* ── 四角取景框：面板四角出现 HUD 角标 ── */
+.corner-frame {
+  position: relative;
+}
+.corner-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  --cf: rgba(34, 211, 238, 0.55);
+  background:
+    linear-gradient(var(--cf), var(--cf)) left 0 top 0 / 16px 2px,
+    linear-gradient(var(--cf), var(--cf)) left 0 top 0 / 2px 16px,
+    linear-gradient(var(--cf), var(--cf)) right 0 top 0 / 16px 2px,
+    linear-gradient(var(--cf), var(--cf)) right 0 top 0 / 2px 16px,
+    linear-gradient(var(--cf), var(--cf)) left 0 bottom 0 / 16px 2px,
+    linear-gradient(var(--cf), var(--cf)) left 0 bottom 0 / 2px 16px,
+    linear-gradient(var(--cf), var(--cf)) right 0 bottom 0 / 16px 2px,
+    linear-gradient(var(--cf), var(--cf)) right 0 bottom 0 / 2px 16px;
+  background-repeat: no-repeat;
+}
+
+/* ── 坐标网格叠加层（主视觉内用） ── */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+/* ── 雷达扫描（放在圆形容器内） ── */
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(34, 211, 238, 0.35) 0deg, rgba(34, 211, 238, 0.08) 40deg, transparent 70deg, transparent 360deg);
+  animation: radarSpin 4.5s linear infinite;
+  pointer-events: none;
+}
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── 扫描线掠过（面板载入时一次性掠过） ── */
+.scan-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 90px;
+  top: -90px;
+  background: linear-gradient(180deg, transparent, rgba(34, 211, 238, 0.08), transparent);
+  animation: scanDown 2.4s ease-out 0.3s both;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes scanDown {
+  from { top: -90px; }
+  to { top: 110%; }
+}
+
+/* ── 警戒斜纹条（分隔装饰，高度 4px） ── */
+.hazard-strip {
+  height: 4px;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(34, 211, 238, 0.35) 0 8px,
+    transparent 8px 16px
+  );
+  opacity: 0.5;
 }

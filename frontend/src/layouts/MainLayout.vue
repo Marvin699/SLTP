@@ -2,12 +2,25 @@
   <div class="main-layout">
     <!-- 顶部导航栏 -->
     <header class="header">
-      <div class="header-left">
-        <div class="logo">
-          <span class="logo-icon">✈</span>
-          <span class="logo-text">智慧低空应急运输教学平台</span>
-        </div>
-        <nav class="nav-menu">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" stroke-width="1.8" stroke-linecap="round">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="24" y2="24">
+              <stop offset="0" stop-color="#22d3ee"/>
+              <stop offset="1" stop-color="#3b82f6"/>
+            </linearGradient>
+          </defs>
+          <!-- 四旋翼无人机：四个旋翼 + X 机身 + 中央舱 -->
+          <circle cx="5" cy="5" r="2.6"/>
+          <circle cx="19" cy="5" r="2.6"/>
+          <circle cx="5" cy="19" r="2.6"/>
+          <circle cx="19" cy="19" r="2.6"/>
+          <path d="M7 7l3.2 3.2M17 7l-3.2 3.2M7 17l3.2-3.2M17 17l-3.2-3.2"/>
+          <rect x="9.4" y="9.4" width="5.2" height="5.2" rx="1.6" fill="rgba(34,211,238,0.18)" stroke="none"/>
+        </svg>
+        <span class="logo-text">智慧低空应急运输教学平台</span>
+      </div>
+      <nav class="nav-menu">
           <router-link
             v-for="item in visibleNavItems"
             :key="item.path"
@@ -15,10 +28,9 @@
             class="nav-item"
             :class="{ active: $route.path === item.path }"
           >
-            {{ item.title }}
+            <span class="nav-item-text">{{ item.title }}</span>
           </router-link>
         </nav>
-      </div>
       <div class="header-right">
         <el-badge :value="3" class="notification-badge">
           <el-icon :size="20"><Bell /></el-icon>
@@ -29,7 +41,6 @@
             <span v-else>{{ avatarInitial }}</span>
           </el-avatar>
           <div class="user-text">
-            <span class="username">欢迎您，{{ userStore.greeting }}</span>
             <el-tag :type="userStore.role === 'teacher' ? 'warning' : 'success'" size="small" effect="dark" class="role-tag">
               {{ userStore.roleLabel }}
             </el-tag>
@@ -77,7 +88,7 @@ const userStore = useUserStore()
 // 教师端导航：完整功能
 const teacherNavItems = [
   { path: '/home', title: '首页' },
-  { path: '/courses', title: '课程中心' },
+  { path: '/courses', title: '我的课程' },
   { path: '/training', title: '实训任务' },
   { path: '/evaluation', title: '教学智评' },
   { path: '/teacher/monitor', title: '教学监控' },
@@ -88,7 +99,7 @@ const teacherNavItems = [
 // 学生端导航：去掉「系统管理」（无权限）
 const studentNavItems = [
   { path: '/home', title: '首页' },
-  { path: '/courses', title: '课程中心' },
+  { path: '/courses', title: '我的课程' },
   { path: '/training', title: '实训任务' },
   { path: '/evaluation', title: '教学智评' },
   { path: '/resources', title: '学习资源' }
@@ -127,69 +138,89 @@ function handleLogout() {
 <style scoped>
 .main-layout {
   min-height: 100vh;
-  background: #0a1628;
+  background: transparent;
   color: #fff;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0 clamp(16px, 2vw, 32px);
   height: 60px;
-  background: linear-gradient(90deg, #0d2137 0%, #1a3a5c 100%);
-  border-bottom: 1px solid rgba(64, 158, 255, 0.3);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 24px;
+  background: rgba(4, 9, 18, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-self: start;
 }
 
 .logo-icon {
-  font-size: 24px;
+  width: 26px;
+  height: 26px;
+  display: block;
 }
 
 .logo-text {
   font-size: 18px;
   font-weight: bold;
-  background: linear-gradient(90deg, #409eff, #67c23a);
+  background: linear-gradient(90deg, #f2f6fa, #7dd3fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .nav-menu {
   display: flex;
-  gap: 4px;
+  gap: 6px;
+  justify-self: center;
 }
 
+/* 斜切导航：平行四边形 tab，内容反向倾斜保持文字水平 */
 .nav-item {
-  padding: 6px 11px;
+  padding: 7px 14px;
   font-size: 13.5px;
-  color: #c0c8d4;
+  color: var(--brand-text-dim, rgba(242, 246, 250, 0.55));
   text-decoration: none;
-  border-radius: 4px;
   white-space: nowrap;
-  transition: all 0.3s;
+  transform: skewX(-12deg);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+  transition: all 0.25s ease;
 }
 
-.nav-item:hover,
+.nav-item-text {
+  display: inline-block;
+  transform: skewX(12deg);
+}
+
+.nav-item:hover {
+  color: var(--brand-text, #f2f6fa);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
 .nav-item.active {
-  color: #fff;
-  background: rgba(64, 158, 255, 0.2);
+  color: #eafcff;
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.15), inset 0 0 10px rgba(34, 211, 238, 0.06);
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 20px;
+  justify-self: end;
 }
 
 .notification-badge {
@@ -205,12 +236,6 @@ function handleLogout() {
 .user-text {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.username {
-  color: #c0c8d4;
-  font-size: 14px;
 }
 
 .role-tag {
@@ -235,9 +260,6 @@ function handleLogout() {
 }
 
 @media (max-width: 1024px) {
-  .header-left {
-    gap: 16px;
-  }
   .nav-menu {
     gap: 2px;
   }
@@ -247,9 +269,6 @@ function handleLogout() {
   }
   .logo-text {
     font-size: 14px;
-  }
-  .username {
-    display: none;
   }
 }
 </style>

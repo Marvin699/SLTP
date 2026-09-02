@@ -1,46 +1,17 @@
 <template>
   <div class="home-page">
-    <!-- 顶部内容区 -->
-    <div class="top-section">
-      <!-- 左侧平台概览 -->
-      <aside class="left-panel">
-        <div class="panel-title">{{ userStore.role === 'teacher' ? '平台概览' : '我的学习' }}</div>
-        <div class="stats-cards">
-          <div v-for="stat in visibleStats" :key="stat.key" class="stat-card">
-            <div class="stat-icon" :class="stat.key">
-              <el-icon :size="18"><component :is="stat.icon" /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stat.value }}</div>
-              <div class="stat-label">{{ stat.label }}</div>
-              <div class="stat-change">较上月 <span class="up">{{ stat.change }}</span></div>
-            </div>
-          </div>
-        </div>
+    <!-- 全屏背景 -->
+    <div class="page-bg">
+      <img src="@/assets/images/banner.png" alt="" class="bg-img" />
+      <div class="bg-overlay"></div>
+    </div>
 
-        <div class="panel-title">平台状态</div>
-        <div class="status-list">
-          <div v-for="status in systemStatus" :key="status.key" class="status-item">
-            <span class="status-dot" :class="status.status"></span>
-            <span class="status-text">{{ status.label }}</span>
-            <span class="status-value" :class="status.status">{{ status.value }}</span>
-          </div>
-        </div>
-      </aside>
-
-      <!-- 中间主区域 -->
-      <main class="center-panel">
-        <!-- Banner区域 -->
-        <div class="hero-banner">
-          <div class="banner-bg">
-            <img src="@/assets/images/banner.png" alt="banner" class="banner-img" />
-            <div class="banner-overlay"></div>
-          </div>
-          <div class="banner-content">
-            <h1 class="banner-title">AI赋能教育 · 智慧决策未来</h1>
-            <p class="banner-subtitle">融合人工智能与低空运输技术，构建沉浸式教学新体验</p>
-          </div>
-        </div>
+    <div class="home-content">
+      <!-- 极简标题 -->
+      <header class="home-hero fade-up">
+        <h1>{{ welcomeText }}</h1>
+        <p>AI 赋能教育 · 智慧决策未来</p>
+      </header>
 
         <!-- 三个智能体卡片 -->
         <div class="agents-section">
@@ -50,26 +21,15 @@
               <div class="card-left">
                 <h3 class="agent-title">应急调度</h3>
                 <p class="agent-subtitle">智能规划最优运输路线</p>
-                <ul class="feature-list">
-                  <li><span class="dot blue"></span>多目标路径优化</li>
-                  <li><span class="dot blue"></span>地形避障分析</li>
-                  <li><span class="dot blue"></span>航线风险评估</li>
-                </ul>
-                <button class="enter-btn">
-                  <span>进入模块</span>
-                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </button>
               </div>
               <div class="card-right">
                 <div class="illustration">
                   <svg viewBox="0 0 200 160" class="agent-illustration">
                     <defs>
                       <linearGradient id="pathGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:0.8"/>
+                        <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:0.8"/>
                         <stop offset="50%" style="stop-color:#409eff;stop-opacity:0.6"/>
-                        <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0.8"/>
+                        <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:0.8"/>
                       </linearGradient>
                       <filter id="glow">
                         <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -83,21 +43,21 @@
                     <path d="M30 120 Q70 100, 100 110 T170 70" stroke="url(#pathGlow)" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#glow)"/>
                     <path d="M30 125 Q70 105, 100 115 T170 75" stroke="#409eff" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/>
                     <circle cx="30" cy="120" r="8" fill="#409eff" filter="url(#glow)">
-                      <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+                      
                     </circle>
                     <circle cx="30" cy="120" r="14" fill="none" stroke="#409eff" stroke-width="1" opacity="0.3"/>
-                    <circle cx="100" cy="110" r="6" fill="#67c23a" filter="url(#glow)"/>
+                    <circle cx="100" cy="110" r="6" fill="#22d3ee" filter="url(#glow)"/>
                     <circle cx="170" cy="70" r="8" fill="#f56c6c" filter="url(#glow)">
-                      <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+                      
                     </circle>
                     <circle cx="170" cy="70" r="14" fill="none" stroke="#f56c6c" stroke-width="1" opacity="0.3"/>
                     <g transform="translate(125, 35)">
                       <ellipse cx="22" cy="8" rx="18" ry="6" fill="rgba(64,158,255,0.2)" stroke="#409eff" stroke-width="1.5"/>
-                      <rect x="3" y="2" width="38" height="12" rx="4" fill="linear-gradient(135deg, #409eff 0%, #00d4ff 100%)"/>
-                      <rect x="0" y="4" width="10" height="3" rx="1.5" fill="#67c23a" opacity="0.8"/>
-                      <rect x="30" y="4" width="10" height="3" rx="1.5" fill="#67c23a" opacity="0.8"/>
+                      <rect x="3" y="2" width="38" height="12" rx="4" fill="linear-gradient(135deg, #409eff 0%, #22d3ee 100%)"/>
+                      <rect x="0" y="4" width="10" height="3" rx="1.5" fill="#22d3ee" opacity="0.8"/>
+                      <rect x="30" y="4" width="10" height="3" rx="1.5" fill="#22d3ee" opacity="0.8"/>
                       <circle cx="22" cy="8" r="4" fill="#fff">
-                        <animate attributeName="opacity" values="1;0.7;1" dur="1.5s" repeatCount="indefinite"/>
+                        
                       </circle>
                       <rect x="15" y="-5" width="3" height="8" rx="1" fill="#409eff"/>
                       <rect x="24" y="-5" width="3" height="8" rx="1" fill="#409eff"/>
@@ -114,29 +74,18 @@
               <div class="card-left">
                 <h3 class="agent-title">装箱评价</h3>
                 <p class="agent-subtitle">智能装载评估与优化</p>
-                <ul class="feature-list">
-                  <li><span class="dot purple"></span>装载空间优化</li>
-                  <li><span class="dot purple"></span>重量平衡分析</li>
-                  <li><span class="dot purple"></span>安全风险评估</li>
-                </ul>
-                <button class="enter-btn">
-                  <span>进入模块</span>
-                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </button>
               </div>
               <div class="card-right">
                 <div class="illustration">
                   <svg viewBox="0 0 200 160" class="agent-illustration">
                     <defs>
                       <linearGradient id="boxGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#9c27b0;stop-opacity:0.4"/>
-                        <stop offset="100%" style="stop-color:#673ab7;stop-opacity:0.2"/>
+                        <stop offset="0%" style="stop-color:#0e7490;stop-opacity:0.4"/>
+                        <stop offset="100%" style="stop-color:#155e75;stop-opacity:0.2"/>
                       </linearGradient>
                       <linearGradient id="boxGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#ab47bc;stop-opacity:0.4"/>
-                        <stop offset="100%" style="stop-color:#7e57c2;stop-opacity:0.2"/>
+                        <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:0.4"/>
+                        <stop offset="100%" style="stop-color:#155e75;stop-opacity:0.2"/>
                       </linearGradient>
                       <filter id="purpleGlow">
                         <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -146,33 +95,33 @@
                         </feMerge>
                       </filter>
                     </defs>
-                    <rect x="55" y="70" width="55" height="55" rx="6" fill="url(#boxGrad1)" stroke="#9c27b0" stroke-width="1.5" filter="url(#purpleGlow)"/>
-                    <polygon points="55,70 82.5,52 110,70" fill="rgba(156,39,176,0.3)" stroke="#9c27b0" stroke-width="1.5"/>
-                    <rect x="65" y="60" width="55" height="55" rx="6" fill="url(#boxGrad2)" stroke="#ab47bc" stroke-width="1.5" filter="url(#purpleGlow)">
-                      <animate attributeName="x" values="65;68;65" dur="2s" repeatCount="indefinite"/>
-                      <animate attributeName="y" values="60;57;60" dur="2s" repeatCount="indefinite"/>
+                    <rect x="55" y="70" width="55" height="55" rx="6" fill="url(#boxGrad1)" stroke="#0e7490" stroke-width="1.5" filter="url(#purpleGlow)"/>
+                    <polygon points="55,70 82.5,52 110,70" fill="rgba(14,116,144,0.3)" stroke="#0e7490" stroke-width="1.5"/>
+                    <rect x="65" y="60" width="55" height="55" rx="6" fill="url(#boxGrad2)" stroke="#22d3ee" stroke-width="1.5" filter="url(#purpleGlow)">
+                      
+                      
                     </rect>
-                    <polygon points="65,60 92.5,42 120,60" fill="rgba(171,71,188,0.3)" stroke="#ab47bc" stroke-width="1.5"/>
-                    <rect x="75" y="50" width="55" height="55" rx="6" fill="rgba(194,89,206,0.4)" stroke="#ce93d8" stroke-width="1.5" filter="url(#purpleGlow)">
-                      <animate attributeName="x" values="75;72;75" dur="2.5s" repeatCount="indefinite"/>
-                      <animate attributeName="y" values="50;53;50" dur="2.5s" repeatCount="indefinite"/>
+                    <polygon points="65,60 92.5,42 120,60" fill="rgba(34,211,238,0.3)" stroke="#22d3ee" stroke-width="1.5"/>
+                    <rect x="75" y="50" width="55" height="55" rx="6" fill="rgba(103,232,249,0.4)" stroke="#67e8f9" stroke-width="1.5" filter="url(#purpleGlow)">
+                      
+                      
                     </rect>
-                    <polygon points="75,50 102.5,32 130,50" fill="rgba(194,89,206,0.3)" stroke="#ce93d8" stroke-width="1.5"/>
-                    <line x1="102" y1="50" x2="102" y2="100" stroke="#9c27b0" stroke-width="0.5" opacity="0.4" stroke-dasharray="3,2"/>
-                    <line x1="75" y1="75" x2="130" y2="75" stroke="#9c27b0" stroke-width="0.5" opacity="0.4" stroke-dasharray="3,2"/>
-                    <rect x="45" y="130" width="110" height="18" rx="4" fill="rgba(156,39,176,0.15)" stroke="#9c27b0" stroke-width="1.5"/>
-                    <rect x="145" y="35" width="22" height="22" rx="4" fill="rgba(156,39,176,0.3)" stroke="#9c27b0" stroke-width="1.5"/>
+                    <polygon points="75,50 102.5,32 130,50" fill="rgba(103,232,249,0.3)" stroke="#67e8f9" stroke-width="1.5"/>
+                    <line x1="102" y1="50" x2="102" y2="100" stroke="#0e7490" stroke-width="0.5" opacity="0.4" stroke-dasharray="3,2"/>
+                    <line x1="75" y1="75" x2="130" y2="75" stroke="#0e7490" stroke-width="0.5" opacity="0.4" stroke-dasharray="3,2"/>
+                    <rect x="45" y="130" width="110" height="18" rx="4" fill="rgba(14,116,144,0.15)" stroke="#0e7490" stroke-width="1.5"/>
+                    <rect x="145" y="35" width="22" height="22" rx="4" fill="rgba(14,116,144,0.3)" stroke="#0e7490" stroke-width="1.5"/>
                     <circle cx="156" cy="46" r="3" fill="#fff" opacity="0.8"/>
-                    <rect x="25" y="85" width="20" height="20" rx="4" fill="rgba(156,39,176,0.25)" stroke="#9c27b0" stroke-width="1.5"/>
+                    <rect x="25" y="85" width="20" height="20" rx="4" fill="rgba(14,116,144,0.25)" stroke="#0e7490" stroke-width="1.5"/>
                     <circle cx="35" cy="95" r="3" fill="#fff" opacity="0.8"/>
-                    <circle cx="102" cy="140" r="4" fill="#9c27b0" opacity="0.6">
-                      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    <circle cx="102" cy="140" r="4" fill="#0e7490" opacity="0.6">
+                      
                     </circle>
-                    <circle cx="85" cy="140" r="3" fill="#9c27b0" opacity="0.4">
-                      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2s" repeatCount="indefinite"/>
+                    <circle cx="85" cy="140" r="3" fill="#0e7490" opacity="0.4">
+                      
                     </circle>
-                    <circle cx="120" cy="140" r="3" fill="#9c27b0" opacity="0.4">
-                      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2s" repeatCount="indefinite"/>
+                    <circle cx="120" cy="140" r="3" fill="#0e7490" opacity="0.4">
+                      
                     </circle>
                   </svg>
                 </div>
@@ -186,25 +135,14 @@
               <div class="card-left">
                 <h3 class="agent-title">课程图谱</h3>
             <p class="agent-subtitle">知识图谱与能力分析</p>
-                <ul class="feature-list">
-                  <li><span class="dot green"></span>知识图谱可视化</li>
-                  <li><span class="dot green"></span>能力模型分析</li>
-                  <li><span class="dot green"></span>思政元素映射</li>
-                </ul>
-                <button class="enter-btn">
-                  <span>进入模块</span>
-                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </button>
               </div>
               <div class="card-right">
                 <div class="illustration">
                   <svg viewBox="0 0 200 160" class="agent-illustration">
                     <defs>
                       <linearGradient id="graphGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#67c23a;stop-opacity:0.8"/>
-                        <stop offset="100%" style="stop-color:#85ce61;stop-opacity:0.6"/>
+                        <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:0.8"/>
+                        <stop offset="100%" style="stop-color:#0ea5e9;stop-opacity:0.6"/>
                       </linearGradient>
                       <filter id="greenGlow">
                         <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -214,154 +152,158 @@
                         </feMerge>
                       </filter>
                     </defs>
-                    <circle cx="100" cy="50" r="16" fill="url(#graphGrad)" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)">
-                      <animate attributeName="r" values="16;18;16" dur="2s" repeatCount="indefinite"/>
+                    <circle cx="100" cy="50" r="16" fill="url(#graphGrad)" stroke="#22d3ee" stroke-width="2" filter="url(#greenGlow)">
+                      
                     </circle>
                     <circle cx="100" cy="50" r="8" fill="#fff">
                       <animate attributeName="opacity" values="1;0.8;1" dur="1.5s" repeatCount="indefinite"/>
                     </circle>
-                    <text x="100" y="54" text-anchor="middle" fill="#67c23a" font-size="10" font-weight="bold">核心</text>
-                    <circle cx="60" cy="90" r="14" fill="rgba(103,194,58,0.35)" stroke="#67c23a" stroke-width="1.5" filter="url(#greenGlow)">
-                      <animate attributeName="r" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
+                    <text x="100" y="54" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="bold">核心</text>
+                    <circle cx="60" cy="90" r="14" fill="rgba(34,211,238,0.35)" stroke="#22d3ee" stroke-width="1.5" filter="url(#greenGlow)">
+                      
                     </circle>
                     <circle cx="60" cy="90" r="6" fill="#fff"/>
-                    <text x="60" y="108" text-anchor="middle" fill="#67c23a" font-size="9" font-weight="500">知识</text>
-                    <circle cx="100" cy="115" r="14" fill="rgba(103,194,58,0.35)" stroke="#67c23a" stroke-width="1.5" filter="url(#greenGlow)">
-                      <animate attributeName="r" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
+                    <text x="60" y="108" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="500">知识</text>
+                    <circle cx="100" cy="115" r="14" fill="rgba(34,211,238,0.35)" stroke="#22d3ee" stroke-width="1.5" filter="url(#greenGlow)">
+                      
                     </circle>
                     <circle cx="100" cy="115" r="6" fill="#fff"/>
-                    <text x="100" y="133" text-anchor="middle" fill="#67c23a" font-size="9" font-weight="500">能力</text>
-                    <circle cx="140" cy="90" r="14" fill="rgba(103,194,58,0.35)" stroke="#67c23a" stroke-width="1.5" filter="url(#greenGlow)">
-                      <animate attributeName="r" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
+                    <text x="100" y="133" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="500">能力</text>
+                    <circle cx="140" cy="90" r="14" fill="rgba(34,211,238,0.35)" stroke="#22d3ee" stroke-width="1.5" filter="url(#greenGlow)">
+                      
                     </circle>
                     <circle cx="140" cy="90" r="6" fill="#fff"/>
-                    <text x="140" y="108" text-anchor="middle" fill="#67c23a" font-size="9" font-weight="500">思政</text>
-                    <circle cx="50" cy="140" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="100" cy="150" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="150" cy="140" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="155" cy="55" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
-                    <circle cx="45" cy="55" r="10" fill="rgba(103,194,58,0.25)" stroke="#67c23a" stroke-width="1"/>
-                    <line x1="100" y1="66" x2="60" y2="76" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)"/>
-                    <line x1="100" y1="66" x2="100" y2="101" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)"/>
-                    <line x1="100" y1="66" x2="140" y2="76" stroke="#67c23a" stroke-width="2" filter="url(#greenGlow)"/>
-                    <line x1="60" y1="104" x2="50" y2="130" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="100" y1="129" x2="100" y2="140" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="140" y1="104" x2="150" y2="130" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="100" y1="66" x2="155" y2="45" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="100" y1="66" x2="45" y2="45" stroke="#67c23a" stroke-width="1.5" opacity="0.5"/>
-                    <circle cx="35" cy="80" r="4" fill="#67c23a" opacity="0.6">
-                      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    <text x="140" y="108" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="500">思政</text>
+                    <circle cx="50" cy="140" r="10" fill="rgba(34,211,238,0.25)" stroke="#22d3ee" stroke-width="1"/>
+                    <circle cx="100" cy="150" r="10" fill="rgba(34,211,238,0.25)" stroke="#22d3ee" stroke-width="1"/>
+                    <circle cx="150" cy="140" r="10" fill="rgba(34,211,238,0.25)" stroke="#22d3ee" stroke-width="1"/>
+                    <circle cx="155" cy="55" r="10" fill="rgba(34,211,238,0.25)" stroke="#22d3ee" stroke-width="1"/>
+                    <circle cx="45" cy="55" r="10" fill="rgba(34,211,238,0.25)" stroke="#22d3ee" stroke-width="1"/>
+                    <line x1="100" y1="66" x2="60" y2="76" stroke="#22d3ee" stroke-width="2" filter="url(#greenGlow)"/>
+                    <line x1="100" y1="66" x2="100" y2="101" stroke="#22d3ee" stroke-width="2" filter="url(#greenGlow)"/>
+                    <line x1="100" y1="66" x2="140" y2="76" stroke="#22d3ee" stroke-width="2" filter="url(#greenGlow)"/>
+                    <line x1="60" y1="104" x2="50" y2="130" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="100" y1="129" x2="100" y2="140" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="140" y1="104" x2="150" y2="130" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="100" y1="66" x2="155" y2="45" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+                    <line x1="100" y1="66" x2="45" y2="45" stroke="#22d3ee" stroke-width="1.5" opacity="0.5"/>
+                    <circle cx="35" cy="80" r="4" fill="#22d3ee" opacity="0.6">
+                      
                     </circle>
-                    <circle cx="165" cy="80" r="4" fill="#67c23a" opacity="0.6">
-                      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    <circle cx="165" cy="80" r="4" fill="#22d3ee" opacity="0.6">
+                      
                     </circle>
                   </svg>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+      </div>
 
-      <!-- 右侧面板 -->
-      <aside class="right-panel">
-        <div class="panel-section">
-          <div class="panel-header">
-            <span class="panel-title">通知公告</span>
-            <el-button type="primary" link size="small">更多</el-button>
-          </div>
-          <div class="notice-list">
-            <div v-for="notice in notices" :key="notice.id" class="notice-item">
-              <div class="notice-dot"></div>
-              <div class="notice-content">
-                <div class="notice-title">{{ notice.title }}</div>
-                <div class="notice-date">{{ notice.date }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- 数据总览：统一大框（可展开） -->
+      <div class="console-wrap fade-up">
+        <button class="console-toggle" @click="toggleConsole">
+          <span>{{ consoleOpen ? '收起数据总览' : '数据总览' }}</span>
+          <svg class="chev" :class="{ open: consoleOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
 
-        <div class="panel-section">
-          <div class="panel-header">
-            <span class="panel-title">实训任务动态</span>
-            <el-button type="primary" link size="small">更多</el-button>
-          </div>
-          <div class="task-list">
-            <div v-for="task in trainingTasks" :key="task.id" class="task-item">
-              <div class="task-info">
-                <div class="task-title">{{ task.title }}</div>
-                <div class="task-progress">
-                  <el-progress
-                    :percentage="task.progress"
-                    :stroke-width="6"
-                    :show-text="false"
-                    :color="task.progress === 100 ? '#67c23a' : '#409eff'"
-                  />
+        <div v-show="consoleOpen" class="console-panel glass-card">
+          <div class="console-grid">
+            <!-- 概览列 -->
+            <div class="console-col">
+              <div class="panel-title">{{ userStore.role === 'teacher' ? '平台概览' : '我的学习' }}</div>
+              <div class="mini-stats">
+                <div v-for="stat in visibleStats" :key="stat.key" class="mini-stat">
+                  <el-icon :size="15" class="mini-stat-icon" :class="stat.key"><component :is="stat.icon" /></el-icon>
+                  <div class="mini-stat-info">
+                    <span class="mini-stat-value">{{ stat.value }}</span>
+                    <span class="mini-stat-label">{{ stat.label }}</span>
+                  </div>
                 </div>
               </div>
-              <el-tag :type="task.status === '进行中' ? 'primary' : 'success'" size="small">
-                {{ task.status }}
-              </el-tag>
+              <div class="panel-title">平台状态</div>
+              <div class="status-list">
+                <div v-for="status in systemStatus" :key="status.key" class="status-item">
+                  <span class="status-dot" :class="status.status"></span>
+                  <span class="status-text">{{ status.label }}</span>
+                  <span class="status-value" :class="status.status">{{ status.value }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 学习统计 -->
+            <div class="console-col mid">
+              <div class="chart-header">
+                <span>学习数据统计</span>
+                <el-radio-group v-model="statsTab" size="small">
+                  <el-radio-button label="7天">近7天</el-radio-button>
+                  <el-radio-button label="30天">近30天</el-radio-button>
+                  <el-radio-button label="学年">学年统计</el-radio-button>
+                </el-radio-group>
+              </div>
+              <div ref="learningChartRef" class="chart-container"></div>
+            </div>
+
+            <!-- 雷达 + 资源 -->
+            <div class="console-col">
+              <div class="chart-header"><span>能力维度分析</span></div>
+              <div ref="radarChartRef" class="chart-container radar-box"></div>
+              <div class="chart-header"><span>资源使用TOP5</span></div>
+              <div class="resource-list">
+                <div v-for="(resource, index) in resourceTop5" :key="index" class="resource-item">
+                  <span class="resource-rank" :class="'rank-' + (index + 1)">{{ index + 1 }}</span>
+                  <span class="resource-name">{{ resource.name }}</span>
+                  <span class="resource-count">{{ resource.count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="console-row2">
+            <div class="console-col">
+              <div class="panel-title">通知公告</div>
+              <div class="notice-list">
+                <div v-for="notice in notices" :key="notice.id" class="notice-item">
+                  <div class="notice-dot"></div>
+                  <div class="notice-content">
+                    <div class="notice-title">{{ notice.title }}</div>
+                    <div class="notice-date">{{ notice.date }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="console-col">
+              <div class="panel-title">实训任务动态</div>
+              <div class="task-list">
+                <div v-for="task in trainingTasks" :key="task.id" class="task-item">
+                  <div class="task-info">
+                    <div class="task-title">{{ task.title }}</div>
+                    <div class="task-progress">
+                      <el-progress
+                        :percentage="task.progress"
+                        :stroke-width="6"
+                        :show-text="false"
+                        :color="task.progress === 100 ? '#67c23a' : '#409eff'"
+                      />
+                    </div>
+                  </div>
+                  <el-tag :type="task.status === '进行中' ? 'primary' : 'success'" size="small">
+                    {{ task.status }}
+                  </el-tag>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </aside>
-    </div>
-
-    <!-- 底部统计区 -->
-    <div class="bottom-section">
-      <div class="chart-card learning-stats">
-        <div class="chart-header">
-          <span>学习数据统计</span>
-          <el-radio-group v-model="statsTab" size="small">
-            <el-radio-button label="7天">近7天</el-radio-button>
-            <el-radio-button label="30天">近30天</el-radio-button>
-            <el-radio-button label="学年">学年统计</el-radio-button>
-          </el-radio-group>
-        </div>
-        <div class="stats-grid">
-          <div class="stats-item">
-            <div class="stats-value">286.5</div>
-            <div class="stats-label">课时(小时)</div>
-          </div>
-          <div class="stats-item">
-            <div class="stats-value">1289</div>
-            <div class="stats-label">完成任务</div>
-          </div>
-          <div class="stats-item">
-            <div class="stats-value">96</div>
-            <div class="stats-label">平均分</div>
-          </div>
-          <div class="stats-item">
-            <div class="stats-value">87.4</div>
-            <div class="stats-label">课堂评分</div>
-          </div>
-        </div>
-        <div ref="learningChartRef" class="chart-container"></div>
-      </div>
-
-      <div class="chart-card ability-analysis">
-        <div class="chart-header">能力维度分析</div>
-        <div ref="radarChartRef" class="chart-container"></div>
-      </div>
-
-      <div class="chart-card resource-top">
-        <div class="chart-header">资源使用TOP5</div>
-        <div class="resource-list">
-          <div v-for="(resource, index) in resourceTop5" :key="index" class="resource-item">
-            <span class="resource-rank" :class="'rank-' + (index + 1)">{{ index + 1 }}</span>
-            <span class="resource-name">{{ resource.name }}</span>
-            <span class="resource-count">{{ resource.count }}</span>
-          </div>
-        </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { Document, List, User, TrendCharts } from '@element-plus/icons-vue'
@@ -370,6 +312,19 @@ import axios from 'axios'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+// 数据总览大框（默认收起保持极简）
+const consoleOpen = ref(false)
+let chartsInited = false
+function toggleConsole() {
+  consoleOpen.value = !consoleOpen.value
+  if (consoleOpen.value && !chartsInited) {
+    nextTick(() => {
+      initCharts()
+      chartsInited = true
+    })
+  }
+}
 
 // 当前用户欢迎语
 const welcomeText = computed(() => {
@@ -425,10 +380,10 @@ async function loadTeacherStats() {
 
 // 通知公告
 const notices = ref([
-  { id: 1, title: '关于开展低空应急运输实训课程的通知', date: '2024-05-25' },
-  { id: 2, title: '平台系统升级维护公告', date: '2024-05-20' },
-  { id: 3, title: '新增课程资源上线通知', date: '2024-05-18' },
-  { id: 4, title: '关于开展无人机航线规划培训的通知', date: '2024-05-15' }
+  { id: 1, title: '关于开展低空应急运输实训课程的通知', date: '2026-08-29' },
+  { id: 2, title: '平台系统升级维护公告', date: '2026-08-26' },
+  { id: 3, title: '新增课程资源上线通知', date: '2026-08-22' },
+  { id: 4, title: '关于开展无人机航线规划培训的通知', date: '2026-08-18' }
 ])
 
 // 实训任务动态
@@ -459,10 +414,8 @@ const goToAgent = (path) => {
   router.push(path)
 }
 
-// 初始化图表
-onMounted(() => {
-  // 加载教师统计（教师端）
-  loadTeacherStats()
+// 初始化图表（大框展开后调用；隐藏容器尺寸为0时 echarts 无法渲染）
+function initCharts() {
   // 学习数据统计折线图
   const learningChart = echarts.init(learningChartRef.value)
   learningChart.setOption({
@@ -563,6 +516,11 @@ onMounted(() => {
     learningChart.resize()
     radarChart.resize()
   })
+}
+
+onMounted(() => {
+  // 加载教师统计（教师端）
+  loadTeacherStats()
 })
 </script>
 
@@ -581,10 +539,12 @@ onMounted(() => {
 
 /* 左侧面板 */
 .left-panel {
-  background: linear-gradient(180deg, rgba(13, 33, 55, 0.95) 0%, rgba(10, 22, 40, 0.98) 100%);
-  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
   padding: clamp(14px, 1.5vw, 24px);
-  border: 1px solid rgba(64, 158, 255, 0.25);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
@@ -593,7 +553,18 @@ onMounted(() => {
   font-weight: 700;
   margin-bottom: clamp(10px, 1vw, 16px);
   color: rgba(255, 255, 255, 0.95);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: linear-gradient(180deg, #22d3ee, rgba(34, 211, 238, 0.2));
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
 }
 
 .stats-cards {
@@ -716,7 +687,7 @@ onMounted(() => {
 .hero-banner {
   position: relative;
   width: 100%;
-  height: clamp(200px, 18vw, 360px);
+  height: clamp(260px, 24vw, 420px);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -736,7 +707,7 @@ onMounted(() => {
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(10, 22, 40, 0.7) 0%, rgba(10, 22, 40, 0.4) 50%, rgba(10, 22, 40, 0.6) 100%);
+  background: linear-gradient(135deg, rgba(5, 10, 20, 0.82) 0%, rgba(5, 10, 20, 0.45) 55%, rgba(5, 10, 20, 0.7) 100%);
 }
 
 .banner-content {
@@ -751,6 +722,94 @@ onMounted(() => {
   padding: 20px;
 }
 
+/* 悬浮指标胶囊：接真实统计数据 */
+.banner-metrics {
+  display: flex;
+  gap: 10px;
+  margin-top: clamp(10px, 1.2vw, 18px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.metric-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(5, 10, 20, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #22d3ee;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: rgba(242, 246, 250, 0.65);
+  letter-spacing: 0.05em;
+}
+
+.ai-chip .metric-label {
+  color: rgba(242, 246, 250, 0.8);
+}
+
+/* 主视觉行动按钮 */
+.banner-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: clamp(12px, 1.4vw, 22px);
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 26px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.cta-btn.primary {
+  color: #04121c;
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  border: none;
+}
+
+.cta-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34, 211, 238, 0.3);
+}
+
+.cta-btn.ghost {
+  color: rgba(242, 246, 250, 0.85);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cta-btn.ghost:hover {
+  color: #fff;
+  border-color: rgba(34, 211, 238, 0.4);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.cta-btn .arrow-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .banner-title {
   font-size: clamp(26px, 2.5vw, 44px);
   font-weight: 800;
@@ -758,6 +817,145 @@ onMounted(() => {
   margin-bottom: clamp(10px, 1vw, 18px);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   letter-spacing: 2px;
+}
+
+/* ============ 驾驶舱 HUD ============ */
+.command-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.command-hero .hero-meta {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 10px;
+  padding-left: 19px;
+}
+
+.command-hero .mission-id {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* 顶部指标条 */
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto;
+  gap: 12px;
+  margin-bottom: clamp(14px, 1.4vw, 22px);
+}
+
+.metric-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 18px;
+  border-radius: 6px;
+  background: linear-gradient(160deg, rgba(34, 211, 238, 0.07), rgba(34, 211, 238, 0.015) 60%, transparent);
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  overflow: hidden;
+}
+
+.metric-tile::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #22d3ee, rgba(34, 211, 238, 0.1));
+}
+
+.metric-tile-value {
+  font-size: clamp(22px, 1.8vw, 32px);
+  line-height: 1.1;
+  color: #fff;
+}
+
+.metric-tile-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(242, 246, 250, 0.5);
+}
+
+.ai-tile {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  border-color: rgba(74, 222, 128, 0.18);
+  background: linear-gradient(160deg, rgba(74, 222, 128, 0.06), transparent);
+}
+
+.ai-tile::after {
+  background: linear-gradient(180deg, #4ade80, rgba(74, 222, 128, 0.1));
+}
+
+.ai-tile .ai-label {
+  color: rgba(134, 239, 172, 0.75);
+}
+
+/* 主视觉 HUD 层 */
+.banner-hud.hud-top {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 4;
+}
+
+.banner-hud-label {
+  display: block;
+  margin-bottom: 10px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.banner-content .hud-label {
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* 雷达圈：右上角半嵌入 */
+.radar-zone {
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 220px;
+  height: 220px;
+  z-index: 1;
+  opacity: 0.9;
+}
+
+.radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  box-shadow: inset 0 0 40px rgba(34, 211, 238, 0.06);
+}
+
+.radar-ring::before {
+  content: '';
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  border: 1px dashed rgba(34, 211, 238, 0.18);
+}
+
+.radar-ring::after {
+  content: '';
+  position: absolute;
+  inset: 44%;
+  border-radius: 50%;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+/* 主视觉内指标胶囊复用仪表数字 */
+.metric-value.hud-num {
+  font-size: 16px;
 }
 
 .banner-subtitle {
@@ -771,16 +969,27 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(10px, 1.2vw, 16px);
+  max-width: 960px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
+/* 智能体卡片错峰入场 */
+.agents-section .agent-card {
+  animation: fadeUp 0.5s ease both;
+}
+.agents-section .agent-card:nth-child(2) { animation-delay: 0.08s; }
+.agents-section .agent-card:nth-child(3) { animation-delay: 0.16s; }
+
 .agent-card {
-  border-radius: 12px;
-  padding: clamp(14px, 1.2vw, 20px);
+  border-radius: 20px;
+  padding: clamp(12px, 1vw, 16px);
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  min-height: clamp(200px, 15vw, 280px);
+  min-height: clamp(96px, 6.5vw, 118px);
 }
 
 .agent-card::before {
@@ -800,62 +1009,27 @@ onMounted(() => {
   opacity: 1;
 }
 
-/* 蓝色主题 - 路径规划 */
-.agent-blue {
-  background: linear-gradient(135deg, rgba(64, 158, 255, 0.15) 0%, rgba(10, 22, 40, 0.95) 100%);
-  border: 1px solid rgba(64, 158, 255, 0.3);
-}
-
-.agent-blue::before {
-  background: linear-gradient(135deg, rgba(64, 158, 255, 0.25) 0%, rgba(10, 22, 40, 0.95) 100%);
-}
-
-.agent-blue:hover {
-  border-color: rgba(64, 158, 255, 0.6);
-  box-shadow: 0 12px 32px rgba(64, 158, 255, 0.2);
-}
-
-/* 青色主题 - 航线详情 */
-.agent-cyan {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(10, 22, 40, 0.95) 100%);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-}
-.agent-cyan::before {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(10, 22, 40, 0.95) 100%);
-}
-.agent-cyan:hover {
-  border-color: rgba(6, 182, 212, 0.6);
-  box-shadow: 0 12px 32px rgba(6, 182, 212, 0.2);
-}
-
-/* 紫色主题 - 装箱评价 */
-.agent-purple {
-  background: linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(10, 22, 40, 0.95) 100%);
-  border: 1px solid rgba(156, 39, 176, 0.3);
-}
-
-.agent-purple::before {
-  background: linear-gradient(135deg, rgba(156, 39, 176, 0.25) 0%, rgba(10, 22, 40, 0.95) 100%);
-}
-
-.agent-purple:hover {
-  border-color: rgba(156, 39, 176, 0.6);
-  box-shadow: 0 12px 32px rgba(156, 39, 176, 0.2);
-}
-
-/* 绿色主题 - 课程图谱 */
+/* 透明毛玻璃：透出天空背景，白字加投影保证可读 */
+.agent-blue,
+.agent-purple,
 .agent-green {
-  background: linear-gradient(135deg, rgba(103, 194, 58, 0.15) 0%, rgba(10, 22, 40, 0.95) 100%);
-  border: 1px solid rgba(103, 194, 58, 0.3);
+  background: rgba(8, 15, 28, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
 }
 
+.agent-blue::before,
+.agent-purple::before,
 .agent-green::before {
-  background: linear-gradient(135deg, rgba(103, 194, 58, 0.25) 0%, rgba(10, 22, 40, 0.95) 100%);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.05) 0%, rgba(5, 10, 20, 0.9) 100%);
 }
 
+.agent-blue:hover,
+.agent-purple:hover,
 .agent-green:hover {
-  border-color: rgba(103, 194, 58, 0.6);
-  box-shadow: 0 12px 32px rgba(103, 194, 58, 0.2);
+  border-color: rgba(34, 211, 238, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* 卡片内容布局 */
@@ -917,48 +1091,47 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.dot.blue {
-  background: #409eff;
-  box-shadow: 0 0 8px rgba(64, 158, 255, 0.6);
+/* 功能点统一主色：全站唯一强调色 */
+.dot.blue, .dot.purple, .dot.green, .dot.cyan {
+  background: #22d3ee;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.45);
 }
 
-.dot.purple {
-  background: #9c27b0;
-  box-shadow: 0 0 8px rgba(156, 39, 176, 0.6);
+/* hover 引导：插画放大泛光 + 标题变青 + 底部滑入光条（静态是常态，动效只在交互时） */
+.agent-illustration {
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
 }
 
-.dot.green {
-  background: #67c23a;
-  box-shadow: 0 0 8px rgba(103, 194, 58, 0.6);
+.agent-card:hover .agent-illustration {
+  transform: scale(1.07) translateY(-3px);
+  filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.4));
 }
 
-.dot.cyan {
-  background: #06b6d4;
-  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+.agent-title {
+  transition: color 0.3s ease;
 }
 
-/* 进入按钮 */
-.enter-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: clamp(8px, 0.8vw, 10px) clamp(16px, 1.5vw, 24px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  color: #fff;
-  font-size: clamp(12px, 0.9vw, 14px);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  backdrop-filter: blur(10px);
-  width: fit-content;
+.agent-card:hover .agent-title {
+  color: #22d3ee;
 }
 
-.enter-btn:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateX(4px);
+.agent-card::after {
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #22d3ee, transparent);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agent-card:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .arrow-icon {
@@ -981,16 +1154,18 @@ onMounted(() => {
 }
 
 .agent-illustration {
-  width: clamp(100px, 10vw, 180px);
-  height: clamp(100px, 10vw, 180px);
+  width: clamp(72px, 6vw, 108px);
+  height: clamp(72px, 6vw, 108px);
 }
 
 /* 右侧面板 */
 .right-panel {
-  background: linear-gradient(180deg, rgba(13, 33, 55, 0.95) 0%, rgba(10, 22, 40, 0.98) 100%);
-  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
   padding: clamp(14px, 1.5vw, 24px);
-  border: 1px solid rgba(64, 158, 255, 0.25);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
@@ -1105,10 +1280,12 @@ onMounted(() => {
 }
 
 .chart-card {
-  background: linear-gradient(180deg, rgba(13, 33, 55, 0.95) 0%, rgba(10, 22, 40, 0.98) 100%);
-  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
   padding: clamp(14px, 1.5vw, 24px);
-  border: 1px solid rgba(64, 158, 255, 0.25);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
@@ -1117,9 +1294,24 @@ onMounted(() => {
   font-weight: 700;
   margin-bottom: clamp(10px, 1vw, 16px);
   color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.08em;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.chart-header > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-header > span:first-child::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: linear-gradient(180deg, #22d3ee, rgba(34, 211, 238, 0.2));
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
 }
 
 .stats-grid {
@@ -1153,6 +1345,216 @@ onMounted(() => {
 
 .chart-container {
   height: clamp(120px, 10vw, 180px);
+}
+
+/* ============ 简约大气版式：全屏背景 + 智能体主角 + 统一数据大框 ============ */
+.home-page {
+  position: relative;
+  min-height: calc(100vh - 60px);
+  padding: 0 clamp(16px, 3vw, 48px) 28px;
+}
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.page-bg .bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.page-bg .bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 10, 20, 0.55) 0%, rgba(5, 10, 20, 0.25) 42%, rgba(5, 10, 20, 0.78) 100%);
+}
+
+.home-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 60px);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* 极简标题 */
+.home-hero {
+  text-align: center;
+  margin: clamp(40px, 9vh, 96px) 0 clamp(28px, 4vh, 56px);
+}
+
+.home-hero h1 {
+  font-size: clamp(28px, 3.2vw, 48px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+.home-hero p {
+  margin-top: 12px;
+  font-size: clamp(13px, 1vw, 16px);
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 智能体为页面唯一主角，撑开后把数据框推到底部 */
+.agents-section {
+  margin-top: auto;
+}
+
+/* 统一数据大框 */
+.console-wrap {
+  margin-top: clamp(28px, 5vh, 56px);
+}
+
+.console-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  padding: 10px 30px;
+  border-radius: 999px;
+  background: rgba(5, 10, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.console-toggle:hover {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: rgba(5, 10, 20, 0.68);
+}
+
+.console-toggle .chev {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.console-toggle .chev.open {
+  transform: rotate(180deg);
+}
+
+.console-panel {
+  margin-top: 14px;
+  border-radius: 16px;
+  padding: clamp(16px, 1.6vw, 26px);
+  background: rgba(8, 15, 28, 0.74);
+  animation: consoleIn 0.35s ease;
+}
+
+@keyframes consoleIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: 250px 1fr 300px;
+  gap: clamp(14px, 1.6vw, 26px);
+}
+
+.console-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(14px, 1.6vw, 26px);
+  margin-top: clamp(14px, 1.6vw, 24px);
+  padding-top: clamp(14px, 1.6vw, 20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mini-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.mini-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.mini-stat:hover {
+  background: rgba(34, 211, 238, 0.07);
+  border-color: rgba(34, 211, 238, 0.25);
+  transform: translateY(-1px);
+}
+
+.mini-stat-icon.courses { color: #409eff; }
+.mini-stat-icon.training { color: #67c23a; }
+.mini-stat-icon.students { color: #e6a23c; }
+.mini-stat-icon.score { color: #f56c6c; }
+
+.mini-stat-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mini-stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+}
+
+/* 数据大框内的数字统一仪表读数风格 */
+.console-panel .status-value,
+.console-panel .resource-count,
+.console-panel .notice-date {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+.console-panel .notice-date {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.mini-stat-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.console-panel .chart-container {
+  height: 220px;
+}
+
+.console-panel .radar-box {
+  height: 180px;
+}
+
+@media (max-width: 1024px) {
+  .console-grid,
+  .console-row2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .resource-list {
