@@ -34,7 +34,13 @@ const routes = [
         path: 'courses',
         name: 'Courses',
         component: () => import('../views/courses/index.vue'),
-        meta: { title: '课程中心' }
+        meta: { title: '我的课程' }
+      },
+      {
+        path: 'courses/:courseName',
+        name: 'CourseDetail',
+        component: () => import('../views/courses/CourseDetail.vue'),
+        meta: { title: '课程详情' }
       },
       {
         path: 'training',

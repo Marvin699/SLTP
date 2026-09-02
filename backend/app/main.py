@@ -3,6 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import engine, Base
@@ -26,6 +27,7 @@ from app.api.routes.debate import router as debate_router
 from app.api.routes.verification import router as verification_router
 from app.api.routes.teacher import router as teacher_router
 from app.api.routes.evaluation import router as evaluation_router
+from app.api.routes.courseware import router as courseware_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -43,6 +45,7 @@ from app.models.chat_history import ChatHistory  # noqa: F401
 from app.models.debate import DebateSession, DebateMessage  # noqa: F401
 from app.models.verification import VerificationRecord  # noqa: F401
 from app.models.activity_log import ActivityLog  # noqa: F401
+from app.models.courseware import Courseware  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -640,6 +643,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# 课件资料静态目录（预览用：/uploads/courseware/xxx.pdf）
+os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads", "courseware"), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads")), name="uploads")
+
 # CORS中间件
 app.add_middleware(
     CORSMiddleware,
@@ -670,6 +677,7 @@ app.include_router(debate_router)
 app.include_router(verification_router)
 app.include_router(teacher_router)
 app.include_router(evaluation_router)
+app.include_router(courseware_router)
 
 
 @app.get("/health", tags=["系统"])
