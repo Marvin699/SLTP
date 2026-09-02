@@ -156,6 +156,9 @@
             </div>
             <div class="msg-body">
               <div class="msg-name">{{ msg.role === 'user' ? '我' : '小翼' }}</div>
+              <div v-if="msg.tools && msg.tools.length" class="msg-tools">
+                🔧 查询了：{{ msg.tools.join('、') }}
+              </div>
               <div class="msg-bubble" v-html="formatMessage(msg.content)"></div>
               <div class="msg-time">{{ msg.time }}</div>
             </div>
@@ -386,6 +389,7 @@ async function sendChat() {
       chatMessages.value.push({
         role: 'assistant',
         content: res.data.reply,
+        tools: res.data.tools_used || [],
         time: formatTime(new Date())
       })
     } else {
@@ -437,7 +441,9 @@ onMounted(() => {
 <style scoped>
 .ai-assistant-page {
   width: 100%;
-  min-height: calc(100vh - 60px);
+  /* 固定视口高度并禁止整页滚动：聊天区消息再多也只让消息列表内部滚动 */
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: #0a1628;
@@ -472,6 +478,7 @@ onMounted(() => {
 /* 主内容区 */
 .main-content {
   flex: 1;
+  min-height: 0;
   display: flex;
   overflow: hidden;
 }
@@ -867,6 +874,7 @@ onMounted(() => {
 /* 右侧聊天区域 */
 .chat-section {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -990,6 +998,7 @@ onMounted(() => {
 
 .chat-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 20px;
   display: flex;
@@ -1073,6 +1082,17 @@ onMounted(() => {
 .msg-time {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.35);
+}
+
+.message.assistant .msg-tools {
+  font-size: 11px;
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px dashed rgba(34, 211, 238, 0.35);
+  border-radius: 8px;
+  padding: 3px 8px;
+  margin-bottom: 5px;
+  display: inline-block;
 }
 
 .message.user .msg-time {

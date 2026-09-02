@@ -70,6 +70,9 @@
               {{ msg.role === 'user' ? '我' : '翼' }}
             </div>
             <div class="msg-body">
+              <div v-if="msg.tools && msg.tools.length" class="msg-tools">
+                🔧 查询了：{{ msg.tools.join('、') }}
+              </div>
               <div class="msg-bubble" v-html="formatMessage(msg.content)"></div>
               <div class="msg-time">{{ msg.time }}</div>
             </div>
@@ -195,6 +198,7 @@ async function sendChat() {
       chatMessages.value.push({
         role: 'assistant',
         content: res.data.reply,
+        tools: res.data.tools_used || [],
         time: formatTime(new Date())
       })
     } else {
@@ -679,6 +683,17 @@ function scrollBottom() {
   font-size: 11px;
   color: #94a3b8;
   margin-top: 4px;
+}
+
+.msg-tools {
+  font-size: 11px;
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px dashed rgba(34, 211, 238, 0.35);
+  border-radius: 8px;
+  padding: 3px 8px;
+  margin-bottom: 5px;
+  display: inline-block;
 }
 
 .typing {
