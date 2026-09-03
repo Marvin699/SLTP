@@ -68,12 +68,12 @@ function createIcon(type, label, size) {
     return L.divIcon({
       html: `<div style="
         width:${size}px;height:${size}px;border-radius:50%;
-        background:rgba(255,107,53,0.15);border:2.5px solid #ff6b35;
+        background:rgba(255,107,53,0.9);border:3px solid #fff;
         display:flex;align-items:center;justify-content:center;
-        font-size:13px;font-weight:900;color:#ff6b35;
-        box-shadow:0 0 16px rgba(255,107,53,0.3);
+        font-size:${Math.round(size * 0.42)}px;font-weight:900;color:#fff;
+        box-shadow:0 0 16px rgba(255,107,53,0.5);
         font-family:'JetBrains Mono',monospace;
-      ">C</div>`,
+      ">${label}</div>`,
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -size / 2 - 6],
@@ -83,11 +83,12 @@ function createIcon(type, label, size) {
   return L.divIcon({
     html: `<div style="
       width:${size}px;height:${size}px;border-radius:50%;
-      background:rgba(0,229,255,0.2);border:2px solid #00e5ff;
+      background:rgba(0,184,212,0.92);border:2.5px solid #fff;
       display:flex;align-items:center;justify-content:center;
-      font-size:9px;font-weight:700;color:#00e5ff;
-      box-shadow:0 0 10px rgba(0,229,255,0.25);
+      font-size:${Math.round(size * 0.46)}px;font-weight:900;color:#fff;
+      box-shadow:0 0 10px rgba(0,229,255,0.45);
       font-family:'JetBrains Mono',monospace;
+      text-shadow:0 1px 2px rgba(0,0,0,0.35);
     ">${label}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -109,16 +110,22 @@ function renderMarkers() {
 
   if (centerPt) {
     const marker = L.marker([centerPt.latitude, centerPt.longitude], {
-      icon: createIcon('center', 'C', 36),
+      icon: createIcon('center', 'C', 44),
     })
+      .bindTooltip(centerPt.name, {
+        permanent: true, direction: 'right', offset: [14, 0], className: 'village-label center-label',
+      })
       .bindPopup(`<b>配送中心</b><br>${centerPt.name}<br>${centerPt.longitude.toFixed(4)}, ${centerPt.latitude.toFixed(4)}`)
     markersGroup.addLayer(marker)
   }
 
   demandPts.forEach((pt, i) => {
     const marker = L.marker([pt.latitude, pt.longitude], {
-      icon: createIcon('demand', String(i + 1), 22),
+      icon: createIcon('demand', String(i + 1), 30),
     })
+      .bindTooltip(`${i + 1} · ${pt.name}`, {
+        permanent: true, direction: 'right', offset: [16, 0], className: 'village-label',
+      })
       .bindPopup(`<b>需求点${i + 1}</b><br>${pt.name}<br>${pt.longitude.toFixed(4)}, ${pt.latitude.toFixed(4)}`)
     markersGroup.addLayer(marker)
 
@@ -465,5 +472,26 @@ onUnmounted(() => {
   font-size: 11px;
   color: #a8b1c2;
   line-height: 1.4;
+}
+
+/* 村庄名称常显标签（Leaflet tooltip 渲染在 map pane，需 :deep） */
+:deep(.village-label) {
+  background: rgba(6, 18, 30, 0.82);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 6px;
+  color: #d7f9ff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  text-shadow: none;
+  white-space: nowrap;
+}
+:deep(.village-label.center-label) {
+  border-color: rgba(255, 107, 53, 0.55);
+  color: #ffd9c4;
+}
+:deep(.village-label::before) {
+  display: none;  /* 去掉 Leaflet 默认小箭头 */
 }
 </style>
