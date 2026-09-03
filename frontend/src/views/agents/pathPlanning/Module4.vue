@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useUavsStore } from '@/stores/pathPlanning/uavs'
@@ -12,6 +13,47 @@ const matStore = useMaterialsStore()
 const uavStore = useUavsStore()
 const optStore = useOptimizerStore()
 const appStore = useAppStore()
+
+// ─── 手动调序（学生调整配送顺序，服务端按同口径重算） ───
+const adjustTrip = ref(null)  // { trip, route }
+
+function startAdjust(row) {
+  const trip = optStore.result?.solution?.trips?.find(
+    (t) => t.route.join(',') === row.route_nodes
+  )
+  if (!trip) return
+  adjustTrip.value = { trip, route: [...trip.route] }
+}
+
+function moveNode(idx, dir) {
+  const r = [...adjustTrip.value.route]
+  const j = idx + dir
+  if (j <= 0 || j >= r.length - 1) return  // 起终点(0)不可动
+  ;[r[idx], r[j]] = [r[j], r[idx]]
+  adjustTrip.value = { ...adjustTrip.value, route: r }
+}
+
+function nodeName(node) {
+  const dp = ptsStore.demands[node - 1]
+  return dp ? dp.name : `点${node}`
+}
+
+async function saveAdjust() {
+  const { trip, route } = adjustTrip.value
+  const res = await optStore.adjustTripOrder(trip.trip_id, route)
+  if (res) {
+    ElMessage.success('配送顺序已调整，指标已重算')
+    adjustTrip.value = null
+  } else {
+    ElMessage.error(optStore.error || '重算失败')
+  }
+}
+
+function revertManual() {
+  optStore.revertToAlgorithm()
+  adjustTrip.value = null
+  ElMessage.success('已回退到算法原始结果')
+}
 
 // ─── 环境约束展示区（T1）───
 const showConstraints = ref(true)
@@ -467,6 +509,15 @@ async function deleteHistory(recordId) {
 
       <!-- 表格1: 路径汇总 -->
       <div v-if="activeTab === 'route'" class="rp-table-wrap">
+        <!-- 手动调序工具条 -->
+        <div class="adjust-bar">
+          <span class="adjust-hint">多村联飞航次可手动调整配送顺序，指标将按同口径重算</span>
+          <button
+            v-if="optStore.manualActive"
+            class="revert-btn"
+            @click="revertManual"
+          >↩ 回退算法结果</button>
+        </div>
         <table class="rp-table">
           <thead>
             <tr>
@@ -478,6 +529,7 @@ async function deleteHistory(recordId) {
               <th>时间(min)</th>
               <th>配送重量(kg)</th>
               <th>状态</th>
+              <th>调序</th>
             </tr>
           </thead>
           <tbody>
@@ -494,6 +546,14 @@ async function deleteHistory(recordId) {
                   {{ r.feasible ? '可行' : '不可行' }}
                 </span>
               </td>
+              <td>
+                <button
+                  v-if="r.route_nodes.split(',').length > 3"
+                  class="adjust-btn"
+                  @click="startAdjust(r)"
+                >⇅ 调整</button>
+                <span v-else class="adjust-na">-</span>
+              </td>
             </tr>
             <!-- 总计行 -->
             <tr class="total-row">
@@ -505,9 +565,36 @@ async function deleteHistory(recordId) {
               <td>{{ optStore.totalTime.toFixed(2) }}</td>
               <td>{{ optStore.result?.solution?.total_delivered?.toLocaleString() || '-' }}</td>
               <td>-</td>
+              <td>-</td>
             </tr>
           </tbody>
         </table>
+
+        <!-- 顺序调整面板 -->
+        <div v-if="adjustTrip" class="adjust-panel">
+          <div class="adjust-panel-title">
+            调整航次 {{ adjustTrip.trip.trip_id + 1 }} 的配送顺序
+            <span class="adjust-panel-path mono">{{ adjustTrip.route.join('→') }}</span>
+          </div>
+          <div class="adjust-list">
+            <div v-for="(node, idx) in adjustTrip.route" :key="idx" class="adjust-item">
+              <template v-if="node === 0">
+                <span class="adjust-depot">{{ idx === 0 ? '🛫 配送中心' : '🛬 返回配送中心' }}</span>
+              </template>
+              <template v-else>
+                <span class="adjust-name">{{ nodeName(node) }}</span>
+                <button class="mv-btn" :disabled="idx <= 1" @click="moveNode(idx, -1)">↑</button>
+                <button class="mv-btn" :disabled="idx >= adjustTrip.route.length - 2" @click="moveNode(idx, 1)">↓</button>
+              </template>
+            </div>
+          </div>
+          <div class="adjust-actions">
+            <button class="adjust-save" :disabled="optStore.loading" @click="saveAdjust">
+              {{ optStore.loading ? '重算中...' : '保存并重算' }}
+            </button>
+            <button class="adjust-cancel" @click="adjustTrip = null">取消</button>
+          </div>
+        </div>
       </div>
 
       <!-- 表格2: 村庄配送详情 -->
@@ -1394,5 +1481,111 @@ async function deleteHistory(recordId) {
 
 .btn-history-del:hover {
   background: rgba(255, 71, 87, 0.15);
+}
+/* ── 手动调序 ── */
+.adjust-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 2px 10px;
+}
+.adjust-hint { font-size: 11px; color: var(--text3); }
+.revert-btn {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 179, 0, 0.45);
+  background: rgba(255, 179, 0, 0.1);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.revert-btn:hover { background: rgba(255, 179, 0, 0.2); }
+.adjust-btn {
+  padding: 3px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.08);
+  color: var(--teal);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.adjust-btn:hover { background: rgba(0, 229, 255, 0.18); }
+.adjust-na { color: var(--text3); font-size: 11px; }
+
+.adjust-panel {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(0, 229, 255, 0.04);
+}
+.adjust-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.adjust-panel-path { font-size: 11px; color: var(--text3); font-weight: 400; }
+.adjust-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.adjust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--navy2);
+}
+.adjust-name { font-size: 12px; color: var(--text); white-space: nowrap; }
+.adjust-depot { font-size: 12px; color: var(--text3); white-space: nowrap; }
+.mv-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.mv-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+.mv-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.adjust-actions { display: flex; gap: 8px; }
+.adjust-save {
+  padding: 6px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--teal);
+  background: rgba(0, 229, 255, 0.14);
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.adjust-save:hover:not(:disabled) { background: rgba(0, 229, 255, 0.24); }
+.adjust-save:disabled { opacity: 0.5; cursor: wait; }
+.adjust-cancel {
+  padding: 6px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
 }
 </style>

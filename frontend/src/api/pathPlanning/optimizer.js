@@ -18,6 +18,11 @@ export function runOptimizer(task, acoParams) {
   return api.post('/optimizer/run', { task, aco_params: acoParams })
 }
 
+/** 手动调整配送顺序后重算（跳过ACO） */
+export function manualAdjust(task, trips) {
+  return api.post('/optimizer/manual', { task, trips })
+}
+
 /** 获取默认 ACO 参数 */
 export function getDefaultParams(task) {
   return api.post('/optimizer/params/default', { task })

@@ -7,6 +7,7 @@ import {
   getOptimizationHistory as apiHistory,
   getOptimizationDetail as apiDetail,
   deleteOptimization as apiDelete,
+  manualAdjust as apiManual,
 } from '@/api/pathPlanning/optimizer'
 import { usePointsStore } from './points'
 import { useMaterialsStore } from './materials'
@@ -25,6 +26,8 @@ export const useOptimizerStore = defineStore('optimizer', () => {
   const historyLoading = ref(false)
   const selectedDroneId = ref(null) // 当前选中查看路线的无人机ID
   const regenHints = ref(null)      // 合规核验回填的提示（{hints:[], params:{}}），Module4 展示后清除
+  const originalResult = ref(null)  // ACO 算法原始结果快照（手动调序后可回退）
+  const manualActive = ref(false)   // 当前结果是否为手动调序版本
 
   // ─── Getters ───
   const summary = computed(() => result.value?.summary || {})
@@ -144,12 +147,48 @@ export const useOptimizerStore = defineStore('optimizer', () => {
       const params = customParams || acoParams.value
       const res = await apiRun(task, params)
       result.value = res.data
+      // 保存算法原始结果快照，供手动调序后回退
+      originalResult.value = res.data
+      manualActive.value = false
       return res.data
     } catch (e) {
       error.value = e.response?.data?.detail || e.message
       return null
     } finally {
       loading.value = false
+    }
+  }
+
+  /**
+   * 手动调整某航次的配送顺序并重算
+   * @param {number} tripId 目标航次 id（solution.trips 中的 trip_id）
+   * @param {number[]} newRoute 重排后的节点序列（0 开头结尾）
+   */
+  async function adjustTripOrder(tripId, newRoute) {
+    const trips = (result.value?.solution?.trips || []).map((t) =>
+      t.trip_id === tripId ? { ...t, route: newRoute } : t
+    )
+    loading.value = true
+    error.value = null
+    try {
+      const task = buildTaskJson()
+      const res = await apiManual(task, trips)
+      result.value = res.data
+      manualActive.value = true
+      return res.data
+    } catch (e) {
+      error.value = e.response?.data?.detail || e.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** 回退到 ACO 算法原始结果 */
+  function revertToAlgorithm() {
+    if (originalResult.value) {
+      result.value = originalResult.value
+      manualActive.value = false
     }
   }
 
@@ -177,6 +216,8 @@ export const useOptimizerStore = defineStore('optimizer', () => {
   function resetResult() {
     result.value = null
     error.value = null
+    originalResult.value = null
+    manualActive.value = false
   }
 
   /** 加载历史记录 */
@@ -242,6 +283,7 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     historyLoading,
     selectedDroneId,
     regenHints,
+    manualActive,
     summary,
     routeTable,
     villageTable,
@@ -265,6 +307,8 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     buildTaskJson,
     fetchDefaultParams,
     runOptimization,
+    adjustTripOrder,
+    revertToAlgorithm,
     downloadExcel,
     resetResult,
     loadHistory,

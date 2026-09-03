@@ -4,7 +4,7 @@ from app.core.deps import get_optional_user
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
-from app.services.optimizer.optimizer_service import run_optimizer
+from app.services.optimizer.optimizer_service import run_optimizer, recompute_manual
 from app.services.optimizer.algorithms.aco.solver import get_default_params
 from app.services.optimizer.models.task_model import parse_task
 from app.services.optimizer.models.solution import Solution
@@ -27,6 +27,41 @@ class OptimizeRequest(BaseModel):
 
 class DefaultParamsRequest(BaseModel):
     task: Dict[str, Any]
+
+
+class ManualTrip(BaseModel):
+    route: List[int]
+    drone_id: str = ""
+    drone_type: str = ""
+    drone_name: str = ""
+    delivery_mode: str = "optional"
+    village_loads: Optional[Dict[str, float]] = None
+
+
+class ManualAdjustRequest(BaseModel):
+    task: Dict[str, Any]
+    trips: List[ManualTrip]
+
+
+@router.post("/manual")
+def manual_adjust(req: ManualAdjustRequest, current_user=Depends(get_optional_user)):
+    """
+    手动调整配送顺序后重算（跳过ACO，直接按传入路线重建方案）
+
+    请求体:
+        task: 任务 JSON（与 /run 一致）
+        trips: 航次列表（route 可被学生手动重排，其余字段沿用原结果）
+    """
+    if not req.task.get("demand_points"):
+        raise HTTPException(status_code=400, detail="任务必须包含需求点")
+    if not req.trips:
+        raise HTTPException(status_code=400, detail="航次列表不能为空")
+    try:
+        return recompute_manual(req.task, [t.model_dump() for t in req.trips])
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"手动重算失败: {str(e)}")
 
 
 @router.post("/run")

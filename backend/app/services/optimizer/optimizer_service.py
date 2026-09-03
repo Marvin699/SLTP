@@ -70,6 +70,92 @@ def run_optimizer(task_data: dict, aco_params: dict = None) -> dict:
     }
 
 
+def recompute_manual(task_data: dict, manual_trips: list) -> dict:
+    """
+    手动调整配送顺序后重算（跳过ACO，直接按传入的 route 重建方案并输出全部表格）
+
+    参数:
+        task_data: 前端传入的 task JSON（与 /run 一致）
+        manual_trips: 航次列表，每项 {route, drone_id, drone_type, drone_name, delivery_mode, village_loads}
+    """
+    from app.services.optimizer.algorithms.aco.cvrp_solver import convert_to_trips
+    from app.services.optimizer.models.solution import Solution
+
+    task = parse_task(task_data)
+    distance_matrix = build_distance_matrix(task)
+
+    # 构建无人机配置（与 cvrp_solver 保持一致）
+    drone_configs = []
+    for uav in task.uavs:
+        quantity = getattr(uav, 'quantity', 1)
+        drone_model = uav.id.split('-')[0] if '-' in uav.id else uav.id
+        for idx in range(quantity):
+            range_points = getattr(uav, 'range_points', []) or []
+            if isinstance(range_points, str):
+                import json
+                try:
+                    range_points = json.loads(range_points)
+                except Exception:
+                    range_points = []
+            drone_configs.append({
+                'id': f"{uav.id}-{idx + 1}" if quantity > 1 else uav.id,
+                'type': drone_model,
+                'name': uav.name,
+                'max_capacity': uav.max_payload,
+                'speed': uav.max_speed,
+                'range_points': range_points,
+                'max_range': getattr(uav, 'max_range', 20),
+                'is_cold_chain': getattr(uav, 'is_cold_chain', False),
+            })
+
+    # 将前端传入的航次转换为内部格式（village_loads: 村庄名→重量 → loads: 节点索引→重量）
+    trips_input = []
+    for t in manual_trips:
+        route = t.get('route') or []
+        if len(route) < 3 or route[0] != 0 or route[-1] != 0:
+            raise ValueError(f"航次路线格式非法: {route}")
+        vloads = t.get('village_loads') or {}
+        name_to_node = {}
+        for node in route:
+            if node != 0 and node - 1 < len(task.demand_points):
+                name_to_node[task.demand_points[node - 1].name] = node
+        loads = {node: w for name, w in vloads.items() if (node := name_to_node.get(name)) is not None}
+        trips_input.append({
+            'route': route,
+            'loads': loads,
+            'drone_id': t.get('drone_id') or t.get('drone_type') or '',
+            'drone_type': t.get('drone_type') or '',
+            'drone_name': t.get('drone_name') or '',
+            'delivery_mode': t.get('delivery_mode', 'optional'),
+        })
+
+    trip_objs = convert_to_trips(trips_input, drone_configs, task, distance_matrix)
+    for i, t in enumerate(trip_objs):
+        t.trip_id = i
+    solution = Solution(trips=trip_objs, task_id="manual")
+
+    summary_stats = build_summary_stats(solution, task)
+    route_table = build_route_summary_table(solution, task)
+    village_table = build_village_detail_table(solution, task)
+    drone_table = build_drone_detail_table(solution, task)
+    feasibility = check_solution_feasibility(solution, task)
+    uav_routes = _build_uav_routes_from_solution(solution, task, distance_matrix)
+    geojson = export_geojson(task, uav_routes, solution.trips)
+
+    return {
+        "summary": summary_stats,
+        "route_table": route_table,
+        "village_table": village_table,
+        "drone_table": drone_table,
+        "feasibility": feasibility,
+        "solution": solution.to_dict(),
+        "geojson": geojson,
+        "elapsed_seconds": 0.0,
+        "aco_params_used": None,
+        "manual": True,
+    }
+
+
 def _build_uav_routes_from_solution(solution, task, distance_matrix):
     """从 Solution 构建 UAVRoute 列表（用于 GeoJSON 导出）"""
     from app.services.optimizer.models.route_model import UAVRoute, RouteSegment
