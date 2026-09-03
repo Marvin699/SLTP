@@ -294,9 +294,9 @@ const CATEGORY_ID_TO_NAME = {
 function exportTemplate() {
   const BOM = '\uFEFF'
   const header = '名称,经度,纬度,物资类别,物资名称,单量(kg),数量'
-  const example1 = '怀渠村,106.285000,23.345000,抢修类,柴油发电机,30,2'
-  const example2 = '怀渠村,106.285000,23.345000,抢修类,电缆(百米),20,2'
-  const example3 = '塘麻村,106.425000,23.085000,生活保障类,矿泉水(箱),12,40'
+  const example1 = '怀渠村,106.380769,23.336847,抢修类,柴油发电机,30,2'
+  const example2 = '怀渠村,106.380769,23.336847,抢修类,电缆(百米),20,2'
+  const example3 = '塘麻村,106.371466,23.270673,生活保障类,矿泉水(箱),12,40'
   const csv = BOM + [header, example1, example2, example3].join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)

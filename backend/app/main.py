@@ -279,16 +279,16 @@ def _init_default_case():
             db.close()
             return
 
-        default_center = {"name": "渠洋村", "longitude": 106.317264, "latitude": 23.310533}
+        default_center = {"name": "渠洋村", "longitude": 106.321514, "latitude": 23.308425}
         default_demands = [
-            {"name": "怀渠村", "longitude": 106.285000, "latitude": 23.345000},
-            {"name": "塘麻村", "longitude": 106.425000, "latitude": 23.085000},
-            {"name": "坡乐村", "longitude": 106.380000, "latitude": 23.075000},
-            {"name": "东风村", "longitude": 106.320150, "latitude": 23.309040},
-            {"name": "古桥村", "longitude": 106.350000, "latitude": 23.200000},
-            {"name": "新和村", "longitude": 106.335000, "latitude": 23.295000},
-            {"name": "怀书村", "longitude": 106.278670, "latitude": 23.339030},
-            {"name": "雅力村", "longitude": 106.380000, "latitude": 23.250000},
+            {"name": "怀渠村", "longitude": 106.380769, "latitude": 23.336847},
+            {"name": "塘麻村", "longitude": 106.371466, "latitude": 23.270673},
+            {"name": "坡乐村", "longitude": 106.333831, "latitude": 23.299707},
+            {"name": "东风村", "longitude": 106.306132, "latitude": 23.332874},
+            {"name": "古桥村", "longitude": 106.286954, "latitude": 23.305080},
+            {"name": "新和村", "longitude": 106.283733, "latitude": 23.383753},
+            {"name": "怀书村", "longitude": 106.278383, "latitude": 23.339094},
+            {"name": "雅力村", "longitude": 106.226579, "latitude": 23.399337},
         ]
         default_materials = {
             "怀渠村": {
