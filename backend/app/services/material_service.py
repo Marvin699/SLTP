@@ -1,6 +1,6 @@
 """物资需求数据与服务 — 基于渠洋镇案例真实数据"""
 
-# 5 大物资类别，常见物资从案例提取
+# 6 大物资类别，常见物资从案例提取
 MATERIAL_CATEGORIES = [
     {
         "id": "repair",
@@ -66,6 +66,21 @@ MATERIAL_CATEGORIES = [
         "priority": 1,
         "special": "冷链运输",
         "risk": "全程2-8°C温控，需专用冷链无人机配送",
+    },
+    {
+        "id": "rescue",
+        "name": "救生防护类",
+        "icon": "🛟",
+        "color": "#a55eea",
+        "items": [
+            {"name": "救生衣", "unit_weight": 1, "qty": 20},
+            {"name": "救生圈", "unit_weight": 2.5, "qty": 10},
+            {"name": "救生绳(盘)", "unit_weight": 5, "qty": 10},
+        ],
+        "total_weight": 95,
+        "priority": 1,
+        "special": "救生优先",
+        "risk": "轻质防水包装，到达后需可快速分发取用",
     },
     {
         "id": "settle",

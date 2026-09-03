@@ -26,6 +26,7 @@ const SUPPLY_TYPE_LABELS = {
   medical: '医疗救援类',
   cold: '冷链医疗类',
   settle: '安置保障类',
+  rescue: '救生防护类',
   // 兼容旧数据
   medicine: '医疗救援类',
   food: '生活保障类',

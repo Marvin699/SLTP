@@ -296,13 +296,14 @@ export const useMaterialsStore = defineStore('materials', () => {
     }
   }
 
-  // supply_type 英文 key → 类别 ID 映射（与后端 5 大类别一致）
+  // supply_type 英文 key → 类别 ID 映射（与后端 6 大类别一致）
   const SUPPLY_TYPE_TO_CATEGORY = {
     repair: 'repair',
     life: 'life',
     medical: 'medical',
     cold: 'cold',
     settle: 'settle',
+    rescue: 'rescue',
     // 兼容旧数据
     medicine: 'medical',
     food: 'life',

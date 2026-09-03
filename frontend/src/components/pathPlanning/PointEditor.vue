@@ -24,6 +24,7 @@ const supplyOptions = [
   { value: 'medical', label: '医疗救援类', icon: '🏥' },
   { value: 'cold', label: '冷链医疗类', icon: '❄️' },
   { value: 'settle', label: '安置保障类', icon: '🏕' },
+  { value: 'rescue', label: '救生防护类', icon: '🛟' },
 ]
 
 onMounted(() => {

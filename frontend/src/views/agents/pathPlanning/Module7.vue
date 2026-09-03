@@ -281,6 +281,7 @@ const CATEGORY_NAME_TO_ID = {
   '医疗救援类': 'medical',
   '冷链医疗类': 'cold',
   '安置保障类': 'settle',
+  '救生防护类': 'rescue',
 }
 
 const CATEGORY_ID_TO_NAME = {
@@ -289,6 +290,7 @@ const CATEGORY_ID_TO_NAME = {
   medical: '医疗救援类',
   cold: '冷链医疗类',
   settle: '安置保障类',
+  rescue: '救生防护类',
 }
 
 function exportTemplate() {
