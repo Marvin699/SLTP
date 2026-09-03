@@ -1,8 +1,8 @@
 """一次性迁移：学生归属教师功能
-1. users 表补 teacher_id / invite_code 两列（SQLite 不支持 ORM 自动加列）
+1. users 表按模型补齐缺失列（SQLite 不支持 ORM 自动加列）
 2. 为所有缺邀请码的教师生成邀请码
 3. 若全平台仅一位教师，把未分配的历史学生划归该教师
-可重复执行（幂等）。用法：cd backend && python scripts/migrate_teacher_ownership.py
+可重复执行（幂等）。用法：cd backend && python3 scripts/migrate_teacher_ownership.py
 """
 import sys
 import os
@@ -13,6 +13,15 @@ from sqlalchemy import text, inspect
 from app.core.database import engine, SessionLocal
 from app.models.user import User
 
+# 模型字段 → 建列 SQL 类型（与 app/models/user.py 保持同步）
+COLUMN_DDL = {
+    "teacher_id": "INTEGER",
+    "invite_code": "VARCHAR(20)",
+    "must_change_password": "BOOLEAN DEFAULT 0",
+    "avatar": "VARCHAR(20)",
+    "is_active": "BOOLEAN DEFAULT 1",
+}
+
 ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
@@ -20,13 +29,12 @@ def main():
     insp = inspect(engine)
     cols = [c["name"] for c in insp.get_columns("users")]
     with engine.begin() as conn:
-        if "teacher_id" not in cols:
-            conn.execute(text("ALTER TABLE users ADD COLUMN teacher_id INTEGER"))
-            print("已添加列 users.teacher_id")
+        for name, ddl in COLUMN_DDL.items():
+            if name not in cols:
+                conn.execute(text(f"ALTER TABLE users ADD COLUMN {name} {ddl}"))
+                print(f"已添加列 users.{name}")
         if "invite_code" not in cols:
-            conn.execute(text("ALTER TABLE users ADD COLUMN invite_code VARCHAR(20)"))
             conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_invite_code ON users (invite_code)"))
-            print("已添加列 users.invite_code")
 
     db = SessionLocal()
     try:
