@@ -428,9 +428,14 @@ body::before,
 body::after {
   content: '';
   position: fixed;
-  inset: 0;
+  /* 预留一个贴图周期的扩展区，配合 transform 漂移实现无缝循环 */
+  top: -1000px;
+  left: -1000px;
+  width: calc(100vw + 1000px);
+  height: calc(100vh + 1000px);
   pointer-events: none;
   z-index: 0;
+  will-change: transform;
 }
 
 /* 第一层：细小星尘（缓慢漂移 + 闪烁） */
@@ -463,13 +468,14 @@ body::after {
   animation: starDrift900 220s linear infinite;
 }
 
+/* 漂移用 transform（GPU 合成，不触发全屏重绘），位移一个贴图周期实现无缝循环 */
 @keyframes starDrift640 {
-  from { background-position: 0 0; }
-  to { background-position: 640px 640px; }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(640px, 640px, 0); }
 }
 @keyframes starDrift900 {
-  from { background-position: 0 0; }
-  to { background-position: 900px 900px; }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(900px, 900px, 0); }
 }
 @keyframes starTwinkle {
   from { opacity: 0.55; }
@@ -613,4 +619,28 @@ body::after {
     transparent 8px 16px
   );
   opacity: 0.5;
+}
+
+/* ============================================================
+   低性能设备降级（html.low-perf 由 index.html 内联脚本检测添加）
+   停掉常驻大动画、去掉毛玻璃重绘，避免课堂低配电脑动画掉帧
+   ============================================================ */
+html.low-perf body::before,
+html.low-perf body::after,
+html.low-perf .page-aurora::before,
+html.low-perf .page-aurora::after {
+  animation: none;
+}
+html.low-perf * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* 系统开了"减弱动态效果"时同样降级 */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .page-aurora::before,
+  .page-aurora::after {
+    animation: none;
+  }
 }
