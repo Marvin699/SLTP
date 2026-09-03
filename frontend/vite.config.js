@@ -51,6 +51,10 @@ export default defineConfig({
   server: {
     port: 5175,
     host: true,
+    fs: {
+      // 允许引用仓库根目录 docs/ 下的使用手册（?raw 导入）
+      allow: [path.resolve(__dirname, '..')],
+    },
     https: process.env.VITE_HTTP === 'true' ? false : {
       cert: fs.readFileSync(path.join(sslDir, 'cert.pem')),
       key: fs.readFileSync(path.join(sslDir, 'key.pem')),
