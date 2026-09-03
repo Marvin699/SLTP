@@ -10,6 +10,15 @@
         <h1>学生管理</h1>
       </div>
       <div class="header-right">
+        <el-tooltip content="学生注册时填写此邀请码即归入您名下，点击复制" placement="bottom">
+          <el-button class="invite-btn" @click="copyInviteCode">
+            <el-icon><Key /></el-icon>
+            邀请码&nbsp;<b class="invite-code">{{ inviteCode || '······' }}</b>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="重置邀请码（旧码失效）" placement="bottom">
+          <el-button @click="resetInviteCode"><el-icon><RefreshRight /></el-icon></el-button>
+        </el-tooltip>
         <el-button type="primary" @click="showImportDialog = true">
           <el-icon><Upload /></el-icon> 批量导入学生
         </el-button>
@@ -68,6 +77,12 @@
       </el-table-column>
       <el-table-column prop="group_no" label="小组" width="120">
         <template #default="{ row }">{{ row.group_no || '未分组' }}</template>
+      </el-table-column>
+      <el-table-column label="归属" width="110">
+        <template #default="{ row }">
+          <el-tag v-if="row.assigned" type="success" size="small" effect="plain">我的学生</el-tag>
+          <el-button v-else size="small" type="warning" link @click="claimStudent(row)">认领</el-button>
+        </template>
       </el-table-column>
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
@@ -145,7 +160,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, Upload, Download, Refresh, Search, UploadFilled, RefreshRight, Delete } from '@element-plus/icons-vue'
+import { ArrowLeft, Upload, Download, Refresh, Search, UploadFilled, RefreshRight, Delete, Key } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
 
@@ -161,6 +176,7 @@ const loading = ref(false)
 const importing = ref(false)
 const students = ref([])
 const keyword = ref('')
+const inviteCode = ref('')
 const showImportDialog = ref(false)
 const selectedFile = ref(null)
 const parsedStudents = ref([])
@@ -189,6 +205,54 @@ async function refreshList() {
 
 function searchStudents() {
   refreshList()
+}
+
+async function fetchInviteCode() {
+  try {
+    const res = await api.get('/api/auth/invite-code')
+    if (res.data.success) inviteCode.value = res.data.invite_code
+  } catch (err) {
+    console.error('获取邀请码失败', err)
+  }
+}
+
+async function copyInviteCode() {
+  if (!inviteCode.value) return
+  try {
+    await navigator.clipboard.writeText(inviteCode.value)
+    ElMessage.success(`邀请码 ${inviteCode.value} 已复制，发给学生注册时填写`)
+  } catch {
+    ElMessage.info(`邀请码：${inviteCode.value}`)
+  }
+}
+
+async function resetInviteCode() {
+  await ElMessageBox.confirm(
+    '重置后旧邀请码立即失效，已注册学生不受影响。确定重置？',
+    '重置邀请码',
+    { type: 'warning', confirmButtonText: '重置', cancelButtonText: '取消' }
+  )
+  try {
+    const res = await api.post('/api/auth/invite-code')
+    if (res.data.success) {
+      inviteCode.value = res.data.invite_code
+      ElMessage.success(`新邀请码：${res.data.invite_code}`)
+    }
+  } catch (err) {
+    ElMessage.error(err.response?.data?.detail || '重置失败')
+  }
+}
+
+async function claimStudent(row) {
+  try {
+    const res = await api.post(`/api/auth/students/${row.id}/claim`)
+    if (res.data.success) {
+      ElMessage.success(res.data.message)
+      refreshList()
+    }
+  } catch (err) {
+    ElMessage.error(err.response?.data?.detail || '认领失败')
+  }
 }
 
 function downloadTemplate() {
@@ -312,6 +376,7 @@ async function handleDelete(row) {
 
 onMounted(() => {
   refreshList()
+  fetchInviteCode()
 })
 </script>
 

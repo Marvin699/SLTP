@@ -1,12 +1,15 @@
 """用户认证与用户管理 API
 
 接口列表：
-- POST /api/auth/register          学生自助注册
+- POST /api/auth/register          学生自助注册（可填教师邀请码）
 - POST /api/auth/login             登录（返回 JWT）
 - GET  /api/auth/me                获取当前用户信息
 - POST /api/auth/change-password   修改密码
 - POST /api/auth/batch-register    教师批量导入学生（需教师权限）
 - GET  /api/auth/students          教师查看学生列表（需教师权限）
+- POST /api/auth/students/{id}/claim  教师认领未分配学生（需教师权限）
+- GET  /api/auth/invite-code       教师查看自己的邀请码（需教师权限）
+- POST /api/auth/invite-code       教师重置邀请码（需教师权限）
 - POST /api/auth/reset-password/{user_id}  教师重置学生密码（需教师权限）
 - DELETE /api/auth/students/{user_id}  教师删除学生（需教师权限）
 """
@@ -16,6 +19,7 @@ from sqlalchemy import or_
 from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from datetime import datetime
+import secrets
 
 from app.core.deps import get_db, get_current_user, require_teacher
 from app.core.security import hash_password, verify_password, create_access_token
@@ -32,6 +36,7 @@ class RegisterRequest(BaseModel):
     password: str
     class_name: Optional[str] = None
     group_no: Optional[str] = None
+    invite_code: Optional[str] = None  # 教师邀请码（选填）
 
     @field_validator("username", "student_no", "password")
     @classmethod
@@ -77,18 +82,54 @@ class ResetPasswordRequest(BaseModel):
 # ============ 工具函数 ============
 
 def user_to_dict(user: User) -> dict:
-    return {
+    d = {
         "id": user.id,
         "username": user.username,
         "role": user.role,
         "student_no": user.student_no,
         "class_name": user.class_name,
         "group_no": user.group_no,
+        "teacher_id": user.teacher_id,
         "must_change_password": user.must_change_password,
         "avatar": user.avatar,
         "is_active": user.is_active,
         "created_at": user.created_at.strftime("%Y-%m-%d %H:%M:%S") if user.created_at else None,
     }
+    if user.role == "teacher":
+        d["invite_code"] = user.invite_code
+    return d
+
+
+def gen_invite_code(db: Session) -> str:
+    """生成不重复的 6 位邀请码（大写字母+数字，去掉易混淆字符）"""
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    while True:
+        code = "".join(secrets.choice(alphabet) for _ in range(6))
+        if not db.query(User).filter(User.invite_code == code).first():
+            return code
+
+
+def ensure_teacher_invite_code(db: Session, teacher: User) -> str:
+    """确保教师有邀请码，没有则生成"""
+    if not teacher.invite_code:
+        teacher.invite_code = gen_invite_code(db)
+        db.commit()
+    return teacher.invite_code
+
+
+def resolve_teacher_id(db: Session, invite_code: Optional[str]) -> Optional[int]:
+    """按邀请码确定学生归属教师；无码时若全平台仅一位教师则自动归属"""
+    if invite_code and invite_code.strip():
+        teacher = db.query(User).filter(
+            User.role == "teacher", User.invite_code == invite_code.strip().upper()
+        ).first()
+        if not teacher:
+            raise HTTPException(status_code=400, detail="邀请码无效，请核对后重新填写")
+        return teacher.id
+    teachers = db.query(User).filter(User.role == "teacher").all()
+    if len(teachers) == 1:
+        return teachers[0].id
+    return None
 
 
 # ============ 接口实现 ============
@@ -117,6 +158,7 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
         student_no=req.student_no,
         class_name=req.class_name,
         group_no=req.group_no,
+        teacher_id=resolve_teacher_id(db, req.invite_code),
         must_change_password=False,  # 自助注册的学生已自设密码
     )
     db.add(user)
@@ -248,6 +290,7 @@ def batch_register(
                 student_no=item.student_no,
                 class_name=item.class_name,
                 group_no=item.group_no,
+                teacher_id=teacher.id,  # 批量导入的学生归该教师
                 must_change_password=True,  # 批量导入强制改密
             )
             db.add(user)
@@ -273,8 +316,11 @@ def list_students(
     teacher: User = Depends(require_teacher),
     db: Session = Depends(get_db),
 ):
-    """教师查看学生列表（支持搜索）"""
-    query = db.query(User).filter(User.role == "student")
+    """教师查看学生列表（我的学生 + 未分配的散生，支持搜索）"""
+    query = db.query(User).filter(
+        User.role == "student",
+        or_(User.teacher_id == teacher.id, User.teacher_id.is_(None)),
+    )
 
     if keyword:
         query = query.filter(
@@ -288,11 +334,57 @@ def list_students(
         query = query.filter(User.class_name == class_name)
 
     students = query.order_by(User.created_at.desc()).all()
+
+    result = []
+    for s in students:
+        d = user_to_dict(s)
+        d["assigned"] = s.teacher_id == teacher.id  # False = 未分配，可认领
+        result.append(d)
+
     return {
         "success": True,
-        "total": len(students),
-        "students": [user_to_dict(s) for s in students],
+        "total": len(result),
+        "students": result,
     }
+
+
+@router.post("/students/{user_id}/claim")
+def claim_student(
+    user_id: int,
+    teacher: User = Depends(require_teacher),
+    db: Session = Depends(get_db),
+):
+    """教师认领未分配的学生"""
+    user = db.query(User).filter(User.id == user_id, User.role == "student").first()
+    if not user:
+        raise HTTPException(status_code=404, detail="学生不存在")
+    if user.teacher_id and user.teacher_id != teacher.id:
+        raise HTTPException(status_code=400, detail=f"该学生已归属其他教师，无法认领")
+
+    user.teacher_id = teacher.id
+    db.commit()
+    return {"success": True, "message": f"已将「{user.username}」纳入名下"}
+
+
+@router.get("/invite-code")
+def get_invite_code(
+    teacher: User = Depends(require_teacher),
+    db: Session = Depends(get_db),
+):
+    """教师查看自己的邀请码（没有则自动生成）"""
+    code = ensure_teacher_invite_code(db, teacher)
+    return {"success": True, "invite_code": code}
+
+
+@router.post("/invite-code")
+def reset_invite_code(
+    teacher: User = Depends(require_teacher),
+    db: Session = Depends(get_db),
+):
+    """教师重置邀请码（旧码立即失效）"""
+    teacher.invite_code = gen_invite_code(db)
+    db.commit()
+    return {"success": True, "invite_code": teacher.invite_code, "message": "邀请码已重置"}
 
 
 @router.post("/reset-password/{user_id}")

@@ -53,6 +53,15 @@
         </el-form-item>
         <el-form-item>
           <el-input
+            v-model="form.invite_code"
+            placeholder="教师邀请码（选填，向指导老师索取）"
+            size="large"
+            prefix-icon="Key"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-input
             v-model="form.password"
             type="password"
             placeholder="设置密码（至少 6 位）"
@@ -112,6 +121,7 @@ const form = reactive({
   student_no: '',
   class_name: '',
   group_no: '',
+  invite_code: '',
   password: '',
   confirmPassword: '',
 })
@@ -149,6 +159,7 @@ async function handleRegister() {
     password: form.password,
     class_name: form.class_name.trim() || null,
     group_no: form.group_no.trim() || null,
+    invite_code: form.invite_code.trim() || null,
   })
   loading.value = false
 
