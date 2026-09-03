@@ -1,8 +1,11 @@
 """方案报告生成服务 - 生成Word和PDF报告"""
 import json
+import logging
 import os
 import re
+import shutil
 import subprocess
+import sys
 import tempfile
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -25,12 +28,51 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 _CJK_FONT_REGISTERED = False
 _CJK_FONT_NAME = None
+_BUNDLED_FONT_INSTALLED = False
+
+logger = logging.getLogger(__name__)
+
+
+def _bundled_font_path() -> Path:
+    """项目内置中文字体（Noto Sans SC, OFL 开源协议，随代码分发）"""
+    return Path(__file__).resolve().parent.parent / 'assets' / 'fonts' / 'NotoSansSC-Regular.ttf'
+
+
+def _ensure_bundled_font_installed():
+    """
+    Linux 服务器上把内置字体装入用户字体目录并刷新字体缓存，
+    供 libreoffice（docx→PDF 转换）等系统工具使用，解决转换后中文黑块问题。
+    """
+    global _BUNDLED_FONT_INSTALLED
+    if _BUNDLED_FONT_INSTALLED or sys.platform.startswith('win'):
+        return
+    _BUNDLED_FONT_INSTALLED = True
+    bundled = _bundled_font_path()
+    if not bundled.exists():
+        return
+    target_dir = Path.home() / '.local' / 'share' / 'fonts'
+    target = target_dir / bundled.name
+    try:
+        if not target.exists():
+            target_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(bundled, target)
+            subprocess.run(['fc-cache', '-f', str(target_dir)], check=False, timeout=60,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            logger.info("已安装内置中文字体到 %s（供 libreoffice 转换使用）", target)
+    except Exception as e:
+        logger.warning("内置字体安装失败（不影响 PDF 直出）: %s", e)
+
 
 def _register_cjk_font():
     global _CJK_FONT_REGISTERED, _CJK_FONT_NAME
     if _CJK_FONT_REGISTERED:
         return _CJK_FONT_NAME
+
+    # 0) 项目内置字体（随代码分发，服务器无需安装任何字体）
+    bundled = _bundled_font_path()
+
     candidates = [
+        ('NotoSansSC', str(bundled)),
         ('NotoSansSC', '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'),
         ('NotoSansSC2', '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc'),
         ('WenQuanYi', '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc'),
@@ -52,6 +94,7 @@ def _register_cjk_font():
                 return name
             except Exception:
                 continue
+    logger.warning("未找到任何可用中文字体，PDF 中文将显示为乱码！请检查 backend/app/assets/fonts/ 是否完整")
     _CJK_FONT_REGISTERED = True
     _CJK_FONT_NAME = 'Helvetica'
     return 'Helvetica'
@@ -392,6 +435,9 @@ def convert_word_to_pdf(word_path: str, pdf_path: str = None) -> str:
 
     if not pdf_path:
         pdf_path = word_path.replace('.docx', '.pdf')
+
+    # Linux 服务器：先把内置中文字体装入用户字体目录，避免 libreoffice 转换后中文黑块
+    _ensure_bundled_font_installed()
 
     soffice = _shutil.which('libreoffice') or _shutil.which('soffice')
     if soffice:
