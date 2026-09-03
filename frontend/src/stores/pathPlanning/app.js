@@ -48,6 +48,8 @@ export const useAppStore = defineStore('app', () => {
     // 清除管理工具态，回到向导流程并定位到对应步骤
     activeAdmin.value = null
     const step = wizardSteps.find(s => s.modules.includes(id))
+    // 教学闸口：未提交前序步骤时禁止跳入后续步骤
+    if (step && stepLocked(step.id)) return false
     if (step) {
       activeStep.value = step.id
       activeModule.value = step.modules.includes(id) ? id : step.modules[0]
@@ -58,12 +60,15 @@ export const useAppStore = defineStore('app', () => {
       activeAdmin.value = id
       activeModule.value = id
     }
+    return true
   }
 
   function gotoStep(stepId) {
+    if (stepLocked(stepId)) return false
     activeAdmin.value = null
     activeStep.value = stepId
     activeModule.value = wizardSteps.find(s => s.id === stepId)?.modules[0] || 1
+    return true
   }
 
   function openAdmin(id) {
@@ -126,10 +131,57 @@ export const useAppStore = defineStore('app', () => {
     }
   })
 
+  // ─── 步骤提交闸口（提交本步后才能进入下一步；案例切换时重置） ───
+  const STEP_SUBMIT_KEY = 'sltp_step_submitted'
+  const _loadSubmits = () => {
+    try { return JSON.parse(localStorage.getItem(STEP_SUBMIT_KEY)) || {} } catch { return {} }
+  }
+  const stepSubmitted = ref({ ..._loadSubmits() })
+
+  function _persistSubmits() {
+    localStorage.setItem(STEP_SUBMIT_KEY, JSON.stringify(stepSubmitted.value))
+  }
+
+  /** 重置提交记录（切换案例时调用） */
+  function resetSubmissions() {
+    stepSubmitted.value = {}
+    _persistSubmits()
+  }
+
+  /** 步骤是否被锁定：前序步骤存在未提交的则锁 */
+  function stepLocked(stepId) {
+    const idx = wizardSteps.findIndex(s => s.id === stepId)
+    if (idx <= 0) return false
+    return wizardSteps.slice(0, idx).some(s => !stepSubmitted.value[s.id])
+  }
+
+  const STEP_BLOCK_MSGS = {
+    1: '请先配置配送中心与需求点，再提交本步',
+    2: '请先完成物资分配并选择无人机，再提交本步',
+    3: '请先完成路径规划，再提交本步',
+    4: '请先生成方案报告，再提交本步',
+  }
+
+  /** 提交当前步骤：校验通过则标记已提交并自动进入下一步 */
+  function submitStep(stepId) {
+    if (!stepStatus.value[stepId]) {
+      alert(STEP_BLOCK_MSGS[stepId] || '当前步骤尚未完成')
+      return false
+    }
+    stepSubmitted.value = { ...stepSubmitted.value, [stepId]: true }
+    _persistSubmits()
+    // 自动进入下一步
+    const idx = wizardSteps.findIndex(s => s.id === stepId)
+    const next = wizardSteps[idx + 1]
+    if (next) gotoStep(next.id)
+    return true
+  }
+
   return {
     activeModule, modules, setModule,
     wizardSteps, adminTools, activeStep, activeAdmin,
     stepStatus, gotoStep, openAdmin, backToWizard,
     disasterParams, totalDemandKg, saveDisasterParams, weatherExceeded,
+    stepSubmitted, submitStep, stepLocked, resetSubmissions,
   }
 })

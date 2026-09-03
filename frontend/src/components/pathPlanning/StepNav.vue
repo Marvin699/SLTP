@@ -11,6 +11,18 @@ const MODULE_LABELS = {
 function onSubModule(id) {
   app.setModule(id)
 }
+
+function onStep(s) {
+  if (app.stepLocked(s.id)) {
+    alert('请先提交前面的步骤，再进入这一步')
+    return
+  }
+  app.gotoStep(s.id)
+}
+
+function onSubmitStep() {
+  app.submitStep(app.activeStep)
+}
 </script>
 
 <template>
@@ -23,12 +35,14 @@ function onSubModule(id) {
           class="step"
           :class="{
             current: app.activeAdmin === null && app.activeStep === s.id,
-            done: app.stepStatus[s.id],
+            done: app.stepSubmitted[s.id],
+            locked: app.stepLocked(s.id),
           }"
-          @click="app.gotoStep(s.id)"
+          @click="onStep(s)"
         >
           <div class="step-circle">
-            <span v-if="app.stepStatus[s.id]" class="step-check">✓</span>
+            <span v-if="app.stepSubmitted[s.id]" class="step-check">✓</span>
+            <span v-else-if="app.stepLocked(s.id)" class="step-lock">🔒</span>
             <span v-else class="step-num">{{ i + 1 }}</span>
           </div>
           <div class="step-text">
@@ -40,7 +54,7 @@ function onSubModule(id) {
         <div
           v-if="i < app.wizardSteps.length - 1"
           class="step-link"
-          :class="{ lit: app.stepStatus[s.id] }"
+          :class="{ lit: app.stepSubmitted[s.id] }"
         ></div>
       </template>
     </nav>
@@ -65,6 +79,14 @@ function onSubModule(id) {
           {{ app.adminTools.find(t => t.id === app.activeAdmin)?.label }}
         </span>
       </div>
+
+      <!-- 提交本步（教学闸口） -->
+      <button
+        v-if="app.activeAdmin === null"
+        class="submit-step-btn"
+        :class="{ submitted: app.stepSubmitted[app.activeStep] }"
+        @click="onSubmitStep"
+      >{{ app.stepSubmitted[app.activeStep] ? '✓ 已提交 · 重新提交' : '提交本步' }}</button>
 
       <!-- 管理工具按钮组 -->
       <div class="admintools">
@@ -217,6 +239,41 @@ function onSubModule(id) {
   border-color: var(--teal);
   color: var(--teal);
   font-weight: 600;
+}
+
+.step-lock { font-size: 12px; }
+
+.step.locked { cursor: not-allowed; opacity: 0.55; }
+.step.locked:hover { background: transparent; }
+.step.locked .step-circle {
+  border-style: dashed;
+  box-shadow: none;
+}
+.step.locked .step-title { color: var(--text3); }
+
+/* ── 提交本步按钮 ── */
+.submit-step-btn {
+  flex-shrink: 0;
+  padding: 6px 18px;
+  border-radius: 7px;
+  border: 1px solid var(--teal);
+  background: rgba(0, 229, 255, 0.14);
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.submit-step-btn:hover {
+  background: rgba(0, 229, 255, 0.24);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+.submit-step-btn.submitted {
+  border-color: var(--green);
+  background: rgba(0, 230, 118, 0.1);
+  color: var(--green);
 }
 
 .subtab.back { border-style: dashed; }

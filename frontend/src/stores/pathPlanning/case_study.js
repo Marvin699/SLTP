@@ -153,6 +153,9 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
     const uavsStoreModule = await import('./uavs')
     const uavsStore = uavsStoreModule.useUavsStore()
     uavsStore.clearSelections()
+    // 重置向导步骤提交记录（新案例从头走流程）
+    const appStoreModule = await import('./app')
+    appStoreModule.useAppStore().resetSubmissions()
 
     // 先清除旧的物资分配
     materialsStore.clearAssignments()
