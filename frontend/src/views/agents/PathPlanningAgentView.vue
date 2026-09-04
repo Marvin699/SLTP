@@ -15,6 +15,7 @@ import Module3 from '@/views/agents/pathPlanning/Module3.vue'
 import Module4 from '@/views/agents/pathPlanning/Module4.vue'
 import Module5 from '@/views/agents/pathPlanning/Module5.vue'
 import Module6 from '@/views/agents/pathPlanning/Module6.vue'
+import Module14 from '@/views/agents/pathPlanning/Module14.vue'
 import Module7 from '@/views/agents/pathPlanning/Module7.vue'
 import Module8 from '@/views/agents/pathPlanning/Module8.vue'
 import Module11 from '@/views/agents/pathPlanning/Module11.vue'
@@ -137,6 +138,11 @@ onMounted(() => {
     <!-- 合规性核验（模块 13）- 全宽布局 -->
     <div class="main-area" v-else-if="app.activeModule === 13">
       <Module13 />
+    </div>
+
+    <!-- 虚拟仿真（模块 14）- 全宽布局 -->
+    <div class="main-area" v-else-if="app.activeModule === 14">
+      <Module14 />
     </div>
 
     <!-- 教师端方案审阅（模块 10）-->

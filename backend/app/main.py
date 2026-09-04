@@ -28,6 +28,7 @@ from app.api.routes.verification import router as verification_router
 from app.api.routes.teacher import router as teacher_router
 from app.api.routes.evaluation import router as evaluation_router
 from app.api.routes.courseware import router as courseware_router
+from app.api.routes.simulations import router as simulations_router
 
 # 确保所有模型在 create_all 之前被导入（注册到 Base.metadata）
 from app.models.assignment import MaterialAssignment  # noqa: F401
@@ -46,6 +47,7 @@ from app.models.debate import DebateSession, DebateMessage  # noqa: F401
 from app.models.verification import VerificationRecord  # noqa: F401
 from app.models.activity_log import ActivityLog  # noqa: F401
 from app.models.courseware import Courseware  # noqa: F401
+from app.models.simulation_video import SimulationVideo  # noqa: F401
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -678,6 +680,7 @@ app.include_router(verification_router)
 app.include_router(teacher_router)
 app.include_router(evaluation_router)
 app.include_router(courseware_router)
+app.include_router(simulations_router)
 
 
 @app.get("/health", tags=["系统"])

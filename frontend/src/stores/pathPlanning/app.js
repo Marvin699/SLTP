@@ -30,7 +30,7 @@ export const useAppStore = defineStore('app', () => {
     { id: 1, title: '案例与配送点', icon: '📍', desc: '加载灾情案例，配置配送中心与需求点', modules: [1] },
     { id: 2, title: '物资与选型', icon: '📦', desc: '配置物资需求，完成无人机选型', modules: [2, 3] },
     { id: 3, title: '规划与诊断', icon: '🗺', desc: '蚁群算法路径规划，诊断与合规核验', modules: [4, 9, 5, 13] },
-    { id: 4, title: '辩论与优出', icon: '🎭', desc: '反向质询辩论，生成最优方案报告', modules: [12, 6, 10] },
+    { id: 4, title: '辩论与优出', icon: '🎭', desc: '反向质询辩论，生成最优方案报告', modules: [12, 6, 10, 14] },
   ]
 
   const adminTools = [
