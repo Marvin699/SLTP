@@ -4,7 +4,7 @@
       <div v-if="modelValue" class="sim-player-mask" @click.self="close">
         <div class="sim-player-head">
           <span class="sim-title">🛰 {{ video?.title || '虚拟仿真' }}</span>
-          <span v-if="video?.group_no" class="sim-group">{{ video.group_no }} 组</span>
+          <span v-if="video?.group_no" class="sim-group">{{ video.group_no }}</span>
           <button class="sim-close-btn" title="关闭 (ESC)" @click="close">✕</button>
         </div>
 

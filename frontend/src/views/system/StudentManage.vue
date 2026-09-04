@@ -110,14 +110,14 @@
     </el-table>
 
     <!-- 设置小组对话框 -->
-    <el-dialog v-model="groupDialogVisible" title="设置小组编号" width="380px">
+    <el-dialog v-model="groupDialogVisible" title="设置学生小组" width="380px">
       <p class="group-dialog-hint">
-        为「<b>{{ groupTarget?.username }}</b>」设置小组编号（1~6 组）。学生的小组编号决定其在
-        「应急调度 → 虚拟仿真」中播放哪一组视频，需与教师在「学习资源」上传视频时标注的组号一致。
+        为「<b>{{ groupTarget?.username }}</b>」选择所属小组。学生的小组决定其在
+        「应急调度 → 虚拟仿真」中播放哪一组视频，需与教师在「学习资源」上传视频时标注的小组一致。
       </p>
-      <el-select v-model="groupForm.group_no" placeholder="选择小组编号" style="width: 100%">
+      <el-select v-model="groupForm.group_no" placeholder="选择所属小组" style="width: 100%">
         <el-option label="未分组" value="" />
-        <el-option v-for="i in 6" :key="i" :label="`第 ${i} 组`" :value="String(i)" />
+        <el-option v-for="name in GROUP_NAMES" :key="name" :label="name" :value="name" />
       </el-select>
       <template #footer>
         <el-button @click="groupDialogVisible = false">取消</el-button>
@@ -185,6 +185,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Upload, Download, Refresh, Search, UploadFilled, RefreshRight, Delete, Key, UserFilled } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
+import { GROUP_NAMES } from '@/constants/groups'
 
 const API_BASE = import.meta.env.VITE_API_BASE || ''
 const token = localStorage.getItem('sltp_token')

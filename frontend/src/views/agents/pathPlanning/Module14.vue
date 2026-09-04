@@ -82,7 +82,7 @@
               <div class="svc-play">▶</div>
               <div class="svc-info">
                 <div class="svc-title">{{ v.title }}</div>
-                <div class="svc-meta">{{ v.group_no ? `第 ${v.group_no} 组` : '通用' }} · {{ v.created_at }}</div>
+              <div class="svc-meta">{{ v.group_no || '通用' }} · {{ v.created_at }}</div>
               </div>
             </div>
           </div>
@@ -114,6 +114,7 @@ import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useUserStore } from '@/stores/user'
 import { fetchSimulationList } from '@/api/simulations'
 import SimulationVideoPlayer from '@/components/SimulationVideoPlayer.vue'
+import { normalizeGroup } from '@/constants/groups'
 
 const optStore = useOptimizerStore()
 const reportStore = useReportStore()
@@ -124,10 +125,9 @@ const userStore = useUserStore()
 const isTeacher = computed(() => userStore.role === 'teacher')
 const myGroup = computed(() => String(userStore.user?.group_no || '').trim())
 
-/** 小组编号归一化：提取数字（"第3组"/"3组"/"3" 都视为 3） */
+/** 小组标识归一化：组名（御风组…）与序号（"3"、"第3组"）统一映射后比较 */
 function normGroup(s) {
-  const m = String(s || '').match(/\d+/)
-  return m ? m[0] : String(s || '').trim()
+  return normalizeGroup(s)
 }
 
 const hasPlan = computed(() => !!optStore.result)
@@ -144,7 +144,7 @@ const myVideos = computed(() => {
 })
 
 const myGroupLabel = computed(() =>
-  myGroup.value ? `第 ${myGroup.value} 组专属仿真视频` : '教师演示模式 · 可选择任意视频'
+  myGroup.value ? `${myGroup.value} 专属仿真视频` : '教师演示模式 · 可选择任意视频'
 )
 
 function startSimulation(v) {

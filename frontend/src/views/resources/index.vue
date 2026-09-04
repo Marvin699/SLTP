@@ -27,8 +27,8 @@
 
     <!-- 提示条 -->
     <div class="hint-bar">
-      💡 教师上传虚拟仿真视频并标注小组编号（1~6 组）；学生在「应急调度」第四步 · 虚拟仿真模块中
-      确定方案后即可点击「开始仿真」观看本组对应的仿真视频。
+      💡 教师上传虚拟仿真视频并标注所属小组（御风组 / 揽星组 / 长空组 / 巡天组 / 逐日组 / 凌云组）；
+      学生在「应急调度」第四步 · 虚拟仿真模块中确定方案后即可点击「开始仿真」观看本组对应的仿真视频。
     </div>
 
     <div v-loading="loading" class="video-groups">
@@ -79,14 +79,9 @@
         <el-form-item label="视频标题">
           <el-input v-model="uploadForm.title" placeholder="默认使用文件名" maxlength="100" />
         </el-form-item>
-        <el-form-item label="小组编号">
+        <el-form-item label="所属小组">
           <el-select v-model="uploadForm.group_no" placeholder="选择该视频对应的小组" style="width: 100%">
-            <el-option label="第 1 组" value="1" />
-            <el-option label="第 2 组" value="2" />
-            <el-option label="第 3 组" value="3" />
-            <el-option label="第 4 组" value="4" />
-            <el-option label="第 5 组" value="5" />
-            <el-option label="第 6 组" value="6" />
+            <el-option v-for="name in GROUP_NAMES" :key="name" :label="name" :value="name" />
           </el-select>
         </el-form-item>
         <el-form-item label="视频文件">
@@ -121,6 +116,7 @@ import { ArrowLeft, Upload, Refresh } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { fetchSimulationList, uploadSimulationVideo, deleteSimulationVideo } from '@/api/simulations'
 import SimulationVideoPlayer from '@/components/SimulationVideoPlayer.vue'
+import { GROUP_NAMES } from '@/constants/groups'
 
 const userStore = useUserStore()
 const isTeacher = computed(() => userStore.role === 'teacher')
@@ -131,18 +127,18 @@ const loading = ref(false)
 const groupedVideos = computed(() => {
   const groups = {}
   for (const v of videos.value) {
-    const key = v.group_no ? `第 ${v.group_no} 组` : '通用'
+    const key = v.group_no || '通用'
     ;(groups[key] = groups[key] || []).push(v)
   }
-  // 按组号数字排序，"通用"排最后
+  // 按组名表顺序排序，"通用"排最后
   return Object.entries(groups)
     .map(([key, vids]) => ({ key, videos: vids }))
     .sort((a, b) => {
-      const na = a.key.match(/\d+/)?.[0]
-      const nb = b.key.match(/\d+/)?.[0]
-      if (na && nb) return na - nb
-      if (na) return -1
-      if (nb) return 1
+      const ia = GROUP_NAMES.indexOf(a.key)
+      const ib = GROUP_NAMES.indexOf(b.key)
+      if (ia >= 0 && ib >= 0) return ia - ib
+      if (ia >= 0) return -1
+      if (ib >= 0) return 1
       return a.key.localeCompare(b.key)
     })
 })
