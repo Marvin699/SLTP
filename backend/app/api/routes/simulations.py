@@ -43,7 +43,7 @@ def _to_dict(v: SimulationVideo) -> dict:
 
 
 @router.post("/upload", summary="上传仿真视频（仅教师）")
-def upload_simulation_video(
+async def upload_simulation_video(
     file: UploadFile = File(...),
     group_no: str = Form(""),
     title: Optional[str] = Form(None),
@@ -54,14 +54,29 @@ def upload_simulation_video(
     if ext not in ALLOWED_EXTS:
         raise HTTPException(status_code=400, detail=f"仅支持视频格式：{'、'.join(sorted(ALLOWED_EXTS))}")
 
-    content = file.file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="文件过大，最大支持 500MB")
-
+    # 流式写盘：避免大视频整文件读入内存压垮小内存服务器
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     stored_name = f"{uuid.uuid4().hex}{ext}"
-    with open(os.path.join(UPLOAD_DIR, stored_name), "wb") as f:
-        f.write(content)
+    stored_path = os.path.join(UPLOAD_DIR, stored_name)
+    size = 0
+    try:
+        with open(stored_path, "wb") as f:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > MAX_FILE_SIZE:
+                    raise HTTPException(status_code=400, detail="文件过大，最大支持 500MB")
+                f.write(chunk)
+    except HTTPException:
+        if os.path.exists(stored_path):
+            os.remove(stored_path)
+        raise
+    except Exception:
+        if os.path.exists(stored_path):
+            os.remove(stored_path)
+        raise
 
     record = SimulationVideo(
         title=(title or "").strip() or os.path.splitext(file.filename or "仿真视频")[0],
@@ -69,7 +84,7 @@ def upload_simulation_video(
         filename=file.filename,
         file_ext=ext,
         file_path=f"simulations/{stored_name}",
-        file_size=len(content),
+        file_size=size,
         uploader_id=current_user.id,
         uploader_name=current_user.username,
     )
