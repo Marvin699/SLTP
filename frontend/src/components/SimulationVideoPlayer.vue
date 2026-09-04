@@ -13,7 +13,7 @@
             v-if="modelValue && video"
             ref="videoEl"
             class="sim-video"
-            :src="video.url"
+            :src="video.blobUrl || video.url"
             controls
             autoplay
             playsinline

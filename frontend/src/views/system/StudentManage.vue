@@ -76,7 +76,10 @@
         <template #default="{ row }">{{ row.class_name || '未分班' }}</template>
       </el-table-column>
       <el-table-column prop="group_no" label="小组" width="120">
-        <template #default="{ row }">{{ row.group_no || '未分组' }}</template>
+        <template #default="{ row }">
+          <span v-if="row.group_no" class="group-tag">{{ row.group_no }}</span>
+          <span v-else class="group-none">未分组</span>
+        </template>
       </el-table-column>
       <el-table-column label="归属" width="110">
         <template #default="{ row }">
@@ -91,8 +94,11 @@
         </template>
       </el-table-column>
       <el-table-column prop="created_at" label="注册时间" width="180" />
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="260" fixed="right">
         <template #default="{ row }">
+          <el-button size="small" class="action-btn group-btn" @click="openGroupDialog(row)">
+            <el-icon><UserFilled /></el-icon> 设组
+          </el-button>
           <el-button size="small" class="action-btn reset-btn" @click="handleReset(row)">
             <el-icon><RefreshRight /></el-icon> 重置密码
           </el-button>
@@ -102,6 +108,22 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 设置小组对话框 -->
+    <el-dialog v-model="groupDialogVisible" title="设置小组编号" width="380px">
+      <p class="group-dialog-hint">
+        为「<b>{{ groupTarget?.username }}</b>」设置小组编号（1~6 组）。学生的小组编号决定其在
+        「应急调度 → 虚拟仿真」中播放哪一组视频，需与教师在「学习资源」上传视频时标注的组号一致。
+      </p>
+      <el-select v-model="groupForm.group_no" placeholder="选择小组编号" style="width: 100%">
+        <el-option label="未分组" value="" />
+        <el-option v-for="i in 6" :key="i" :label="`第 ${i} 组`" :value="String(i)" />
+      </el-select>
+      <template #footer>
+        <el-button @click="groupDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="groupSaving" @click="submitGroup">保存</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 批量导入对话框 -->
     <el-dialog v-model="showImportDialog" title="批量导入学生" width="640px">
@@ -160,7 +182,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, Upload, Download, Refresh, Search, UploadFilled, RefreshRight, Delete, Key } from '@element-plus/icons-vue'
+import { ArrowLeft, Upload, Download, Refresh, Search, UploadFilled, RefreshRight, Delete, Key, UserFilled } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
 
@@ -181,6 +203,36 @@ const showImportDialog = ref(false)
 const selectedFile = ref(null)
 const parsedStudents = ref([])
 const uploadRef = ref(null)
+
+// 设置小组
+const groupDialogVisible = ref(false)
+const groupSaving = ref(false)
+const groupTarget = ref(null)
+const groupForm = ref({ group_no: '' })
+
+function openGroupDialog(row) {
+  groupTarget.value = row
+  groupForm.value.group_no = row.group_no || ''
+  groupDialogVisible.value = true
+}
+
+async function submitGroup() {
+  groupSaving.value = true
+  try {
+    const res = await api.patch(
+      `/api/auth/students/${groupTarget.value.id}/group?group_no=${encodeURIComponent(groupForm.value.group_no || '')}`
+    )
+    if (res.data.success) {
+      ElMessage.success(res.data.message)
+      groupDialogVisible.value = false
+      refreshList()
+    }
+  } catch (err) {
+    ElMessage.error(err.response?.data?.detail || '设置小组失败')
+  } finally {
+    groupSaving.value = false
+  }
+}
 
 const todayNew = computed(() => {
   const today = new Date().toISOString().slice(0, 10)
@@ -540,4 +592,26 @@ onMounted(() => {
   font-size: 12px;
   margin: 8px 0 0;
 }
+
+.group-tag {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.08);
+  color: #22d3ee;
+  font-size: 12px;
+}
+.group-none { color: #7a8699; font-size: 12px; }
+.group-btn {
+  border-color: rgba(0, 229, 255, 0.35);
+  color: #22d3ee;
+}
+.group-dialog-hint {
+  font-size: 13px;
+  color: #a8b3c4;
+  line-height: 1.7;
+  margin: 0 0 14px;
+}
+.group-dialog-hint b { color: #22d3ee; }
 </style>

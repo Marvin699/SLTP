@@ -366,6 +366,24 @@ def claim_student(
     return {"success": True, "message": f"已将「{user.username}」纳入名下"}
 
 
+@router.patch("/students/{user_id}/group")
+def set_student_group(
+    user_id: int,
+    group_no: Optional[str] = None,
+    teacher: User = Depends(require_teacher),
+    db: Session = Depends(get_db),
+):
+    """教师设置学生的小组编号（用于虚拟仿真视频按组匹配，传空串清除）"""
+    user = db.query(User).filter(User.id == user_id, User.role == "student").first()
+    if not user:
+        raise HTTPException(status_code=404, detail="学生不存在")
+
+    user.group_no = (group_no or "").strip() or None
+    db.commit()
+    label = f"第 {user.group_no} 组" if user.group_no else "未分组"
+    return {"success": True, "message": f"已将「{user.username}」设为 {label}", "group_no": user.group_no}
+
+
 @router.get("/invite-code")
 def get_invite_code(
     teacher: User = Depends(require_teacher),

@@ -62,6 +62,10 @@
           :title="hasPlan ? '全屏播放本组仿真视频' : '请先完成路径规划确定方案'"
           @click="startSimulation(myVideos[0])"
         >▶ 开始仿真</button>
+        <p class="preload-status" v-if="myVideos[0]">
+          <template v-if="myVideos[0].blobUrl">✓ 视频已缓存到本机，播放不占服务器带宽</template>
+          <template v-else-if="myVideos[0].preloading">⬇ 正在预加载本组视频… {{ preloadProgress }}%</template>
+        </p>
       </div>
 
       <!-- 没有本组视频：教师显示全部可选 / 学生提示 -->
@@ -153,10 +157,43 @@ function startSimulation(v) {
   playerVisible.value = true
 }
 
+/* ─── 预加载：进页面即把本组视频后台下载为 Blob，点播放时零网络请求 ─── */
+const preloadProgress = ref(0)
+
+async function preloadVideo(v) {
+  if (!v || v.blobUrl || v.preloading) return
+  v.preloading = true
+  preloadProgress.value = 0
+  try {
+    const res = await fetch(v.url)
+    if (!res.ok) throw new Error(res.status)
+    const total = Number(res.headers.get('content-length')) || v.file_size || 0
+    const reader = res.body.getReader()
+    const chunks = []
+    let received = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+      received += value.length
+      if (total) preloadProgress.value = Math.min(99, Math.round((received / total) * 100))
+    }
+    const blob = new Blob(chunks, { type: 'video/mp4' })
+    v.blobUrl = URL.createObjectURL(blob)
+    preloadProgress.value = 100
+  } catch (err) {
+    console.warn('[Module14] 预加载失败，将回退为在线流式播放', err)
+  } finally {
+    v.preloading = false
+  }
+}
+
 onMounted(async () => {
   try {
     const res = await fetchSimulationList()
     videos.value = res.data || []
+    // 只预加载本组的第一个视频：6 组各自缓存各自的，带宽错峰
+    preloadVideo(myVideos.value[0])
   } catch (err) {
     console.warn('[Module14] 仿真视频列表加载失败', err)
   }
@@ -289,6 +326,12 @@ onMounted(async () => {
   opacity: 0.45;
   cursor: not-allowed;
 }
+.preload-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text3);
+}
+.preload-status { color: var(--teal); opacity: 0.85; }
 
 /* 无视频空态 */
 .no-video { padding: 4px 0; }
