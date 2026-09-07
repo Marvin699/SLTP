@@ -158,7 +158,7 @@ function handleLogout() {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0 clamp(16px, 2vw, 32px);
-  height: 60px;
+  height: 66px;
   background: rgba(4, 9, 18, 0.45);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -188,14 +188,14 @@ function handleLogout() {
 
 .nav-menu {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   justify-self: center;
 }
 
 /* 斜切导航：平行四边形 tab，内容反向倾斜保持文字水平 */
 .nav-item {
-  padding: 7px 14px;
-  font-size: 13.5px;
+  padding: 9px 18px;
+  font-size: 16px;
   color: var(--brand-text-dim, rgba(242, 246, 250, 0.55));
   text-decoration: none;
   white-space: nowrap;
@@ -381,11 +381,11 @@ function handleLogout() {
 
 @media (max-width: 1024px) {
   .nav-menu {
-    gap: 2px;
+    gap: 4px;
   }
   .nav-item {
-    padding: 6px 10px;
-    font-size: 13px;
+    padding: 7px 12px;
+    font-size: 14.5px;
   }
   .logo-text {
     font-size: 14px;

@@ -326,10 +326,10 @@ function toggleConsole() {
   }
 }
 
-// 当前用户欢迎语
+// 当前用户欢迎语（教师端按甲方要求显示平台名；学生端保留个性化欢迎）
 const welcomeText = computed(() => {
   if (userStore.role === 'teacher') {
-    return `${userStore.username}老师，欢迎回到教学平台`
+    return '智慧低空应急运输平台'
   }
   return `${userStore.username}同学，欢迎开始今天的学习`
 })
@@ -968,8 +968,8 @@ onMounted(() => {
 .agents-section {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(10px, 1.2vw, 16px);
-  max-width: 960px;
+  gap: clamp(12px, 1.4vw, 20px);
+  max-width: 1200px;
   width: 100%;
   margin-left: auto;
   margin-right: auto;
@@ -983,13 +983,13 @@ onMounted(() => {
 .agents-section .agent-card:nth-child(3) { animation-delay: 0.16s; }
 
 .agent-card {
-  border-radius: 20px;
-  padding: clamp(12px, 1vw, 16px);
+  border-radius: 22px;
+  padding: clamp(16px, 1.3vw, 22px);
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  min-height: clamp(96px, 6.5vw, 118px);
+  min-height: clamp(120px, 8vw, 150px);
 }
 
 .agent-card::before {
@@ -1047,7 +1047,7 @@ onMounted(() => {
 }
 
 .card-right {
-  width: 160px;
+  width: 190px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1055,14 +1055,14 @@ onMounted(() => {
 
 /* 标题样式 */
 .agent-title {
-  font-size: clamp(16px, 1.4vw, 22px);
+  font-size: clamp(20px, 1.7vw, 27px);
   font-weight: 700;
   color: #fff;
   margin-bottom: 8px;
 }
 
 .agent-subtitle {
-  font-size: clamp(13px, 1vw, 15px);
+  font-size: clamp(14px, 1.15vw, 17px);
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: clamp(14px, 1.2vw, 20px);
 }
