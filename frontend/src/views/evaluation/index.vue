@@ -141,7 +141,7 @@ const TASK_SECTION_MAP = {
   8: [
     { id: 'section1', name: '环节一：运输方案汇报与知识深化', short_name: '方案汇报', time_range: '0-10min', description: '小组汇报运输方案，教师/企业导师提问，AI词云与风险分析', dimensions: ['方案完整性', '表达展示', '操作规范', '团队配合'] },
     { id: 'section2', name: '环节二：应急推演与工单处置', short_name: '应急推演', time_range: '10-20min', description: '突发应急场景推演，各组提交工单三要素，AI生成综合质量分', dimensions: ['决策速度', '方案可行性', '风险评估', '团队配合'] },
-    { id: 'section3', name: '环节三：飞行演练与裁判评分', short_name: '飞行演练', time_range: '21-36min', description: '限时飞行前检查、双电转单电操作、裁判六维能力评分', dimensions: ['安全性', '操作规范性', '用时效率', '团队配合'] },
+    { id: 'section3', name: '环节三：飞行演练与裁判评分', short_name: '飞行演练', time_range: '21-36min', description: '限时飞行前检查、双电转单电操作、裁判六维能力评分', dimensions: ['教师评分', '企业导师评分', 'Ai评分', '学生评分'] },
   ],
 }
 
