@@ -64,21 +64,21 @@
 
         <main>
           <!-- 模块1 项目评价 -->
-          <section class="card" id="c-project" :class="{ expanded: expandedCard === 'c-project' }" @click="toggleExpand('c-project')">
+          <section class="card" id="c-project" :class="{ expanded: expandedCard === 'c-project' }" @dblclick="toggleExpand('c-project')">
             <div class="card-head"><h2>项目评价 · 项目达成度</h2><span class="tag">总结性</span>
               <span class="hd-num">均值 <b>{{ projAvgText }}</b>%</span></div>
             <div class="chart" ref="chProjectEl"></div>
           </section>
 
           <!-- 模块5 过程评价·课堂实时 -->
-          <section class="card" id="c-stage" :class="{ expanded: expandedCard === 'c-stage' }" @click="toggleExpand('c-stage')">
+          <section class="card" id="c-stage" :class="{ expanded: expandedCard === 'c-stage' }" @dblclick="toggleExpand('c-stage')">
             <div class="card-head"><h2>过程评价 · 课堂实时</h2><span class="tag">三阶递进</span>
               <span class="hd-num">课前推送 · 课中采集 · 课后回炉</span></div>
             <div class="chart" ref="chStageEl"></div>
           </section>
 
           <!-- 模块3 个人画像 -->
-          <section class="card" id="c-student" :class="{ expanded: expandedCard === 'c-student' }" @click="toggleExpand('c-student')">
+          <section class="card" id="c-student" :class="{ expanded: expandedCard === 'c-student' }" @dblclick="toggleExpand('c-student')">
             <div class="card-head"><h2>个人画像 · 五维能力雷达</h2><span class="tag">形成性</span>
               <span class="hd-num">{{ stuScopeText }}</span></div>
             <div class="stu-wrap">
@@ -88,27 +88,27 @@
           </section>
 
           <!-- 模块2 任务评价 -->
-          <section class="card" id="c-task" :class="{ expanded: expandedCard === 'c-task' }" @click="toggleExpand('c-task')">
+          <section class="card" id="c-task" :class="{ expanded: expandedCard === 'c-task' }" @dblclick="toggleExpand('c-task')">
             <div class="card-head"><h2>任务评价 · 13项典型任务</h2><span class="tag">AI评分</span>
               <span class="hd-num">颜色=难度系数</span></div>
             <div class="chart" ref="chTaskEl"></div>
           </section>
 
           <!-- 桑基图 -->
-          <section class="card" id="c-sankey" :class="{ expanded: expandedCard === 'c-sankey' }" @click="toggleExpand('c-sankey')">
+          <section class="card" id="c-sankey" :class="{ expanded: expandedCard === 'c-sankey' }" @dblclick="toggleExpand('c-sankey')">
             <div class="card-head"><h2>项目 → 任务 → 能力 流量分布</h2><span class="tag">桑基图</span></div>
             <div class="chart" ref="chSankeyEl"></div>
           </section>
 
           <!-- 模块4 行为轨迹热力图 -->
-          <section class="card" id="c-proc" :class="{ expanded: expandedCard === 'c-proc' }" @click="toggleExpand('c-proc')">
+          <section class="card" id="c-proc" :class="{ expanded: expandedCard === 'c-proc' }" @dblclick="toggleExpand('c-proc')">
             <div class="card-head"><h2>项目过程评价 · 行为轨迹</h2>
               <button v-for="(m, i) in procMetrics" :key="m" class="m-btn" :class="{ on: curMetric === i }" @click.stop="curMetric = i">{{ mBtnNames[i] }}</button></div>
             <div class="chart" ref="chProcEl"></div>
           </section>
 
           <!-- 证书通过率 -->
-          <section class="card" id="c-cert" :class="{ expanded: expandedCard === 'c-cert' }" @click="toggleExpand('c-cert')">
+          <section class="card" id="c-cert" :class="{ expanded: expandedCard === 'c-cert' }" @dblclick="toggleExpand('c-cert')">
             <div class="card-head"><h2>证书通过率</h2><span class="tag">CAAC</span></div>
             <div class="mini-wrap">
               <div class="chart" ref="chCertEl"></div>
@@ -121,7 +121,7 @@
           </section>
 
           <!-- AI智能体服务量 -->
-          <section class="card" id="c-ai" :class="{ expanded: expandedCard === 'c-ai' }" @click="toggleExpand('c-ai')">
+          <section class="card" id="c-ai" :class="{ expanded: expandedCard === 'c-ai' }" @dblclick="toggleExpand('c-ai')">
             <div class="card-head"><h2>AI智能体服务量</h2><span class="tag warn">四元主体</span></div>
             <div class="mini-wrap">
               <div class="chart" ref="chAiEl"></div>
@@ -135,13 +135,12 @@
           </section>
 
           <!-- 模块6 增值评价 -->
-          <section class="card" id="c-delta" :class="{ expanded: expandedCard === 'c-delta' }" @click="toggleExpand('c-delta')">
+          <section class="card" id="c-delta" :class="{ expanded: expandedCard === 'c-delta' }" @dblclick="toggleExpand('c-delta')">
             <div class="card-head"><h2>增值评价 · 进步增量</h2><span class="tag warn">纵向对比</span>
               <span class="hd-num">不横向排名 · 只看个人纵向进步</span></div>
             <div class="delta-wrap">
               <div class="chart" ref="chDeltaEl"></div>
               <div class="delta-side">
-                <div class="slogan">以起点为基线，以增量论成长</div>
                 <div class="delta-rows">
                   <div v-for="(d, i) in dimNames" :key="d" class="d-row">
                     <span class="dn">{{ d }}</span>
@@ -155,8 +154,10 @@
           </section>
         </main>
 
-        <!-- 放大遮罩：点击空白处还原 -->
-        <div v-if="expandedCard" class="exp-mask" @click="expandedCard = ''; nextTick(resizeAll)"></div>
+        <!-- 放大遮罩：单击空白处 / 右上角按钮 / ESC 退出 -->
+        <div v-if="expandedCard" class="exp-mask" @click="closeExpand">
+          <button class="exp-close" @click.stop="closeExpand">✕ 退出放大（ESC）</button>
+        </div>
       </div>
     </div>
   </div>
@@ -265,6 +266,10 @@ const expandedCard = ref('')     // 当前放大显示的卡片 id
 
 function toggleExpand(id) {
   expandedCard.value = expandedCard.value === id ? '' : id
+  nextTick(resizeAll)
+}
+function closeExpand() {
+  expandedCard.value = ''
   nextTick(resizeAll)
 }
 function onKeydown(e) {
@@ -405,7 +410,8 @@ function renderStuRadar() {
   const label = stuScopeText.value
   const classAvg = avgDims(students, 'now')
   chStu.setOption(Object.assign({}, RADAR_BASE, {
-    legend: { top: 0, right: 0, textStyle: { color: '#9FB3D9', fontSize: 10 }, itemWidth: 12, itemHeight: 8 },
+    legend: { bottom: 0, right: 0, textStyle: { color: '#9FB3D9', fontSize: 10 }, itemWidth: 12, itemHeight: 8 },
+    radar: Object.assign({}, RADAR_BASE.radar, { radius: '60%', center: ['50%', '50%'] }),
     series: [{ type: 'radar', symbolSize: 4,
       data: [
         { value: dimsArr(nowAvg), name: label,
@@ -479,9 +485,9 @@ function renderDelta() {
   const act = activeStudents()
   const sAvg = avgDims(act, 'start'), nAvg = avgDims(act, 'now')
   chDelta.setOption(Object.assign({}, RADAR_BASE, {
-    radar: Object.assign({}, RADAR_BASE.radar, { radius: '70%', center: ['50%', '54%'],
+    radar: Object.assign({}, RADAR_BASE.radar, { radius: '60%', center: ['50%', '48%'],
       axisName: { color: '#9FB3D9', fontSize: 10 } }),
-    legend: { top: 0, left: 0, textStyle: { color: '#9FB3D9', fontSize: 10 }, itemWidth: 12, itemHeight: 8 },
+    legend: { bottom: 0, left: 0, textStyle: { color: '#9FB3D9', fontSize: 10 }, itemWidth: 12, itemHeight: 8 },
     series: [{ type: 'radar', symbolSize: 3,
       data: [
         { value: dimsArr(sAvg), name: '起点画像',
@@ -837,8 +843,8 @@ main {
 .card.expanded {
   position: fixed;
   left: 50%; top: 50%;
-  width: min(94vw, 1720px);
-  height: min(88vh, 940px);
+  width: min(68vw, 1180px);
+  height: min(72vh, 760px);
   transform: translate(-50%, -50%);
   z-index: 1000;
   background: rgba(10, 28, 60, .97);
@@ -853,6 +859,19 @@ main {
   backdrop-filter: blur(3px);
   cursor: pointer;
 }
+.exp-close {
+  position: absolute;
+  top: 22px; right: 28px;
+  padding: 6px 14px;
+  font-size: 13px; letter-spacing: 1px;
+  color: #EAF6FF;
+  background: rgba(0, 212, 255, .12);
+  border: 1px solid rgba(0,212,255,.55);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.exp-close:hover { background: #00D4FF; color: #04122B; box-shadow: 0 0 14px rgba(0,212,255,.6); }
 .card-head { flex: none; height: clamp(20px, 2.8vh, 26px); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .card-head::before {
   content: '';
@@ -895,13 +914,6 @@ main {
 .delta-wrap { flex: 1; min-height: 0; display: flex; }
 .delta-wrap .chart { width: 56%; min-height: 0; }
 .delta-side { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 8px; }
-.slogan {
-  font-size: clamp(10px, 0.75vw, 15px); color: #FFB627; letter-spacing: 1px; font-weight: 700;
-  text-shadow: 0 0 10px rgba(255,182,39,.45); margin-bottom: 6px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.slogan::before { content: '「'; color: #00D4FF; }
-.slogan::after { content: '」'; color: #00D4FF; }
 .d-row { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #B9CBE8; margin: 3px 0; }
 .d-row .dn { width: 56px; flex: none; }
 .d-row .bar { flex: 1; height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
