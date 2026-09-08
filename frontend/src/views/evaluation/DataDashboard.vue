@@ -1,7 +1,7 @@
 <template>
   <div class="dash-page">
-    <!-- 1920×1080 舞台，宽高双向拉伸铺满窗口（高度扣除顶栏） -->
-    <div class="stage" :style="{ transform: 'scale(' + scaleX + ', ' + scaleY + ')' }">
+    <!-- 流式自适应舞台：栅格/图表/弹性字号跟随窗口尺寸伸缩 -->
+    <div class="stage">
 
       <!-- ===== 左侧学员名单面板（借鉴智慧评价系统，可收起） ===== -->
       <aside class="roster" :class="{ closed: !rosterOpen }">
@@ -258,8 +258,6 @@ const procMetrics = ['提交次数', 'AI询问次数', '协作发言', '风险�
 const procBtnNames = ['提交', 'AI询问', '协作发言', '风险预警']
 const procMax = [8, 15, 12, 4]
 const rosterOpen = ref(true)
-const scaleX = ref(1)
-const scaleY = ref(1)
 const clockText = ref('--:--:--')
 
 const mBtnNames = procBtnNames
@@ -560,11 +558,7 @@ function resizeAll() {
     .forEach(c => c && c.resize())
 }
 
-/* ================= 舞台缩放 + 时钟 ================= */
-function fit() {
-  scaleX.value = window.innerWidth / 1920
-  scaleY.value = (window.innerHeight - 66) / 1080
-}
+/* ================= 时钟 ================= */
 let clockTimer = null
 function tick() {
   const d = new Date(), p = n => String(n).padStart(2, '0')
@@ -575,10 +569,9 @@ function tick() {
 watch(curGroup, renderAll)
 watch(selected, () => { renderStuRadar(); renderDelta() })
 watch(curMetric, renderProc)
-function onResize() { fit(); resizeAll() }
+function onResize() { resizeAll() }
 
 onMounted(() => {
-  fit()
   tick()
   clockTimer = setInterval(tick, 1000)
   chProject = echarts.init(chProjectEl.value)
@@ -603,23 +596,21 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ===== 全局：深蓝底 + 科技 HUD 风 ===== */
+/* ===== 全局：深蓝底 + 科技 HUD 风（流式自适应） ===== */
 .dash-page {
-  width: 100%;
-  height: calc(100vh - 66px);
+  /* 抵消 MainLayout 内容区内边距，大屏贴边铺满 */
+  --ml-pad: clamp(12px, 1.5vw, 24px);
+  margin: calc(-1 * var(--ml-pad));
+  width: calc(100% + 2 * var(--ml-pad));
+  height: calc(100vh - 66px + 2 * var(--ml-pad));
   overflow: hidden;
   background: #050D21;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .stage {
-  width: 1920px;
-  height: 1080px;
-  flex: none;
-  transform-origin: center center;
-  padding: 12px 16px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 14px;
   display: flex;
   gap: 10px;
   position: relative;
@@ -640,7 +631,8 @@ onBeforeUnmount(() => {
 
 /* ===== 左侧学员名单面板 ===== */
 .roster {
-  width: 236px;
+  width: clamp(200px, 12.5vw, 240px);
+  min-width: 200px;
   flex: none;
   position: relative;
   z-index: 2;
@@ -655,6 +647,7 @@ onBeforeUnmount(() => {
 }
 .roster.closed {
   width: 0;
+  min-width: 0;
   opacity: 0;
   padding: 0;
   border-width: 0;
@@ -762,7 +755,7 @@ onBeforeUnmount(() => {
 }
 
 header {
-  height: 64px;
+  height: clamp(54px, 5.4vh, 68px);
   flex: none;
   display: flex;
   align-items: center;
@@ -773,27 +766,27 @@ header {
   border-radius: 4px;
   box-shadow: 0 0 14px rgba(0,212,255,.15), inset 0 0 24px rgba(0,212,255,.05);
 }
-header .h-left { width: 430px; font-size: 12px; color: #7FA8E0; line-height: 1.6; }
+header .h-left { width: clamp(300px, 23vw, 440px); font-size: clamp(10px, 0.63vw, 12px); color: #7FA8E0; line-height: 1.6; }
 header .h-left b { color: #00D4FF; }
 header .h-title { text-align: center; }
 header .h-title h1 {
-  font-size: 26px; letter-spacing: 6px; color: #EAF6FF; font-weight: 700;
+  font-size: clamp(18px, 1.35vw, 27px); letter-spacing: 6px; color: #EAF6FF; font-weight: 700;
   text-shadow: 0 0 12px rgba(0,212,255,.7), 0 0 32px rgba(0,212,255,.35);
 }
-header .h-title .sub { font-size: 12px; color: #00D4FF; letter-spacing: 3px; margin-top: 3px; }
-header .h-right { width: 430px; text-align: right; }
+header .h-title .sub { font-size: clamp(10px, 0.63vw, 13px); color: #00D4FF; letter-spacing: 3px; margin-top: 3px; }
+header .h-right { width: clamp(300px, 23vw, 440px); text-align: right; }
 .clock {
-  font-size: 24px; color: #FFB627;
+  font-size: clamp(16px, 1.25vw, 25px); color: #FFB627;
   font-family: "Consolas", "Courier New", monospace;
   text-shadow: 0 0 10px rgba(255,182,39,.5); letter-spacing: 2px;
 }
-header .h-right .date { font-size: 11px; color: #7FA8E0; margin-top: 2px; }
+header .h-right .date { font-size: clamp(9px, 0.58vw, 11px); color: #7FA8E0; margin-top: 2px; }
 
-.tabs { height: 40px; flex: none; display: flex; align-items: center; gap: 8px; }
-.tabs .t-label { font-size: 13px; color: #7FA8E0; margin: 0 6px 0 2px; letter-spacing: 1px; }
+.tabs { height: clamp(34px, 4.2vh, 42px); flex: none; display: flex; align-items: center; gap: 8px; }
+.tabs .t-label { font-size: clamp(11px, 0.68vw, 13px); color: #7FA8E0; margin: 0 6px 0 2px; letter-spacing: 1px; }
 .tabs .t-label b { color: #FFB627; }
 .tab {
-  height: 30px; padding: 0 16px; line-height: 28px; font-size: 13px;
+  height: clamp(26px, 3.2vh, 31px); padding: 0 clamp(10px, 0.85vw, 17px); line-height: 1.6; font-size: clamp(11px, 0.68vw, 13.5px);
   color: #9FB3D9; cursor: pointer;
   border: 1px solid rgba(0,212,255,.30); border-radius: 3px;
   background: rgba(0,212,255,.05);
@@ -804,7 +797,7 @@ header .h-right .date { font-size: 11px; color: #7FA8E0; margin-top: 2px; }
   color: #04122B; background: linear-gradient(180deg, #00D4FF, #0FA8D8);
   font-weight: 700; box-shadow: 0 0 14px rgba(0,212,255,.6);
 }
-.tabs .t-note { margin-left: auto; font-size: 11px; color: #5E7BA8; letter-spacing: 1px; }
+.tabs .t-note { margin-left: auto; font-size: clamp(9px, 0.58vw, 11px); color: #5E7BA8; letter-spacing: 1px; white-space: nowrap; }
 
 main {
   flex: 1;
@@ -822,14 +815,14 @@ main {
   display: flex; flex-direction: column;
   padding: 8px 10px; min-height: 0; min-width: 0; position: relative;
 }
-.card-head { flex: none; height: 24px; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.card-head { flex: none; height: clamp(20px, 2.8vh, 26px); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .card-head::before {
   content: '';
   width: 4px; height: 14px;
   background: linear-gradient(180deg, #00D4FF, #0FA8D8);
   border-radius: 1px; box-shadow: 0 0 6px rgba(0,212,255,.8);
 }
-.card-head h2 { font-size: 14px; color: #EAF4FF; letter-spacing: 1px; font-weight: 600; white-space: nowrap; }
+.card-head h2 { font-size: clamp(12px, 0.75vw, 14.5px); color: #EAF4FF; letter-spacing: 1px; font-weight: 600; white-space: nowrap; }
 .card-head .tag {
   font-size: 10px; color: #0A1F44; background: #00D4FF;
   border-radius: 2px; padding: 1px 6px; letter-spacing: 1px; font-weight: 700;
@@ -865,7 +858,7 @@ main {
 .delta-wrap .chart { width: 56%; min-height: 0; }
 .delta-side { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 8px; }
 .slogan {
-  font-size: 15px; color: #FFB627; letter-spacing: 2px; font-weight: 700;
+  font-size: clamp(12px, 0.82vw, 16px); color: #FFB627; letter-spacing: 2px; font-weight: 700;
   text-shadow: 0 0 10px rgba(255,182,39,.45); margin-bottom: 8px;
 }
 .slogan::before { content: '「'; color: #00D4FF; }
@@ -875,15 +868,15 @@ main {
 .d-row .bar { flex: 1; height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
 .d-row .bar i { display: block; height: 100%; background: linear-gradient(90deg, #0FA8D8, #4ADE80); border-radius: 3px; }
 .d-row .dv { width: 34px; flex: none; text-align: right; color: #4ADE80; font-family: Consolas, monospace; font-weight: 700; }
-.d-avg { margin-top: 8px; font-size: 12px; color: #7FA8E0; }
-.d-avg b { color: #4ADE80; font-size: 24px; font-family: Consolas, monospace; text-shadow: 0 0 10px rgba(74,222,128,.5); }
+.d-avg { margin-top: 8px; font-size: clamp(10px, 0.63vw, 12px); color: #7FA8E0; }
+.d-avg b { color: #4ADE80; font-size: clamp(18px, 1.25vw, 25px); font-family: Consolas, monospace; text-shadow: 0 0 10px rgba(74,222,128,.5); }
 .d-note { font-size: 10px; color: #5E7BA8; margin-top: 4px; }
 
 .mini-wrap { flex: 1; min-height: 0; display: flex; }
 .mini-wrap .chart { flex: 1; }
 .mini-side { width: 44%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
 .big-num {
-  font-size: 34px; font-weight: 800; font-family: Consolas, monospace; color: #00D4FF;
+  font-size: clamp(24px, 1.8vw, 36px); font-weight: 800; font-family: Consolas, monospace; color: #00D4FF;
   text-shadow: 0 0 14px rgba(0,212,255,.6); line-height: 1;
 }
 .big-num.green { color: #4ADE80; text-shadow: 0 0 14px rgba(74,222,128,.6); }
