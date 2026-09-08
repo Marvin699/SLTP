@@ -210,7 +210,7 @@ ROSTER.forEach(function (rg) {
   })
 })
 // 成长阶梯：按当前均分排名赋级（30人 → 6能手 / 18工匠 / 6学徒）
-(function () {
+;(function () {
   const order = students.slice().sort(function (a, b) { return avgOf(b.now) - avgOf(a.now) })
   order.forEach(function (s, idx) { s.level = idx < 6 ? '能手' : (idx < 24 ? '工匠' : '学徒') })
   // 证书通过率 90% ≈ 27/30：固定 3 人未通过
