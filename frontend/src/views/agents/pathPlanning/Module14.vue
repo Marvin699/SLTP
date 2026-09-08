@@ -35,65 +35,67 @@
       </div>
     </div>
 
-    <!-- ─── 仿真视频区 ─── -->
+    <!-- ─── 仿真演练区 ─── -->
     <div class="sim-panel video-panel">
       <div class="panel-head">
-        <span class="panel-title">🎬 虚拟仿真</span>
+        <span class="panel-title">🛰 虚拟仿真 · 演练平台</span>
         <span class="panel-sub">{{ myGroupLabel }}</span>
       </div>
 
-      <!-- 本组视频 -->
+      <!-- 本组仿真场景 -->
       <div v-if="myVideos.length > 0" class="my-video-area">
         <div
-          v-for="v in myVideos"
+          v-for="(v, i) in myVideos"
           :key="v.id"
-          class="sim-video-card"
+          class="scene-card"
           @click="startSimulation(v)"
         >
-          <div class="svc-play">▶</div>
-          <div class="svc-info">
-            <div class="svc-title">{{ v.title }}</div>
-            <div class="svc-meta">{{ v.uploader_name || '教师' }} · {{ v.created_at }}</div>
+          <div class="scene-badge">SCENE-{{ String(i + 1).padStart(2, '0') }}</div>
+          <div class="scene-info">
+            <div class="scene-title">{{ v.title }}</div>
+            <div class="scene-meta">应急运输演练场景 · 资源就绪</div>
           </div>
+          <div class="scene-enter">进入 →</div>
         </div>
         <button
           class="start-sim-btn"
           :disabled="!hasPlan"
-          :title="hasPlan ? '全屏播放本组仿真视频' : '请先完成路径规划确定方案'"
+          :title="hasPlan ? '接入仿真引擎，进入本组演练场景' : '请先完成路径规划确定方案'"
           @click="startSimulation(myVideos[0])"
-        >▶ 开始仿真</button>
+        >⏻ 启动仿真</button>
         <p class="preload-status" v-if="myVideos[0]">
-          <template v-if="myVideos[0].blobUrl">✓ 视频已缓存到本机，播放不占服务器带宽</template>
-          <template v-else-if="myVideos[0].preloading">⬇ 正在预加载本组视频… {{ preloadProgress }}%</template>
+          <template v-if="myVideos[0].blobUrl">✓ 仿真场景资源已就绪 · 可随时接入引擎</template>
+          <template v-else-if="myVideos[0].preloading">⬇ 正在装载场景资源… {{ preloadProgress }}%</template>
         </p>
       </div>
 
-      <!-- 没有本组视频：教师显示全部可选 / 学生提示 -->
+      <!-- 没有本组场景：教师显示全部可选 / 学生提示 -->
       <div v-else class="no-video">
         <template v-if="videos.length > 0">
-          <p class="nv-hint">{{ isTeacher ? '当前账号没有小组编号，可选择任意视频演示：' : '未找到你所在小组的视频，可从下方选择（或联系教师确认小组编号）：' }}</p>
+          <p class="nv-hint">{{ isTeacher ? '当前账号没有小组编号，可接入任意场景演示：' : '未找到你所在小组的仿真场景，可从下方接入（或联系教师确认小组编号）：' }}</p>
           <div class="all-videos">
             <div
-              v-for="v in videos"
+              v-for="(v, i) in videos"
               :key="v.id"
-              class="sim-video-card"
+              class="scene-card"
               @click="startSimulation(v)"
             >
-              <div class="svc-play">▶</div>
-              <div class="svc-info">
-                <div class="svc-title">{{ v.title }}</div>
-              <div class="svc-meta">{{ v.group_no || '通用' }} · {{ v.created_at }}</div>
+              <div class="scene-badge">SCENE-{{ String(i + 1).padStart(2, '0') }}</div>
+              <div class="scene-info">
+                <div class="scene-title">{{ v.title }}</div>
+                <div class="scene-meta">{{ v.group_no || '通用场景' }} · 资源就绪</div>
               </div>
+              <div class="scene-enter">进入 →</div>
             </div>
           </div>
-          <button class="start-sim-btn" :disabled="!hasPlan" @click="startSimulation(videos[0])">▶ 开始仿真</button>
+          <button class="start-sim-btn" :disabled="!hasPlan" @click="startSimulation(videos[0])">⏻ 启动仿真</button>
         </template>
         <template v-else>
           <div class="nv-empty">
-            <div class="nv-icon">🎬</div>
-            <p>教师还没有上传仿真视频</p>
-            <p class="nv-sub" v-if="isTeacher">请到「学习资源」页面上传（右上角菜单 → 学习资源）</p>
-            <p class="nv-sub" v-else>请等待教师在「学习资源」页面上传本组视频</p>
+            <div class="nv-icon">⬡</div>
+            <p>仿真场景尚未部署</p>
+            <p class="nv-sub" v-if="isTeacher">请到「学习资源」页面部署本组演练场景（右上角菜单 → 学习资源）</p>
+            <p class="nv-sub" v-else>请等待教师在「学习资源」页面部署本组演练场景</p>
           </div>
         </template>
       </div>
@@ -144,7 +146,7 @@ const myVideos = computed(() => {
 })
 
 const myGroupLabel = computed(() =>
-  myGroup.value ? `${myGroup.value} 专属仿真视频` : '教师演示模式 · 可选择任意视频'
+  myGroup.value ? `${myGroup.value} 专属演练场景` : '教师演示模式 · 可接入任意场景'
 )
 
 function startSimulation(v) {
@@ -259,49 +261,55 @@ onMounted(async () => {
   line-height: 1.7;
 }
 
-/* 视频卡片 */
+/* 仿真场景卡片 */
 .my-video-area, .all-videos {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
 }
-.sim-video-card {
+.scene-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 14px;
+  padding: 14px 18px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 229, 255, 0.03);
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 260px;
+  min-width: 300px;
 }
-.sim-video-card:hover {
+.scene-card:hover {
   border-color: var(--teal);
-  background: rgba(0, 229, 255, 0.06);
+  background: rgba(0, 229, 255, 0.07);
   transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.12);
 }
-.svc-play {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 2px solid var(--teal);
-  color: var(--teal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  padding-left: 3px;
+.scene-badge {
   flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--teal);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: rgba(0, 229, 255, 0.07);
 }
-.sim-video-card:hover .svc-play {
-  background: rgba(0, 229, 255, 0.15);
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+.scene-info { flex: 1; min-width: 0; }
+.scene-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.scene-meta { font-size: 11px; color: var(--text3); margin-top: 3px; letter-spacing: 0.5px; }
+.scene-enter {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--teal);
+  letter-spacing: 1px;
+  opacity: 0.55;
+  transition: all 0.2s;
 }
-.svc-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.svc-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.scene-card:hover .scene-enter { opacity: 1; text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
 
 /* 开始仿真按钮 */
 .start-sim-btn {
