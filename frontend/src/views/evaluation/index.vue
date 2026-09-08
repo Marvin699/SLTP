@@ -1,86 +1,86 @@
 <template>
   <div class="evaluation-page">
-    <!-- 顶部导航 -->
-    <div class="page-header">
-      <div class="header-left">
-        <h1>{{ selectedTaskName }}</h1>
+    <!-- 仪式感页头 -->
+    <div class="page-title-block">
+      <div class="title-row">
+        <span class="title-bar"></span>
+        <h1>教学智评</h1>
+        <span class="title-sub">诊断 → 形成 → 总结 · 教师 / 企业导师 / AI / 学生 四元评价</span>
       </div>
-      <div class="header-right">
-        <!-- 项目选择 -->
+      <div class="title-tools">
         <el-select v-model="selectedProjectId" placeholder="选择项目" size="default"
-          style="width: 200px" @change="onProjectChange" :loading="projectsLoading">
+          style="width: 190px" @change="onProjectChange" :loading="projectsLoading">
           <el-option v-for="p in projects" :key="p.project_id" :label="`${p.project_id} · ${p.name}`" :value="p.project_id" />
         </el-select>
-        <!-- 任务选择 -->
         <el-select v-model="selectedTaskId" placeholder="选择任务" size="default"
-          style="width: 260px" :disabled="!selectedProjectId || tasksLoading" :loading="tasksLoading"
+          style="width: 240px" :disabled="!selectedProjectId || tasksLoading" :loading="tasksLoading"
           @change="onTaskChange">
           <el-option v-for="t in taskList" :key="t.id" :label="t.name" :value="t.id" />
         </el-select>
-        <button class="back-graph-btn" @click="goBackToGraph">
-          <span>📊</span> 返回图谱
+        <button class="tool-btn" @click="goBackToGraph" title="返回图谱">
+          <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M3.4 20.4 20.9 3.4a1 1 0 0 1 1.7.8v6.4a1 1 0 0 1-.4.8L4.9 20.9z"/><path fill="currentColor" d="m3.4 20.4 15.4-17.9a1 1 0 0 1 .8-.4h6.4z" opacity=".4"/></svg>
+          图谱
         </button>
-        <button class="back-home-btn" @click="$router.push('/')">
-          <span>🏠</span> 返回首页
+        <button class="tool-btn" @click="$router.push('/')" title="返回首页">
+          <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+          首页
         </button>
       </div>
     </div>
 
-    <!-- 教学效果数据大屏入口 -->
-    <div class="task8-entry" @click="$router.push('/evaluation/dashboard')">
-      <div class="task8-entry-left">
-        <div class="task8-entry-icon">📈</div>
-        <div class="task8-entry-text">
-          <div class="task8-entry-title">教学效果数据大屏 · 诊断 → 形成 → 总结</div>
-          <div class="task8-entry-sub">项目达成度 · 五维画像 · 增值评价 · 左侧学员名单联动</div>
+    <!-- 数据大屏入口（双卡并排） -->
+    <div class="entry-row">
+      <div class="entry-card" @click="$router.push('/evaluation/dashboard')">
+        <div class="entry-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/></svg>
         </div>
-      </div>
-      <div class="task8-entry-arrow">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24"><path fill="currentColor" d="M489.664 512 339.264 357.12a30.59 30.59 0 0 1 0-42.688 29.12 29.12 0 0 1 41.728 0l170.368 175.36a32 32 0 0 1 0 44.672L380.992 709.632a29.12 29.12 0 0 1-41.728 0 30.59 30.59 0 0 1 0-42.752L489.664 512Z"/></svg>
-      </div>
-    </div>
-
-    <!-- 任务8大屏入口 -->
-    <div class="task8-entry" @click="$router.push('/evaluation/task8')">
-      <div class="task8-entry-left">
-        <div class="task8-entry-icon">📺</div>
-        <div class="task8-entry-text">
-          <div class="task8-entry-title">任务8 · 方案优化与应急模拟演练</div>
-          <div class="task8-entry-sub">实时数据大屏 · 六维能力图谱 · 课堂小结</div>
+        <div class="entry-text">
+          <div class="entry-title">教学效果数据大屏</div>
+          <div class="entry-sub">项目达成度 · 五维画像 · 增值评价 · 学员名单联动</div>
         </div>
+        <div class="entry-arrow">›</div>
       </div>
-      <div class="task8-entry-arrow">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24"><path fill="currentColor" d="M489.664 512 339.264 357.12a30.59 30.59 0 0 1 0-42.688 29.12 29.12 0 0 1 41.728 0l170.368 175.36a32 32 0 0 1 0 44.672L380.992 709.632a29.12 29.12 0 0 1-41.728 0 30.59 30.59 0 0 1 0-42.752L489.664 512Z"/></svg>
+      <div class="entry-card" @click="$router.push('/evaluation/task8')">
+        <div class="entry-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M4 4h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6l2 3h-2l-2-3h-2l-2 3H6l2-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1m1 2v10h14V6z"/></svg>
+        </div>
+        <div class="entry-text">
+          <div class="entry-title">任务8 · 方案优化与应急模拟演练</div>
+          <div class="entry-sub">实时数据大屏 · 六维能力图谱 · 课堂小结</div>
+        </div>
+        <div class="entry-arrow">›</div>
       </div>
     </div>
 
     <!-- 三环节卡片 -->
     <div class="section-cards">
-      <div v-for="sec in sections" :key="sec.id" class="section-card">
+      <div v-for="(sec, idx) in sections" :key="sec.id" class="section-card" :class="{ active: overviewData[sec.id]?.session_count }">
+        <span class="card-index">0{{ idx + 1 }}</span>
         <div class="card-top">
           <div class="card-badge" :class="getBadgeClass(sec.id)">{{ sec.short_name }}</div>
           <div class="card-time">{{ sec.time_range }}</div>
+          <span class="status-light" :class="overviewData[sec.id]?.session_count ? 'on' : ''"></span>
         </div>
         <h3 class="card-name">{{ sec.name }}</h3>
         <p class="card-desc">{{ sec.description }}</p>
 
-        <!-- 维度标签 -->
+        <!-- 评价主体 -->
         <div class="card-dims">
-          <span v-for="dim in sec.dimensions" :key="dim" class="dim-tag">{{ dim }}</span>
+          <span class="dims-line">评价主体 · 教师 · 企业导师 · AI · 学生</span>
         </div>
 
         <!-- 统计数据 -->
         <div class="card-stats">
           <div class="stat-item">
-            <span class="stat-value">{{ overviewData[sec.id]?.session_count || 0 }}</span>
+            <span class="stat-value mono">{{ overviewData[sec.id]?.session_count || 0 }}</span>
             <span class="stat-label">评分链接</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value">{{ overviewData[sec.id]?.total_scorers || 0 }}</span>
+            <span class="stat-value mono">{{ overviewData[sec.id]?.total_scorers || 0 }}</span>
             <span class="stat-label">打分人</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value" :class="getStatusClass(sec.id)">
+            <span class="stat-value" :class="overviewData[sec.id]?.session_count ? 'status-active' : 'status-pending'">
               {{ overviewData[sec.id]?.session_count ? '已启用' : '待启用' }}
             </span>
             <span class="stat-label">状态</span>
@@ -111,10 +111,11 @@
 
     <!-- 快速操作提示 -->
     <div class="quick-tips">
-      <div class="tip-icon">📋</div>
+      <div class="tip-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M16 2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8zm-5 18a2 2 0 1 1 0-4 2 2 0 0 1 0 4m3-10H6V4h8z"/></svg>
+      </div>
       <div class="tip-content">
-        <h4>课前准备</h4>
-        <p>进入「管理链接」为每个环节生成评分链接，将链接分享给打分人（教师、企业导师、学生观察员），扫码即可进入打分页面。打分数据实时汇总到「成绩总览」。</p>
+        课前准备：进入「管理链接」为每个环节生成评分链接，分享给打分人（教师、企业导师、学生观察员），扫码即可打分，数据实时汇总到「成绩总览」。
       </div>
     </div>
   </div>
@@ -276,45 +277,56 @@ onMounted(async () => {
   min-height: calc(100vh - 100px);
 }
 
-/* 顶部 */
-.page-header {
+/* 仪式感页头 */
+.page-title-block {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
   gap: 16px;
+  margin-bottom: 24px;
 }
-.page-header h1 { margin: 0; font-size: 22px; font-weight: 700; white-space: nowrap; }
-.header-right {
-  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+.title-row { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+.title-bar {
+  width: 5px; height: 30px; border-radius: 2px; align-self: center;
+  background: linear-gradient(180deg, #00D4FF, #0066FF);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.55);
+  flex-shrink: 0;
 }
-.back-graph-btn {
+.title-row h1 {
+  margin: 0; font-size: 30px; font-weight: 800; letter-spacing: 2px; white-space: nowrap;
+  color: #EAF6FF;
+  text-shadow: 0 0 22px rgba(0, 168, 255, 0.45);
+}
+.title-sub {
+  font-size: 13px; color: #8FB3D9; letter-spacing: 1px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.title-tools { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.tool-btn {
   display: flex; align-items: center; gap: 6px;
-  background: rgba(64,158,255,0.15); border: 1px solid rgba(64,158,255,0.3);
-  color: #409eff; border-radius: 8px; padding: 8px 16px; cursor: pointer;
-  font-size: 14px; transition: all 0.2s;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  color: #9BE1FF; border-radius: 6px; padding: 7px 14px; cursor: pointer;
+  font-size: 13px; letter-spacing: 1px; transition: all 0.2s;
 }
-.back-graph-btn:hover { background: rgba(64,158,255,0.25); color: #fff; }
-.back-home-btn {
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  color: #c0c8d4; border-radius: 8px; padding: 8px 16px; cursor: pointer;
-  font-size: 14px; transition: all 0.2s;
+.tool-btn:hover {
+  background: rgba(0, 212, 255, 0.18); color: #EAF6FF;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
 }
-.back-home-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.tool-btn svg { flex-shrink: 0; }
 
 /* 下拉框暗色主题 */
 :deep(.el-select .el-input__wrapper) {
   background: rgba(13,33,55,0.8);
   border: 1px solid rgba(255,255,255,0.12);
   box-shadow: none;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 :deep(.el-select .el-input__wrapper:hover) {
-  border-color: rgba(64,158,255,0.4);
+  border-color: rgba(0,212,255,0.4);
 }
 :deep(.el-select .el-input__wrapper.is-focus) {
-  border-color: #409eff;
+  border-color: #00D4FF;
 }
 :deep(.el-select .el-input__inner) {
   color: #e2e8f0;
@@ -326,44 +338,54 @@ onMounted(async () => {
   color: rgba(255,255,255,0.4);
 }
 
-/* 任务8大屏入口 */
-.task8-entry {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #0a2a4d 0%, #0f3a6b 50%, #0d2a52 100%);
-  border: 1px solid rgba(0,168,255,0.35);
-  box-shadow: 0 4px 20px rgba(0,80,180,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+/* 数据大屏入口 · 双卡并排 */
+.entry-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+.entry-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, rgba(10, 32, 62, 0.85), rgba(8, 24, 48, 0.85));
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
   cursor: pointer;
-  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
-.task8-entry:hover {
+.entry-card::before {
+  content: '';
+  position: absolute; top: 0; left: -80%;
+  width: 50%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(0, 212, 255, 0.12), transparent);
+  transition: left 0.5s ease;
+}
+.entry-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0,100,220,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-  border-color: rgba(0,220,180,0.6);
+  border-color: rgba(0, 212, 255, 0.6);
+  box-shadow: 0 6px 22px rgba(0, 120, 220, 0.3);
 }
-.task8-entry-left { display: flex; align-items: center; gap: 16px; }
-.task8-entry-icon {
-  width: 52px; height: 52px; border-radius: 12px;
-  background: linear-gradient(135deg, #00a8ff, #00dc82);
+.entry-card:hover::before { left: 130%; }
+.entry-icon {
+  width: 46px; height: 46px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 26px; box-shadow: 0 0 18px rgba(0,220,130,0.5);
+  color: #00D4FF;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
-.task8-entry-title { font-size: 17px; font-weight: 700; color: #e0f0ff; letter-spacing: 1px; }
-.task8-entry-sub { font-size: 12px; color: #7ab8e0; margin-top: 4px; }
-.task8-entry-arrow {
-  width: 40px; height: 40px; border-radius: 10px;
-  background: rgba(0,168,255,0.12);
-  display: flex; align-items: center; justify-content: center;
-  color: #00dc82; border: 1px solid rgba(0,220,180,0.3);
-  transition: transform 0.25s;
+.entry-text { flex: 1; min-width: 0; }
+.entry-title { font-size: 15px; font-weight: 700; color: #EAF6FF; letter-spacing: 1px; }
+.entry-sub { font-size: 12px; color: #7A9CC6; margin-top: 3px; letter-spacing: 0.5px; }
+.entry-arrow {
+  font-size: 26px; color: #00D4FF; line-height: 1;
+  opacity: 0.6; transition: all 0.25s; flex-shrink: 0;
 }
-.task8-entry:hover .task8-entry-arrow { transform: translateX(4px); }
+.entry-card:hover .entry-arrow { opacity: 1; transform: translateX(4px); }
 
-/* 环节卡片 */
+/* 环节卡片 · HUD 风 */
 .section-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -371,77 +393,126 @@ onMounted(async () => {
   margin-bottom: 24px;
 }
 .section-card {
-  background: rgba(13, 33, 55, 0.8);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 24px;
+  position: relative;
+  background: rgba(8, 24, 48, 0.8);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  border-radius: 4px;
+  padding: 22px 22px 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   transition: all 0.3s;
 }
-.section-card:hover {
-  border-color: rgba(64,158,255,0.3);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  transform: translateY(-2px);
+.section-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+  opacity: 0.5;
 }
+.section-card::after {
+  content: '';
+  position: absolute; top: 0; left: -80%;
+  width: 50%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(0, 212, 255, 0.08), transparent);
+  transition: left 0.55s ease;
+  pointer-events: none;
+}
+.section-card:hover {
+  border-color: rgba(0, 212, 255, 0.55);
+  box-shadow: 0 6px 24px rgba(0, 100, 200, 0.3), inset 0 0 30px rgba(0, 212, 255, 0.03);
+  transform: translateY(-3px);
+}
+.section-card:hover::after { left: 130%; }
+.card-index {
+  position: absolute; right: 14px; top: 6px;
+  font-family: Consolas, monospace;
+  font-size: 44px; font-weight: 800; line-height: 1;
+  color: rgba(0, 212, 255, 0.10);
+  letter-spacing: 2px;
+  pointer-events: none;
+}
+.section-card.active .card-index { color: rgba(0, 212, 255, 0.18); }
 .card-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
+  position: relative;
 }
 .card-badge {
-  font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 2px;
+  letter-spacing: 2px;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
 }
-.badge-blue { background: rgba(64,158,255,0.15); color: #409eff; border: 1px solid rgba(64,158,255,0.3); }
-.badge-orange { background: rgba(245,158,11,0.15); color: #f59c0b; border: 1px solid rgba(245,158,11,0.3); }
-.badge-green { background: rgba(103,194,58,0.15); color: #67c23a; border: 1px solid rgba(103,194,58,0.3); }
-.card-time { font-size: 12px; color: #718096; }
-.card-name { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
-.card-desc { margin: 0 0 14px; font-size: 13px; color: #c0c8d4; line-height: 1.6; flex-shrink: 0; }
+.badge-blue { background: rgba(0,168,255,0.14); color: #4DB8FF; border: 1px solid rgba(0,168,255,0.4); }
+.badge-orange { background: rgba(255,182,39,0.12); color: #FFB627; border: 1px solid rgba(255,182,39,0.4); }
+.badge-green { background: rgba(74,222,128,0.12); color: #4ADE80; border: 1px solid rgba(74,222,128,0.4); }
+.card-time { font-size: 12px; color: #7A9CC6; font-family: Consolas, monospace; }
+.status-light {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #3A4A63; margin-left: auto; flex-shrink: 0;
+}
+.status-light.on {
+  background: #00E5A8;
+  box-shadow: 0 0 8px rgba(0, 229, 168, 0.9);
+  animation: breath 2s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { box-shadow: 0 0 4px rgba(0, 229, 168, 0.5); }
+  50% { box-shadow: 0 0 12px rgba(0, 229, 168, 1); }
+}
+.card-name { margin: 0 0 8px; font-size: 17px; font-weight: 700; color: #EAF6FF; letter-spacing: 1px; position: relative; }
+.card-desc { margin: 0 0 14px; font-size: 13px; color: #A8BDD9; line-height: 1.65; flex-shrink: 0; position: relative; }
 
-/* 维度标签 */
-.card-dims {
-  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px;
-}
-.dim-tag {
-  font-size: 11px; padding: 3px 8px; border-radius: 4px;
-  background: rgba(255,255,255,0.04); color: #718096; border: 1px solid rgba(255,255,255,0.06);
+/* 评价主体 */
+.card-dims { margin-bottom: 16px; position: relative; }
+.dims-line {
+  font-size: 12px; color: #6E8BB5; letter-spacing: 1.5px;
+  padding-left: 10px;
+  border-left: 2px solid rgba(0, 212, 255, 0.35);
 }
 
 /* 统计数据 */
 .card-stats {
-  display: flex; gap: 16px; margin-bottom: 18px;
-  padding: 14px 0; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; gap: 12px; margin-bottom: 18px;
+  padding: 13px 0;
+  border-top: 1px solid rgba(0, 212, 255, 0.12);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.12);
+  position: relative;
 }
 .stat-item { flex: 1; text-align: center; }
-.stat-value { display: block; font-size: 22px; font-weight: 700; color: #fff; }
-.stat-label { display: block; font-size: 12px; color: #718096; margin-top: 2px; }
-.status-active { color: #67c23a; }
-.status-pending { color: #718096; }
+.stat-value {
+  display: block; font-size: 22px; font-weight: 700; color: #EAF6FF;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+}
+.stat-value.mono { font-family: Consolas, monospace; }
+.stat-label { display: block; font-size: 12px; color: #6E8BB5; margin-top: 3px; letter-spacing: 1px; }
+.status-active { color: #00E5A8 !important; text-shadow: 0 0 12px rgba(0, 229, 168, 0.5) !important; }
+.status-pending { color: #5E7BA8 !important; text-shadow: none !important; }
 
 /* 操作按钮 */
 .card-actions {
   display: flex; gap: 10px; margin-top: auto;
+  position: relative;
 }
 .card-actions .el-button { flex: 1; }
 
 /* 快速提示 */
 .quick-tips {
-  display: flex; gap: 14px; padding: 18px 22px;
-  background: rgba(13,33,55,0.6); border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
+  display: flex; align-items: center; gap: 12px; padding: 13px 20px;
+  background: rgba(8, 24, 48, 0.55);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 4px;
 }
-.tip-icon { font-size: 28px; flex-shrink: 0; }
-.tip-content h4 { margin: 0 0 6px; font-size: 14px; color: #e2e8f0; }
-.tip-content p { margin: 0; font-size: 13px; color: #718096; line-height: 1.6; }
+.tip-icon { color: #00D4FF; flex-shrink: 0; display: flex; opacity: 0.85; }
+.tip-content { font-size: 13px; color: #7A9CC6; line-height: 1.6; letter-spacing: 0.5px; }
 
 :deep(.el-button:not(.el-button--primary):not(.el-button--danger):not(.el-button--success):not(.el-button--warning)) {
-  --el-button-bg-color: rgba(64,158,255,0.15);
-  --el-button-border-color: rgba(64,158,255,0.3);
-  --el-button-text-color: #a0c4ff;
-  --el-button-hover-bg-color: rgba(64,158,255,0.25);
-  --el-button-hover-border-color: rgba(64,158,255,0.5);
-  --el-button-hover-text-color: #66b1ff;
+  --el-button-bg-color: rgba(0, 212, 255, 0.08);
+  --el-button-border-color: rgba(0, 212, 255, 0.35);
+  --el-button-text-color: #9BE1FF;
+  --el-button-hover-bg-color: rgba(0, 212, 255, 0.18);
+  --el-button-hover-border-color: rgba(0, 212, 255, 0.6);
+  --el-button-hover-text-color: #EAF6FF;
 }
 </style>
