@@ -1,5 +1,7 @@
 <template>
   <div class="graph-view-page" :class="{ 'light-theme': isLight }" :style="pageStyle">
+    <!-- 顶部隐藏导航（鼠标移到屏幕顶部呼出） -->
+    <AgentTopNav />
     <!-- 顶部导航 -->
     <header class="view-header" :style="headerStyle">
       <div class="header-left">
@@ -588,6 +590,7 @@
 </template>
 
 <script setup>
+import AgentTopNav from '@/components/AgentTopNav.vue'
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {

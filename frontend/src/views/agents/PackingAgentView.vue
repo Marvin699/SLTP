@@ -1,5 +1,7 @@
 <template>
   <div class="packing-agent-page">
+    <!-- 顶部隐藏导航（鼠标移到屏幕顶部呼出） -->
+    <AgentTopNav />
     <!-- 顶部导航栏 -->
     <header class="top-header">
       <div class="header-left">
@@ -601,6 +603,7 @@
 </template>
 
 <script setup>
+import AgentTopNav from '@/components/AgentTopNav.vue'
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'

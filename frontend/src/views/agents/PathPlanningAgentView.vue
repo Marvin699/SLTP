@@ -1,4 +1,5 @@
 <script setup>
+import AgentTopNav from '@/components/AgentTopNav.vue'
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -76,6 +77,8 @@ onMounted(() => {
 
 <template>
   <div class="path-planning-agent-page" :class="{ 'day-mode': isDayMode }">
+    <!-- 顶部隐藏导航（鼠标移到屏幕顶部呼出） -->
+    <AgentTopNav />
     <!-- Top header with back button -->
     <header class="agent-top-header">
       <div class="header-left">

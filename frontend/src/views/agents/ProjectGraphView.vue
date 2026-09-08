@@ -1,5 +1,7 @@
 <template>
   <div class="project-page">
+    <!-- 顶部隐藏导航（鼠标移到屏幕顶部呼出） -->
+    <AgentTopNav />
     <!-- 顶部导航 -->
     <header class="view-header">
       <div class="header-left">
@@ -130,6 +132,7 @@
 </template>
 
 <script setup>
+import AgentTopNav from '@/components/AgentTopNav.vue'
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, ArrowRight, DataBoard, Share } from '@element-plus/icons-vue'

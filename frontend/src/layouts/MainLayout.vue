@@ -94,30 +94,11 @@ import { SwitchButton, ArrowDown, User } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import AiAssistantFloat from '@/components/AiAssistantFloat.vue'
 import UserManualDialog from '@/components/UserManualDialog.vue'
+import { teacherNavItems, studentNavItems } from '@/constants/navigation'
 
 const router = useRouter()
 const userStore = useUserStore()
 const showManual = ref(false)
-
-// 教师端导航：完整功能
-const teacherNavItems = [
-  { path: '/home', title: '首页' },
-  { path: '/courses', title: '我的课程' },
-  { path: '/training', title: '实训任务' },
-  { path: '/evaluation', title: '教学智评' },
-  { path: '/teacher/monitor', title: '教学监控' },
-  { path: '/resources', title: '学习资源' },
-  { path: '/system', title: '系统管理' }
-]
-
-// 学生端导航：去掉「系统管理」（无权限）
-const studentNavItems = [
-  { path: '/home', title: '首页' },
-  { path: '/courses', title: '我的课程' },
-  { path: '/training', title: '实训任务' },
-  { path: '/evaluation', title: '教学智评' },
-  { path: '/resources', title: '学习资源' }
-]
 
 const visibleNavItems = computed(() => {
   return userStore.role === 'teacher' ? teacherNavItems : studentNavItems
