@@ -1,7 +1,7 @@
 <template>
   <div class="dash-page">
-    <!-- 1920×1080 舞台，按窗口等比缩放（高度扣除顶栏） -->
-    <div class="stage" :style="{ transform: 'scale(' + scale + ')' }">
+    <!-- 1920×1080 舞台，宽高双向拉伸铺满窗口（高度扣除顶栏） -->
+    <div class="stage" :style="{ transform: 'scale(' + scaleX + ', ' + scaleY + ')' }">
 
       <!-- ===== 左侧学员名单面板（借鉴智慧评价系统，可收起） ===== -->
       <aside class="roster" :class="{ closed: !rosterOpen }">
@@ -258,7 +258,8 @@ const procMetrics = ['提交次数', 'AI询问次数', '协作发言', '风险�
 const procBtnNames = ['提交', 'AI询问', '协作发言', '风险预警']
 const procMax = [8, 15, 12, 4]
 const rosterOpen = ref(true)
-const scale = ref(1)
+const scaleX = ref(1)
+const scaleY = ref(1)
 const clockText = ref('--:--:--')
 
 const mBtnNames = procBtnNames
@@ -561,7 +562,8 @@ function resizeAll() {
 
 /* ================= 舞台缩放 + 时钟 ================= */
 function fit() {
-  scale.value = Math.min(window.innerWidth / 1920, (window.innerHeight - 66) / 1080)
+  scaleX.value = window.innerWidth / 1920
+  scaleY.value = (window.innerHeight - 66) / 1080
 }
 let clockTimer = null
 function tick() {
