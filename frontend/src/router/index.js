@@ -55,6 +55,12 @@ const routes = [
         meta: { title: '教学智评' }
       },
       {
+        path: 'evaluation/dashboard',
+        name: 'DataDashboard',
+        component: () => import('../views/evaluation/DataDashboard.vue'),
+        meta: { title: '教学效果数据大屏' }
+      },
+      {
         path: 'evaluation/section/:sectionId',
         name: 'SectionDetail',
         component: () => import('../views/evaluation/SectionDetail.vue'),

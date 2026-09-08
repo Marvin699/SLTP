@@ -26,6 +26,20 @@
       </div>
     </div>
 
+    <!-- 教学效果数据大屏入口 -->
+    <div class="task8-entry" @click="$router.push('/evaluation/dashboard')">
+      <div class="task8-entry-left">
+        <div class="task8-entry-icon">📈</div>
+        <div class="task8-entry-text">
+          <div class="task8-entry-title">教学效果数据大屏 · 诊断 → 形成 → 总结</div>
+          <div class="task8-entry-sub">项目达成度 · 五维画像 · 增值评价 · 左侧学员名单联动</div>
+        </div>
+      </div>
+      <div class="task8-entry-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="24" height="24"><path fill="currentColor" d="M489.664 512 339.264 357.12a30.59 30.59 0 0 1 0-42.688 29.12 29.12 0 0 1 41.728 0l170.368 175.36a32 32 0 0 1 0 44.672L380.992 709.632a29.12 29.12 0 0 1-41.728 0 30.59 30.59 0 0 1 0-42.752L489.664 512Z"/></svg>
+      </div>
+    </div>
+
     <!-- 任务8大屏入口 -->
     <div class="task8-entry" @click="$router.push('/evaluation/task8')">
       <div class="task8-entry-left">
