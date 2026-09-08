@@ -48,65 +48,18 @@
 
       <!-- 右侧聊天区域 -->
       <div class="chat-section">
-        <!-- 录音采集卡片 -->
-        <div class="record-card">
-          <div class="record-header">
-            <el-icon :size="18" color="#00e5ff"><Microphone /></el-icon>
-            <span class="record-title">小组汇报 · 语音采集</span>
+        <!-- 语音识别考核入口 -->
+        <div class="voice-entry-card" @click="goToVoiceRecognition">
+          <div class="voice-entry-icon">
+            <el-icon :size="20" color="#00e5ff"><Microphone /></el-icon>
           </div>
-          <div class="record-selectors">
-            <div class="selector-item">
-              <span class="select-label">项目</span>
-              <el-select v-model="selectedProject" size="small" style="width: 200px">
-                <el-option label="P5 - 应急物资低空智慧运输" value="P5" />
-              </el-select>
-            </div>
-            <div class="selector-item">
-              <span class="select-label">任务</span>
-              <el-select v-model="selectedTask" size="small" style="width: 240px">
-                <el-option label="任务8 - 方案汇报与应急模拟演练" value="T8" />
-              </el-select>
-            </div>
-            <div class="selector-item">
-              <span class="select-label">环节</span>
-              <el-select v-model="selectedSection" size="small" style="width: 220px">
-                <el-option label="环节一 - 运输方案汇报与知识深化" value="section1" />
-              </el-select>
-            </div>
+          <div class="voice-entry-text">
+            <div class="voice-entry-title">语音识别 · 汇报考核</div>
+            <div class="voice-entry-sub">无人机操作口令实时识别比对，小组汇报自动评分</div>
           </div>
-          <div class="record-body">
-            <div class="record-left">
-              <div v-if="isRecording" class="record-timer">
-                <span class="timer-dot"></span>
-                <span class="timer-text">{{ recordDuration }}</span>
-                <span class="timer-label">正在采集</span>
-              </div>
-              <div v-else-if="recorded" class="record-done">
-                <el-icon color="#67c23a" :size="18"><CircleCheckFilled /></el-icon>
-                <span>采集完成 · {{ recordDuration }}</span>
-              </div>
-              <div v-else class="record-idle">
-                <span class="idle-text">点击开始采集学生汇报语音</span>
-              </div>
-            </div>
-            <div class="record-right">
-              <canvas v-show="isRecording" ref="waveCanvas" class="wave-canvas" width="180" height="36"></canvas>
-              <!-- 已采集完成后：显示"开始分析"或"查看AI分析" -->
-              <el-button v-if="recorded && !analyzed" type="warning" @click="startAnalyze" :loading="analyzing" round>
-                {{ analyzing ? 'AI分析中' : '开始分析' }}
-              </el-button>
-              <el-button v-else-if="recorded && analyzed" type="success" @click="goToAnalysis" round>
-                查看AI分析
-                <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-              </el-button>
-              <!-- 采集按钮 -->
-              <el-button v-if="!isRecording && !recorded" type="primary" @click="startRecording" :icon="Microphone" round>
-                开始采集
-              </el-button>
-              <el-button v-else-if="isRecording" type="danger" @click="stopRecording" :icon="VideoPause" round>
-                停止采集
-              </el-button>
-            </div>
+          <div class="voice-entry-action">
+            进入考核
+            <el-icon class="el-icon--right"><ArrowRight /></el-icon>
           </div>
         </div>
 
@@ -169,9 +122,9 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import { ref, nextTick, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, ArrowRight, Delete, Promotion, Microphone, VideoPause, CircleCheckFilled } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Delete, Promotion, Microphone } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import axios from 'axios'
 import XiaoYiAvatar from '@/components/XiaoYiAvatar.vue'
@@ -180,11 +133,8 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const goBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-  } else {
-    router.push('/home')
-  }
+  // 固定返回首页：避免从语音识别页跳转过来后，back 又退回识别页
+  router.push('/home')
 }
 
 // 聊天状态
@@ -199,114 +149,13 @@ const chatInput = ref('')
 const chatLoading = ref(false)
 const chatMessagesRef = ref(null)
 
-// ===== 录音采集 =====
-const selectedProject = ref('P5')
-const selectedTask = ref('T8')
-const selectedSection = ref('section1')
-const isRecording = ref(false)
-const recorded = ref(false)
-const analyzing = ref(false)
-const analyzed = ref(false)
-const recordDuration = ref('00:00')
-const waveCanvas = ref(null)
-let recordTimer = null
-let recordSeconds = 0
-let animFrame = null
-
-function startRecording() {
-  // 纯模拟演示，不打开真实麦克风
-  drawWave()
-
-  // 计时器
-  recordSeconds = 0
-  recordDuration.value = '00:00'
-  recordTimer = setInterval(() => {
-    recordSeconds++
-    const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0')
-    const s = String(recordSeconds % 60).padStart(2, '0')
-    recordDuration.value = `${m}:${s}`
-  }, 1000)
-
-  isRecording.value = true
-  recorded.value = false
-  analyzing.value = false
-  analyzed.value = false
+// 语音识别考核页入口
+function goToVoiceRecognition() {
+  router.push('/ai-assistant/voice')
 }
-
-function stopRecording() {
-  cancelAnimationFrame(animFrame)
-  clearInterval(recordTimer)
-  isRecording.value = false
-  recorded.value = true
-}
-
-function startAnalyze() {
-  analyzing.value = true
-  analyzed.value = false
-  setTimeout(() => {
-    analyzing.value = false
-    analyzed.value = true
-  }, 5000)
-}
-
-// 模拟波形数据（平滑过渡，模拟语音节奏）
-let waveHeights = []
-function drawWave() {
-  const canvas = waveCanvas.value
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  const barCount = 32
-  const barWidth = canvas.width / barCount
-  // 初始化：中间高两边低的弧形
-  if (waveHeights.length !== barCount) {
-    waveHeights = Array.from({ length: barCount }, (_, i) => {
-      const center = barCount / 2
-      const dist = Math.abs(i - center) / center
-      return 0.2 + (1 - dist) * 0.3
-    })
-  }
-
-  let tick = 0
-  function draw() {
-    animFrame = requestAnimationFrame(draw)
-    tick += 0.06
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    for (let i = 0; i < barCount; i++) {
-      // 用正弦波叠加产生自然起伏，中间高两边低
-      const center = barCount / 2
-      const dist = Math.abs(i - center) / center
-      const envelope = 1 - dist * 0.6
-      const wave = Math.sin(tick + i * 0.4) * 0.3 + 0.5
-      const wave2 = Math.sin(tick * 1.7 + i * 0.25) * 0.15
-      const target = envelope * (wave + wave2)
-      // 平滑过渡
-      waveHeights[i] += (target - waveHeights[i]) * 0.3
-      const h = Math.max(3, waveHeights[i] * canvas.height * 0.85)
-      const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - h)
-      gradient.addColorStop(0, 'rgba(0, 229, 255, 0.2)')
-      gradient.addColorStop(1, 'rgba(0, 229, 255, 0.85)')
-      ctx.fillStyle = gradient
-      ctx.fillRect(i * barWidth + 1, canvas.height - h, barWidth - 2, h)
-    }
-  }
-  draw()
-}
-
-function goToAnalysis() {
-  router.push({
-    path: `/evaluation/section/${selectedSection.value}/ai-analysis`,
-    query: { groupA: '揽星组', groupB: '御风组' }
-  })
-}
-
-onUnmounted(() => {
-  clearInterval(recordTimer)
-  cancelAnimationFrame(animFrame)
-})
 
 // 数字人状态
 const avatarState = computed(() => {
-  if (isRecording.value) return 'listening'
   if (chatLoading.value) return 'thinking'
   return 'idle'
 })
@@ -845,111 +694,58 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* 录音采集卡片 */
-.record-card {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.06), rgba(0, 180, 204, 0.03));
-  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
-  padding: 14px 20px;
-  flex-shrink: 0;
-}
-.record-header {
+/* 语音识别考核入口卡片 */
+.voice-entry-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 14px;
+  margin: 14px 20px 0;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(0, 128, 255, 0.04));
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s;
+  flex-shrink: 0;
 }
-.record-title {
+.voice-entry-card:hover {
+  border-color: rgba(0, 229, 255, 0.55);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.15);
+  transform: translateY(-1px);
+}
+.voice-entry-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.voice-entry-text { flex: 1; min-width: 0; }
+.voice-entry-title {
   font-size: 14px;
   font-weight: 600;
   color: #e2e8f0;
+  margin-bottom: 3px;
 }
-.record-selectors {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
+.voice-entry-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
 }
-.selector-item {
+.voice-entry-action {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-.select-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  gap: 2px;
+  font-size: 13px;
+  color: #00e5ff;
   flex-shrink: 0;
+  transition: transform 0.2s;
 }
-.selector-item :deep(.el-select .el-input__wrapper) {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: none;
-  border-radius: 6px;
-}
-.selector-item :deep(.el-select .el-input__wrapper:hover) {
-  border-color: rgba(0, 229, 255, 0.4);
-}
-.selector-item :deep(.el-select .el-input__wrapper.is-focus) {
-  border-color: #00e5ff;
-}
-.selector-item :deep(.el-select .el-input__inner) {
-  color: #e2e8f0;
-}
-.record-body {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.record-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.record-timer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.timer-dot {
-  width: 8px;
-  height: 8px;
-  background: #f56c6c;
-  border-radius: 50%;
-  animation: recBlink 1s ease-in-out infinite;
-}
-@keyframes recBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-.timer-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: #f56c6c;
-  font-variant-numeric: tabular-nums;
-}
-.timer-label {
-  font-size: 12px;
-  color: rgba(245, 108, 108, 0.7);
-}
-.record-done {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #67c23a;
-}
-.record-idle {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
-}
-.record-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.wave-canvas {
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.2);
+.voice-entry-card:hover .voice-entry-action {
+  transform: translateX(3px);
 }
 
 /* 聆听状态文字动画 */

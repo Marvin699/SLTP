@@ -183,6 +183,12 @@ const routes = [
     meta: { title: '小翼 · AI智能助教' }
   },
   {
+    path: '/ai-assistant/voice',
+    name: 'VoiceRecognition',
+    component: () => import('../views/ai-assistant/VoiceRecognition.vue'),
+    meta: { title: '语音识别 · 汇报考核' }
+  },
+  {
     path: '/score/:token',
     name: 'ScorePage',
     component: () => import('../views/score/ScorePage.vue'),
