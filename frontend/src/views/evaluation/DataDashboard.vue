@@ -64,21 +64,21 @@
 
         <main>
           <!-- 模块1 项目评价 -->
-          <section class="card" id="c-project">
+          <section class="card" id="c-project" :class="{ expanded: expandedCard === 'c-project' }" @click="toggleExpand('c-project')">
             <div class="card-head"><h2>项目评价 · 项目达成度</h2><span class="tag">总结性</span>
               <span class="hd-num">均值 <b>{{ projAvgText }}</b>%</span></div>
             <div class="chart" ref="chProjectEl"></div>
           </section>
 
           <!-- 模块5 过程评价·课堂实时 -->
-          <section class="card" id="c-stage">
+          <section class="card" id="c-stage" :class="{ expanded: expandedCard === 'c-stage' }" @click="toggleExpand('c-stage')">
             <div class="card-head"><h2>过程评价 · 课堂实时</h2><span class="tag">三阶递进</span>
               <span class="hd-num">课前推送 · 课中采集 · 课后回炉</span></div>
             <div class="chart" ref="chStageEl"></div>
           </section>
 
           <!-- 模块3 个人画像 -->
-          <section class="card" id="c-student">
+          <section class="card" id="c-student" :class="{ expanded: expandedCard === 'c-student' }" @click="toggleExpand('c-student')">
             <div class="card-head"><h2>个人画像 · 五维能力雷达</h2><span class="tag">形成性</span>
               <span class="hd-num">{{ stuScopeText }}</span></div>
             <div class="stu-wrap">
@@ -88,27 +88,27 @@
           </section>
 
           <!-- 模块2 任务评价 -->
-          <section class="card" id="c-task">
+          <section class="card" id="c-task" :class="{ expanded: expandedCard === 'c-task' }" @click="toggleExpand('c-task')">
             <div class="card-head"><h2>任务评价 · 13项典型任务</h2><span class="tag">AI评分</span>
               <span class="hd-num">颜色=难度系数</span></div>
             <div class="chart" ref="chTaskEl"></div>
           </section>
 
           <!-- 桑基图 -->
-          <section class="card" id="c-sankey">
+          <section class="card" id="c-sankey" :class="{ expanded: expandedCard === 'c-sankey' }" @click="toggleExpand('c-sankey')">
             <div class="card-head"><h2>项目 → 任务 → 能力 流量分布</h2><span class="tag">桑基图</span></div>
             <div class="chart" ref="chSankeyEl"></div>
           </section>
 
           <!-- 模块4 行为轨迹热力图 -->
-          <section class="card" id="c-proc">
+          <section class="card" id="c-proc" :class="{ expanded: expandedCard === 'c-proc' }" @click="toggleExpand('c-proc')">
             <div class="card-head"><h2>项目过程评价 · 行为轨迹</h2>
-              <button v-for="(m, i) in procMetrics" :key="m" class="m-btn" :class="{ on: curMetric === i }" @click="curMetric = i">{{ mBtnNames[i] }}</button></div>
+              <button v-for="(m, i) in procMetrics" :key="m" class="m-btn" :class="{ on: curMetric === i }" @click.stop="curMetric = i">{{ mBtnNames[i] }}</button></div>
             <div class="chart" ref="chProcEl"></div>
           </section>
 
           <!-- 证书通过率 -->
-          <section class="card" id="c-cert">
+          <section class="card" id="c-cert" :class="{ expanded: expandedCard === 'c-cert' }" @click="toggleExpand('c-cert')">
             <div class="card-head"><h2>证书通过率</h2><span class="tag">CAAC</span></div>
             <div class="mini-wrap">
               <div class="chart" ref="chCertEl"></div>
@@ -121,7 +121,7 @@
           </section>
 
           <!-- AI智能体服务量 -->
-          <section class="card" id="c-ai">
+          <section class="card" id="c-ai" :class="{ expanded: expandedCard === 'c-ai' }" @click="toggleExpand('c-ai')">
             <div class="card-head"><h2>AI智能体服务量</h2><span class="tag warn">四元主体</span></div>
             <div class="mini-wrap">
               <div class="chart" ref="chAiEl"></div>
@@ -135,7 +135,7 @@
           </section>
 
           <!-- 模块6 增值评价 -->
-          <section class="card" id="c-delta">
+          <section class="card" id="c-delta" :class="{ expanded: expandedCard === 'c-delta' }" @click="toggleExpand('c-delta')">
             <div class="card-head"><h2>增值评价 · 进步增量</h2><span class="tag warn">纵向对比</span>
               <span class="hd-num">不横向排名 · 只看个人纵向进步</span></div>
             <div class="delta-wrap">
@@ -150,11 +150,13 @@
                   </div>
                 </div>
                 <div class="d-avg">平均增值量 <b>{{ deltaAvg }}</b> 分</div>
-                <div class="d-note">虚线灰 = 起点画像　实线青 = 当前画像</div>
               </div>
             </div>
           </section>
         </main>
+
+        <!-- 放大遮罩：点击空白处还原 -->
+        <div v-if="expandedCard" class="exp-mask" @click="expandedCard = ''; nextTick(resizeAll)"></div>
       </div>
     </div>
   </div>
@@ -259,6 +261,18 @@ const procBtnNames = ['提交', 'AI询问', '协作发言', '风险预警']
 const procMax = [8, 15, 12, 4]
 const rosterOpen = ref(true)
 const clockText = ref('--:--:--')
+const expandedCard = ref('')     // 当前放大显示的卡片 id
+
+function toggleExpand(id) {
+  expandedCard.value = expandedCard.value === id ? '' : id
+  nextTick(resizeAll)
+}
+function onKeydown(e) {
+  if (e.key === 'Escape' && expandedCard.value) {
+    expandedCard.value = ''
+    nextTick(resizeAll)
+  }
+}
 
 const mBtnNames = procBtnNames
 function scopeStudents() { return curGroup.value === 0 ? students : students.filter(s => s.group === curGroup.value) }
@@ -574,6 +588,7 @@ function onResize() { resizeAll() }
 onMounted(() => {
   tick()
   clockTimer = setInterval(tick, 1000)
+  window.addEventListener('keydown', onKeydown)
   chProject = echarts.init(chProjectEl.value)
   chStage = echarts.init(chStageEl.value)
   chStu = echarts.init(chStuEl.value)
@@ -590,6 +605,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearInterval(clockTimer)
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('keydown', onKeydown)
   ;[chProject, chTask, chStu, chProc, chStage, chDelta, chSankey, chCert, chAi]
     .forEach(c => c && c.dispose())
 })
@@ -814,6 +830,28 @@ main {
   box-shadow: 0 0 12px rgba(0,212,255,.14), inset 0 0 22px rgba(0,212,255,.04);
   display: flex; flex-direction: column;
   padding: 8px 10px; min-height: 0; min-width: 0; position: relative;
+  cursor: pointer;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.card:hover { box-shadow: 0 0 18px rgba(0,212,255,.35), inset 0 0 22px rgba(0,212,255,.06); }
+.card.expanded {
+  position: fixed;
+  left: 50%; top: 50%;
+  width: min(94vw, 1720px);
+  height: min(88vh, 940px);
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: rgba(10, 28, 60, .97);
+  box-shadow: 0 0 40px rgba(0,212,255,.45), inset 0 0 30px rgba(0,212,255,.08);
+  cursor: default;
+}
+.exp-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(3, 10, 26, .78);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
 }
 .card-head { flex: none; height: clamp(20px, 2.8vh, 26px); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .card-head::before {
@@ -858,8 +896,9 @@ main {
 .delta-wrap .chart { width: 56%; min-height: 0; }
 .delta-side { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 8px; }
 .slogan {
-  font-size: clamp(12px, 0.82vw, 16px); color: #FFB627; letter-spacing: 2px; font-weight: 700;
-  text-shadow: 0 0 10px rgba(255,182,39,.45); margin-bottom: 8px;
+  font-size: clamp(10px, 0.75vw, 15px); color: #FFB627; letter-spacing: 1px; font-weight: 700;
+  text-shadow: 0 0 10px rgba(255,182,39,.45); margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .slogan::before { content: '「'; color: #00D4FF; }
 .slogan::after { content: '」'; color: #00D4FF; }
@@ -870,7 +909,6 @@ main {
 .d-row .dv { width: 34px; flex: none; text-align: right; color: #4ADE80; font-family: Consolas, monospace; font-weight: 700; }
 .d-avg { margin-top: 8px; font-size: clamp(10px, 0.63vw, 12px); color: #7FA8E0; }
 .d-avg b { color: #4ADE80; font-size: clamp(18px, 1.25vw, 25px); font-family: Consolas, monospace; text-shadow: 0 0 10px rgba(74,222,128,.5); }
-.d-note { font-size: 10px; color: #5E7BA8; margin-top: 4px; }
 
 .mini-wrap { flex: 1; min-height: 0; display: flex; }
 .mini-wrap .chart { flex: 1; }
