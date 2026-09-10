@@ -80,11 +80,11 @@
           <!-- 模块3 个人画像 -->
           <section class="card" id="c-student" :class="{ expanded: expandedCard === 'c-student' }" @dblclick="toggleExpand('c-student')">
             <div class="card-head"><h2>个人画像 · 五维能力雷达</h2><span class="tag">形成性</span>
-              <span class="hd-num">{{ stuScopeText }}</span>
+              <span class="hd-num stu-name">{{ stuScopeText }}</span>
               <span v-if="selLevelBadge" class="stu-level" :class="'lv-' + selLevelBadge.key">
-                <svg v-if="selLevelBadge.key === '能手'" viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M3 17h18v2H3zm2-4h14l1.5-9L15 8.5 12 3 9 8.5 3.5 4z"/></svg>
-                <svg v-else-if="selLevelBadge.key === '工匠'" viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                <svg v-else viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                <svg v-if="selLevelBadge.key === '能手'" viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M3 17h18v2H3zm2-4h14l1.5-9L15 8.5 12 3 9 8.5 3.5 4z"/></svg>
+                <svg v-else-if="selLevelBadge.key === '工匠'" viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <svg v-else viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
                 {{ selLevelBadge.label }}
               </span></div>
             <div class="stu-wrap">
@@ -230,6 +230,14 @@ ROSTER.forEach(function (rg) {
     DIMS.forEach(d => { lowest.now[d] = 70 + ri(0, 9) })
     lowest.delta = +(avgOf(lowest.now) - avgOf(lowest.start)).toFixed(1)
   }
+})()
+
+// 指定学员：英星空（长空组）固定为能手档（均分 ≥90）
+;(function () {
+  const target = students.find(s => s.name === '英星空')
+  if (!target) return
+  DIMS.forEach(d => { target.now[d] = ri(90, 99) })
+  target.delta = +(avgOf(target.now) - avgOf(target.start)).toFixed(1)
 })()
 
 // 成长阶梯：按当前均分阈值赋级（能手 ≥90 / 工匠 ≥80 / 学徒 ≥70）
@@ -781,7 +789,7 @@ onBeforeUnmount(() => {
 .lv-工匠 { color: #00D4FF; border: 1px solid rgba(0,212,255,.6); }
 .lv-能手 { color: #FFB627; border: 1px solid rgba(255,182,39,.6); }
 /* 个人画像卡片头部的领航等级徽章（含SVG图案） */
-.stu-level { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 1px 8px; border-radius: 2px; letter-spacing: 1px; font-weight: 600; }
+.stu-level { flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: 14px; padding: 3px 12px; border-radius: 3px; letter-spacing: 1px; font-weight: 600; }
 .rs-score { flex: none; width: 24px; text-align: right; font-size: 12px; color: #4ADE80; font-family: Consolas, monospace; font-weight: 700; }
 
 /* 收起后贴边把手 */
@@ -925,6 +933,8 @@ main {
 .card-head .tag.warn { background: #FFB627; }
 .card-head .hd-num { margin-left: auto; font-size: 12px; color: #7FA8E0; white-space: nowrap; }
 .card-head .hd-num b { color: #00D4FF; font-size: 17px; font-family: Consolas, monospace; }
+/* 个人画像右上角：学员姓名 + 等级徽章放大 */
+.card-head .hd-num.stu-name { font-size: 17px; font-weight: 600; color: #D6E8FF; letter-spacing: 1px; }
 .chart { flex: 1; min-height: 0; width: 100%; }
 
 #c-project { grid-column: 1/5; grid-row: 1; }
