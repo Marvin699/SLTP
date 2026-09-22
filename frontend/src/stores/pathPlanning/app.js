@@ -48,8 +48,7 @@ export const useAppStore = defineStore('app', () => {
     // 清除管理工具态，回到向导流程并定位到对应步骤
     activeAdmin.value = null
     const step = wizardSteps.find(s => s.modules.includes(id))
-    // 教学闸口：未提交前序步骤时禁止跳入后续步骤
-    if (step && stepLocked(step.id)) return false
+    // 自由浏览模式：允许直接进入任意步骤，缺前置数据由引导提示条负责
     if (step) {
       activeStep.value = step.id
       activeModule.value = step.modules.includes(id) ? id : step.modules[0]
@@ -64,7 +63,6 @@ export const useAppStore = defineStore('app', () => {
   }
 
   function gotoStep(stepId) {
-    if (stepLocked(stepId)) return false
     activeAdmin.value = null
     activeStep.value = stepId
     activeModule.value = wizardSteps.find(s => s.id === stepId)?.modules[0] || 1
@@ -148,13 +146,6 @@ export const useAppStore = defineStore('app', () => {
     _persistSubmits()
   }
 
-  /** 步骤是否被锁定：前序步骤存在未提交的则锁 */
-  function stepLocked(stepId) {
-    const idx = wizardSteps.findIndex(s => s.id === stepId)
-    if (idx <= 0) return false
-    return wizardSteps.slice(0, idx).some(s => !stepSubmitted.value[s.id])
-  }
-
   const STEP_BLOCK_MSGS = {
     1: '请先配置配送中心与需求点，再提交本步',
     2: '请先完成物资分配并选择无人机，再提交本步',
@@ -182,6 +173,6 @@ export const useAppStore = defineStore('app', () => {
     wizardSteps, adminTools, activeStep, activeAdmin,
     stepStatus, gotoStep, openAdmin, backToWizard,
     disasterParams, totalDemandKg, saveDisasterParams, weatherExceeded,
-    stepSubmitted, submitStep, stepLocked, resetSubmissions,
+    stepSubmitted, submitStep, resetSubmissions,
   }
 })

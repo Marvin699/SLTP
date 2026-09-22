@@ -13,10 +13,6 @@ function onSubModule(id) {
 }
 
 function onStep(s) {
-  if (app.stepLocked(s.id)) {
-    alert('请先提交前面的步骤，再进入这一步')
-    return
-  }
   app.gotoStep(s.id)
 }
 
@@ -36,13 +32,11 @@ function onSubmitStep() {
           :class="{
             current: app.activeAdmin === null && app.activeStep === s.id,
             done: app.stepSubmitted[s.id],
-            locked: app.stepLocked(s.id),
           }"
           @click="onStep(s)"
         >
           <div class="step-circle">
             <span v-if="app.stepSubmitted[s.id]" class="step-check">✓</span>
-            <span v-else-if="app.stepLocked(s.id)" class="step-lock">🔒</span>
             <span v-else class="step-num">{{ i + 1 }}</span>
           </div>
           <div class="step-text">
@@ -241,17 +235,7 @@ function onSubmitStep() {
   font-weight: 600;
 }
 
-.step-lock { font-size: 12px; }
-
-.step.locked { cursor: not-allowed; opacity: 0.55; }
-.step.locked:hover { background: transparent; }
-.step.locked .step-circle {
-  border-style: dashed;
-  box-shadow: none;
-}
-.step.locked .step-title { color: var(--text3); }
-
-/* ── 提交本步按钮 ── */
+.subtab.back { border-style: dashed; }
 .submit-step-btn {
   flex-shrink: 0;
   padding: 6px 18px;

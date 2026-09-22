@@ -37,22 +37,22 @@ const isLoading = computed(() => store.loading || matStore.loading || uavStore.l
 const isDayMode = ref(false)
 const toggleTheme = () => { isDayMode.value = !isDayMode.value }
 
-// ─── 向导步骤引导：前置步骤未完成时的提示 ───
+// ─── 自由浏览引导：定位到第一个数据未就绪的步骤 ───
 const stepHints = {
-  2: '先在「① 案例与配送点」中加载案例并配置需求点，才能进行物资分配',
-  3: '先在「② 物资与选型」中完成物资分配和无人机选型，才能进行路径规划',
-  4: '先在「③ 规划与诊断」中运行路径规划生成方案，才能进行辩论与优出',
+  1: '建议先在「① 案例与配送点」加载案例并配置配送中心与需求点',
+  2: '建议先在「② 物资与选型」完成物资分配和无人机选型',
+  3: '建议先在「③ 规划与诊断」运行路径规划生成方案',
+  4: '建议先在「④ 辩论与优出」生成方案报告',
 }
-const pendingHint = computed(() => {
-  if (app.activeAdmin !== null) return null
-  const step = app.activeStep
-  // 检查所有前置步骤是否完成
-  for (let i = 1; i < step; i++) {
-    if (!app.stepStatus[i]) {
-      return stepHints[step] || '请先完成前置步骤'
-    }
+const firstUnready = computed(() => {
+  for (let i = 1; i <= 4; i++) {
+    if (!app.stepStatus[i]) return i
   }
   return null
+})
+const pendingHint = computed(() => {
+  if (app.activeAdmin !== null) return null
+  return firstUnready.value ? (stepHints[firstUnready.value] || null) : null
 })
 
 const goBack = () => {
@@ -102,15 +102,15 @@ onMounted(() => {
     <!-- StepNav for wizard navigation -->
     <StepNav />
 
-    <!-- 步骤引导提示条 -->
+    <!-- 自由浏览引导提示条 -->
     <div v-if="pendingHint" class="step-hint-bar">
       <span class="hint-icon">💡</span>
-      <span>{{ pendingHint }}</span>
+      <span>{{ pendingHint }}（当前页面可直接浏览）</span>
       <button
-        v-if="app.activeStep > 1 && !app.stepStatus[app.activeStep - 1]"
+        v-if="firstUnready && firstUnready < app.activeStep"
         class="hint-jump"
-        @click="app.gotoStep(app.activeStep - 1)"
-      >← 去完成第 {{ ['一', '二', '三', '四'][app.activeStep - 2] }} 步</button>
+        @click="app.gotoStep(firstUnready)"
+      >← 去完成第 {{ ['一', '二', '三', '四'][firstUnready - 1] }} 步</button>
     </div>
 
     <!-- Main area -->

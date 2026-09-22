@@ -79,9 +79,6 @@
       <router-view />
     </main>
 
-    <!-- AI小翼全局悬浮球 -->
-    <AiAssistantFloat />
-
     <!-- 使用手册弹窗（师生切换） -->
     <UserManualDialog v-model="showManual" />
   </div>
@@ -92,7 +89,6 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { SwitchButton, ArrowDown, User } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import AiAssistantFloat from '@/components/AiAssistantFloat.vue'
 import UserManualDialog from '@/components/UserManualDialog.vue'
 import { teacherNavItems, studentNavItems } from '@/constants/navigation'
 
