@@ -61,7 +61,8 @@
 <script setup>
 import { ref, nextTick, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { apiRoot } from '@/utils/request'
+import DOMPurify from 'dompurify'
 import XiaoYiAvatar from '@/components/XiaoYiAvatar.vue'
 import { useUserStore } from '@/stores/user'
 
@@ -79,7 +80,7 @@ const messages = ref([
 const msgsRef = ref(null)
 const quicks = ['这个页面是做什么的？', '如何开始路径规划？', '无人机装载有什么原则？', '课程图谱怎么用？']
 
-function fmt(c) { return String(c || '').replace(/\n/g, '<br>') }
+function fmt(c) { return DOMPurify.sanitize(String(c || '').replace(/\n/g, '<br>')) }
 
 function scrollBottom() {
   if (msgsRef.value) msgsRef.value.scrollTop = msgsRef.value.scrollHeight
@@ -94,7 +95,7 @@ async function send() {
   await nextTick()
   scrollBottom()
   try {
-    const res = await axios.post('/api/ai-chat/chat', {
+    const res = await apiRoot.post('/api/ai-chat/chat', {
       messages: messages.value
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => ({ role: m.role, content: m.content }))

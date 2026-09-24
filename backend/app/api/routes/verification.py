@@ -110,7 +110,7 @@ def _match_engine_flag(engine_key: Optional[str], issues: List[str], warnings: L
 
 
 @router.get("/template")
-def get_template():
+def get_template(_: object = Depends(get_current_user)):
     """下发标准核验模板（7 组指标，引擎可核验项带 engine_key 标识）"""
     return {"groups": CHECKLIST_TEMPLATE}
 

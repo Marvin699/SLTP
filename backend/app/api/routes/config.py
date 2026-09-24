@@ -1,7 +1,8 @@
 """配置信息 API 路由"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
+from app.core.deps import get_current_user
 from app.services.config_service import list_configs, save_config, load_config, delete_config
 
 router = APIRouter(prefix="/api/path-planning/config", tags=["配置管理"])
@@ -13,13 +14,13 @@ class SaveRequest(BaseModel):
 
 
 @router.get("/list")
-def get_configs():
+def get_configs(_: object = Depends(get_current_user)):
     """列出所有配置文件"""
     return list_configs()
 
 
 @router.get("/load/{filename}")
-def get_config(filename: str):
+def get_config(filename: str, _: object = Depends(get_current_user)):
     """加载配置文件内容"""
     try:
         content = load_config(filename)
@@ -29,14 +30,14 @@ def get_config(filename: str):
 
 
 @router.post("/save")
-def post_save(req: SaveRequest):
+def post_save(req: SaveRequest, _: object = Depends(get_current_user)):
     """保存配置文件"""
     result = save_config(req.filename, req.content)
     return result
 
 
 @router.delete("/delete/{filename}")
-def del_config(filename: str):
+def del_config(filename: str, _: object = Depends(get_current_user)):
     """删除配置文件"""
     if delete_config(filename):
         return {'message': f'已删除: {filename}'}

@@ -1,17 +1,12 @@
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
 /** 反向质询辩论 API（需登录，自动携带 token） */
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/debate',
   timeout: 120000,
   headers: { 'Content-Type': 'application/json' },
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('sltp_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
 
 /** 创建辩论会话 */
 export function createSession(data) {

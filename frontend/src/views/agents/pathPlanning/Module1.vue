@@ -1,5 +1,7 @@
 <script setup>
+import { authFetch } from '@/utils/request'
 import { ref, computed, onUnmounted, onMounted, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useConfigStore } from '@/stores/pathPlanning/config'
 import { useCaseStudyStore } from '@/stores/pathPlanning/case_study'
@@ -49,12 +51,12 @@ const calibPreview = ref([]) // [{ id, name, current, target }]
 function buildCalibPreview() {
   const total = disasterTotal.value
   if (!total) {
-    alert('请先填写受灾人口、人均日消耗和保障时长')
+    ElMessage.warning('请先填写受灾人口、人均日消耗和保障时长')
     return
   }
   const assigned = store.demands.filter(p => (matStore.getAssignment(p.id)?.total_weight || 0) > 0)
   if (!assigned.length) {
-    alert('还没有需求点配置物资。\n请先在步骤②「物资需求选择」为需求点勾选物资类别，再回来推算。')
+    ElMessage.warning('还没有需求点配置物资，请先在步骤②勾选物资类别再回来推算')
     return
   }
   const list = assigned.map(p => {
@@ -75,11 +77,7 @@ async function confirmCalibrate() {
   }
   appStore.saveDisasterParams()
   showCalibPreview.value = false
-  alert(
-    `已按灾情需求校准 ${ok} 个需求点的物资数量（保持各点占比不变）：\n` +
-    `总需求 ${disasterTotal.value.toFixed(0)} kg，各点数量已等比调整。\n` +
-    `可在步骤②查看明细并微调。`
-  )
+  ElMessage.success(`已校准 ${ok} 个需求点的物资数量（总需求 ${disasterTotal.value.toFixed(0)} kg），可在步骤②微调`)
 }
 
 const showCaseDropdown = ref(false)
@@ -120,16 +118,24 @@ async function saveEdit(id) {
     })
     editingId.value = null
   } catch (e) {
-    alert('更新失败')
+    ElMessage.error('更新失败')
   }
 }
 
 async function handleDeletePoint(id) {
-  if (!confirm('确认删除该点位？')) return
+  try {
+    await ElMessageBox.confirm('确认删除该点位？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
   try {
     await store.removePoint(id)
   } catch (e) {
-    alert('删除失败')
+    ElMessage.error('删除失败')
   }
 }
 
@@ -168,7 +174,7 @@ async function handleSearch() {
   searchError.value = ''
   searchResults.value = []
   try {
-    const res = await fetch(`/api/path-planning/points/geocode/search?keyword=${encodeURIComponent(searchQuery.value)}`)
+    const res = await authFetch(`/api/path-planning/points/geocode/search?keyword=${encodeURIComponent(searchQuery.value)}`)
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       searchError.value = err.detail || '搜索失败'
@@ -243,13 +249,13 @@ async function handleGenMatrix() {
     await store.loadDistanceMatrix()
     showDistMatrix.value = true
   } catch (e) {
-    alert('生成失败: ' + (store.error || e.message))
+    ElMessage.error('生成失败: ' + (store.error || e.message))
   }
 }
 
 function handleShowCoordTable() {
   if (store.points.length === 0) {
-    alert('请先添加点位')
+    ElMessage.warning('请先添加点位')
     return
   }
   showCoordTable.value = true
@@ -274,19 +280,19 @@ async function handleSaveModule1() {
   }
   
   try {
-    const response = await fetch('/api/path-planning/workspace/save/module1', {
+    const response = await authFetch('/api/path-planning/workspace/save/module1', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(module1Data),
     })
     const result = await response.json()
     if (result.success) {
-      alert('模块一数据已保存！')
+      ElMessage.success('模块一数据已保存')
     } else {
-      alert('保存失败: ' + result.message)
+      ElMessage.error('保存失败: ' + result.message)
     }
   } catch (e) {
-    alert('保存失败: ' + e.message)
+    ElMessage.error('保存失败: ' + e.message)
   }
 }
 
@@ -294,7 +300,7 @@ async function handleExport() {
   try {
     await store.saveGeoJSON()
   } catch (e) {
-    alert('导出失败')
+    ElMessage.error('导出失败')
   }
 }
 
@@ -305,7 +311,7 @@ onMounted(async () => {
 async function handleApplyCase(caseData) {
   await caseStore.applyCase(caseData)
   showCaseDropdown.value = false
-  alert('案例已应用！')
+  ElMessage.success('案例已应用')
 }
 
 function toggleCaseDropdown() {

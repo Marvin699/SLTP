@@ -58,6 +58,7 @@
  * 机型的增删改，数据存 uav_params 表，步骤③选型实时生效
  */
 import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchModels, createUAVModel, updateUAVModel, deleteUAVModel } from '@/api/pathPlanning/uavs'
 
 const models = ref([])
@@ -147,12 +148,20 @@ async function handleSave() {
 }
 
 async function handleDelete(m) {
-  if (!confirm(`确定删除机型「${m.brand} ${m.model}」？\n删除后学生选型列表将不再显示该机型。`)) return
+  try {
+    await ElMessageBox.confirm(
+      `确定删除机型「${m.brand} ${m.model}」？删除后学生选型列表将不再显示该机型。`,
+      '删除确认',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+    )
+  } catch {
+    return
+  }
   try {
     await deleteUAVModel(m.model_id)
     await loadModels()
   } catch (e) {
-    alert(e.response?.data?.detail || '删除失败')
+    ElMessage.error(e.response?.data?.detail || '删除失败')
   }
 }
 

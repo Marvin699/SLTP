@@ -6,8 +6,10 @@ import asyncio
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query, WebSocket, WebSocketDisconnect, Depends
 from fastapi.responses import FileResponse, JSONResponse
+
+from app.core.deps import get_current_user, require_teacher
 
 router = APIRouter(prefix="/api/calls", tags=["任务4·录像"])
 
@@ -160,6 +162,7 @@ async def upload_chunk(
     seq: int = Query(0, ge=0, description="分片序号"),
     total: int = Query(9999, ge=1, description="总分片数(占位)"),
     chunk: UploadFile = File(...),
+    _: object = Depends(get_current_user),
 ):
     key = f"g{group_id}"
     UPLOAD_COUNTER[key] = UPLOAD_COUNTER.get(key, 0) + 1
@@ -202,6 +205,7 @@ def _cleanup_old_for_group(group_id: int, keep_recent: int = 30):
 def list_calls(
     group_id: Optional[int] = Query(None, ge=1, le=6),
     limit: int = Query(50, ge=1, le=200),
+    _: object = Depends(require_teacher),
 ):
     items = []
     for f in sorted(MEDIA_DIR.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -227,7 +231,7 @@ def list_calls(
 
 
 @router.get("/latest")
-def latest_for_group(group_id: int = Query(..., ge=1, le=6)):
+def latest_for_group(group_id: int = Query(..., ge=1, le=6), _: object = Depends(require_teacher)):
     best = None
     best_time = 0
     for f in MEDIA_DIR.iterdir():

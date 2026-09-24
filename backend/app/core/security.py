@@ -1,12 +1,21 @@
 """密码哈希 + JWT 工具"""
-import os
+import secrets
 import jwt
 from datetime import datetime, timedelta, timezone
 import bcrypt
 
+from app.core.config import settings
 
-# JWT 密钥（生产环境应放到 .env，这里给一个默认值方便首次启动）
-JWT_SECRET = os.environ.get("JWT_SECRET", "sltp_secret_key_2026_change_me_in_production")
+
+# JWT 密钥：优先从 .env（经 settings）读取；未配置则每次启动随机生成（本地开发友好），
+# 但正式部署必须配置 JWT_SECRET，否则重启后所有已签发 token 失效
+_env_secret = (settings.JWT_SECRET or "").strip()
+if not _env_secret:
+    _env_secret = secrets.token_hex(32)
+    print("[安全提醒] 未配置 JWT_SECRET（.env），本次已使用随机密钥；"
+          "正式部署请在 .env 中固定 JWT_SECRET，否则重启后所有登录会失效")
+
+JWT_SECRET = _env_secret
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24 * 7  # Token 有效期 7 天
 

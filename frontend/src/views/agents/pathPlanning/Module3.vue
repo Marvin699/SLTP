@@ -1,6 +1,9 @@
 <script setup>
+import { authFetch } from '@/utils/request'
 import { ref, onMounted, computed } from 'vue'
+import { ElMessage } from 'element-plus'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { useUavsStore } from '@/stores/pathPlanning/uavs'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
@@ -122,7 +125,8 @@ marked.setOptions({
 })
 
 function renderMarkdown(text) {
-  return marked(text || '')
+  // AI 输出经消毒后再渲染，防注入恶意 HTML/脚本
+  return DOMPurify.sanitize(marked(text || ''))
 }
 
 onMounted(async () => {
@@ -212,19 +216,19 @@ async function handleSaveModule3() {
   }
   
   try {
-    const response = await fetch('/api/path-planning/workspace/save/module3', {
+    const response = await authFetch('/api/path-planning/workspace/save/module3', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(module3Data),
     })
     const result = await response.json()
     if (result.success) {
-      alert('模块三数据已保存！')
+      ElMessage.success('模块三数据已保存')
     } else {
-      alert('保存失败: ' + result.message)
+      ElMessage.error('保存失败: ' + result.message)
     }
   } catch (e) {
-    alert('保存失败: ' + e.message)
+    ElMessage.error('保存失败: ' + e.message)
   }
 }
 

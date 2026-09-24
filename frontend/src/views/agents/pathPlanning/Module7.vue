@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCaseStudyStore } from '@/stores/pathPlanning/case_study'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
@@ -71,7 +72,7 @@ function openEditModal(caseData) {
 
 async function handleSave() {
   if (!form.value.name || !form.value.center_data.name) {
-    alert('请填写案例名称和配送中心')
+    ElMessage.warning('请填写案例名称和配送中心')
     return
   }
 
@@ -90,9 +91,16 @@ async function handleSave() {
 }
 
 async function handleDelete(id) {
-  if (confirm('确定删除此案例？')) {
-    await caseStore.removeCase(id)
+  try {
+    await ElMessageBox.confirm('确定删除此案例？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
   }
+  await caseStore.removeCase(id)
 }
 
 async function handleSetDefault(id) {
@@ -101,7 +109,7 @@ async function handleSetDefault(id) {
 
 async function handleApply(caseData) {
   await caseStore.applyCase(caseData)
-  alert('案例已应用到当前数据')
+  ElMessage.success('案例已应用到当前数据')
 }
 
 async function saveCurrentAsCase() {
@@ -109,7 +117,7 @@ async function saveCurrentAsCase() {
   const demands = pointsStore.demands
 
   if (!center || demands.length === 0) {
-    alert('请先配置配送点数据')
+    ElMessage.warning('请先配置配送点数据')
     return
   }
 
@@ -144,7 +152,7 @@ async function saveCurrentAsCase() {
   }
 
   await caseStore.addCase(caseData)
-  alert('当前数据已保存为案例')
+  ElMessage.success('当前数据已保存为案例')
 }
 
 function addDemandPoint() {
@@ -328,7 +336,7 @@ function triggerImport() {
 function importFromCsv(text) {
   const lines = text.trim().split(/\r?\n/)
   if (lines.length < 2) {
-    alert('文件为空或缺少数据行')
+    ElMessage.warning('文件为空或缺少数据行')
     return
   }
 
@@ -341,7 +349,7 @@ function importFromCsv(text) {
   const requiredCols = ['名称', '经度', '纬度', '物资类别', '物资名称', '单量(kg)', '数量']
   for (const col of requiredCols) {
     if (!(col in colMap)) {
-      alert(`缺少必需列: "${col}"，请使用导出模板`)
+      ElMessage.warning(`缺少必需列: "${col}"，请使用导出模板`)
       return
     }
   }
@@ -382,7 +390,7 @@ function importFromCsv(text) {
 
   const points = Object.values(pointMap)
   if (points.length === 0) {
-    alert('未解析到有效数据')
+    ElMessage.warning('未解析到有效数据')
     return
   }
 
@@ -415,7 +423,7 @@ function importFromCsv(text) {
   }
   tempMaterialData.value = newMaterialData
 
-  alert(`成功导入 ${points.length} 个需求点`)
+  ElMessage.success(`成功导入 ${points.length} 个需求点`)
 }
 
 function parseCsvLine(line) {

@@ -194,6 +194,8 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         "message": "登录成功",
         "token": token,
         "user": user_to_dict(user),
+        # 弱密码提醒（不阻断登录）：正式使用前引导改掉默认/弱口令
+        "weak_password": req.password == "123456" or req.password == user.username,
     }
 
 

@@ -1,16 +1,9 @@
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/path-planning',
   timeout: 300000,
   headers: { 'Content-Type': 'application/json' },
-})
-
-// 自动携带登录 token（方案记录归属 + 交互日志需要）
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('sltp_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
 })
 
 /** 运行路径优化 */

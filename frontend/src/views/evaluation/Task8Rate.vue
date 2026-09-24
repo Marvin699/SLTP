@@ -69,7 +69,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { authFetch } from '@/utils/request'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -133,7 +134,7 @@ function onSlider(i, e) { dims.value[i].val = parseInt(e.target.value) }
 
 async function refreshLatest() {
   try {
-    const r = await fetch(`${API_BASE}/api/ratings/latest_all`)
+    const r = await authFetch(`${API_BASE}/api/ratings/latest_all`)
     const j = await r.json()
     for (const gid of ALLOW_GIDS) {
       if (j[gid]) {
@@ -149,7 +150,7 @@ async function submit() {
   submitting.value = true
   submitMsg.value = ''
   try {
-    const r = await fetch(`${API_BASE}/api/ratings/submit`, {
+    const r = await authFetch(`${API_BASE}/api/ratings/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -178,9 +179,17 @@ async function submit() {
   }
 }
 
+// 轮询最新结果；离开页面必须清理，否则永久后台轮询
+let pollTimer = null
 onMounted(() => {
   refreshLatest()
-  setInterval(refreshLatest, 5000)
+  pollTimer = setInterval(refreshLatest, 5000)
+})
+onUnmounted(() => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
 })
 </script>
 

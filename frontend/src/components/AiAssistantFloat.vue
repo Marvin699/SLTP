@@ -104,7 +104,8 @@ import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Minus, FullScreen, Promotion } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import axios from 'axios'
+import { apiRoot } from '@/utils/request'
+import DOMPurify from 'dompurify'
 import XiaoYiAvatar from './XiaoYiAvatar.vue'
 
 const router = useRouter()
@@ -145,7 +146,7 @@ function formatTime(d) {
 }
 
 function formatMessage(c) {
-  return c.replace(/\n/g, '<br>')
+  return DOMPurify.sanitize(String(c || '').replace(/\n/g, '<br>'))
 }
 
 async function sendChat() {
@@ -164,7 +165,7 @@ async function sendChat() {
   scrollBottom()
 
   try {
-    const res = await axios.post('/api/ai-chat/chat', {
+    const res = await apiRoot.post('/api/ai-chat/chat', {
       messages: chatMessages.value
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => ({ role: m.role, content: m.content }))

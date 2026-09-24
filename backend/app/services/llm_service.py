@@ -67,7 +67,7 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3) -> str:
     last_err = None
     for i, cfg in enumerate(chain):
         try:
-            client = OpenAI(api_key=cfg["api_key"], base_url=cfg["base_url"], timeout=180.0)
+            client = OpenAI(api_key=cfg["api_key"], base_url=cfg["base_url"], timeout=30.0)
             tag = cfg["model"] if i == 0 else f"{cfg['model']}(备用#{i})"
             print(f"[LLM] 开始调用 {tag}...")
             response = client.chat.completions.create(

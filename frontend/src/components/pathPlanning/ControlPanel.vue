@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 
 const store = usePointsStore()
@@ -35,7 +36,7 @@ async function handleGenMatrix() {
   try {
     await store.loadDistanceMatrix()
   } catch (e) {
-    alert('生成距离矩阵失败: ' + (store.error || e.message))
+    ElMessage.error('生成距离矩阵失败: ' + (store.error || e.message))
   }
 }
 
@@ -43,7 +44,7 @@ async function handleExport() {
   try {
     await store.saveGeoJSON()
   } catch (e) {
-    alert('导出失败')
+    ElMessage.error('导出失败')
   }
 }
 

@@ -508,7 +508,7 @@ function startUploader(g, stream) {
     form.append('chunk', ev.data, `part_${String(seq).padStart(5,'0')}${ext}`)
     form.append('mime', mime)
     try {
-      await fetch(url, { method: 'POST', body: form })
+      await authFetch(url, { method: 'POST', body: form })
       lastUploadSeq = seq
     } catch (_) {}
   }

@@ -65,7 +65,7 @@ async def chat(
         if not api_key:
             return {"success": False, "message": "AI助教未配置，请先在系统管理中配置大模型"}
 
-        client = OpenAI(api_key=api_key, base_url=base_url, timeout=60.0)
+        client = OpenAI(api_key=api_key, base_url=base_url, timeout=30.0)
 
         system_msg = req.system_prompt or (
             "你是智慧低空应急运输教学平台的AI助教，你的名字叫'小翼'。"

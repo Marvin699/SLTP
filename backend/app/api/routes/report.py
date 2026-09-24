@@ -5,7 +5,7 @@ import re
 import shutil
 import urllib.parse
 from fastapi import APIRouter, HTTPException, Query, Depends
-from app.core.deps import get_optional_user
+from app.core.deps import get_current_user
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
@@ -41,7 +41,7 @@ class ChooseReportRequest(BaseModel):
 
 
 @router.post("/generate")
-def generate_report_endpoint(req: GenerateReportRequest, current_user=Depends(get_optional_user)):
+def generate_report_endpoint(req: GenerateReportRequest, current_user=Depends(get_current_user)):
     """
     生成方案报告（Word + PDF）
     
@@ -132,7 +132,7 @@ def _enc_name(name: str, ext: str) -> str:
         return clean + '.' + ext
 
 @router.get("/download/{report_id}/word")
-def download_word(report_id: int):
+def download_word(report_id: int, _: object = Depends(get_current_user)):
     """下载Word报告"""
     try:
         db = SessionLocal()
@@ -170,7 +170,7 @@ def download_word(report_id: int):
 
 
 @router.get("/download/{report_id}/pdf")
-def download_pdf(report_id: int):
+def download_pdf(report_id: int, _: object = Depends(get_current_user)):
     """下载PDF报告"""
     try:
         db = SessionLocal()
@@ -208,7 +208,7 @@ def download_pdf(report_id: int):
 
 
 @router.get("/history")
-def get_report_history(limit: int = 20):
+def get_report_history(limit: int = 20, _: object = Depends(get_current_user)):
     """
     获取报告历史记录
     
@@ -251,7 +251,7 @@ def get_report_history(limit: int = 20):
 
 
 @router.get("/{report_id}")
-def get_report_detail(report_id: int):
+def get_report_detail(report_id: int, _: object = Depends(get_current_user)):
     """
     获取报告详情
     
@@ -293,7 +293,7 @@ def get_report_detail(report_id: int):
 
 
 @router.put("/{report_id}")
-def update_report(report_id: int, req: UpdateReportRequest):
+def update_report(report_id: int, req: UpdateReportRequest, _: object = Depends(get_current_user)):
     """
     更新报告数据（重新生成Word）
     
@@ -334,7 +334,7 @@ def update_report(report_id: int, req: UpdateReportRequest):
 
 
 @router.post("/{report_id}/choose")
-def choose_report(report_id: int, req: ChooseReportRequest):
+def choose_report(report_id: int, req: ChooseReportRequest, _: object = Depends(get_current_user)):
     """择优决策：选定最终方案（全局唯一，其余自动取消），并记录决策理由"""
     try:
         db = SessionLocal()
@@ -372,7 +372,7 @@ def choose_report(report_id: int, req: ChooseReportRequest):
 
 
 @router.delete("/{report_id}")
-def delete_report(report_id: int):
+def delete_report(report_id: int, _: object = Depends(get_current_user)):
     """
     删除报告
     

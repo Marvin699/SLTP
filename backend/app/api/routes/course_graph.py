@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.deps import get_current_user
 from app.models.course_graph import CourseProject, TeachingStatus
 from app.schemas.course_graph import (
     CourseProjectCreate, CourseProjectUpdate,
@@ -15,14 +16,14 @@ router = APIRouter(prefix="/api/course-graph", tags=["课程图谱-数据管理"
 
 # --- 简要响应（不含sub_projects大字段） ---
 @router.get("/projects", response_model=List[CourseProjectResponse], summary="获取所有项目列表")
-def get_projects(db: Session = Depends(get_db)):
+def get_projects(db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     projects = db.query(CourseProject).filter(CourseProject.is_active == True).order_by(CourseProject.project_id).all()
     return projects
 
 
 # --- 完整数据 ---
 @router.get("/projects/{project_id}", response_model=CourseProjectResponse, summary="获取单个项目完整数据")
-def get_project(project_id: str, db: Session = Depends(get_db)):
+def get_project(project_id: str, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     project = db.query(CourseProject).filter(CourseProject.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail=f"项目 {project_id} 不存在")
@@ -31,7 +32,7 @@ def get_project(project_id: str, db: Session = Depends(get_db)):
 
 # --- 创建项目 ---
 @router.post("/projects", response_model=CourseProjectResponse, status_code=201, summary="创建新项目")
-def create_project(data: CourseProjectCreate, db: Session = Depends(get_db)):
+def create_project(data: CourseProjectCreate, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     exists = db.query(CourseProject).filter(CourseProject.project_id == data.project_id).first()
     if exists:
         raise HTTPException(status_code=400, detail=f"项目编号 {data.project_id} 已存在")
@@ -56,7 +57,7 @@ def create_project(data: CourseProjectCreate, db: Session = Depends(get_db)):
 
 # --- 更新项目 ---
 @router.put("/projects/{project_id}", response_model=CourseProjectResponse, summary="更新项目")
-def update_project(project_id: str, data: CourseProjectUpdate, db: Session = Depends(get_db)):
+def update_project(project_id: str, data: CourseProjectUpdate, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     project = db.query(CourseProject).filter(CourseProject.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail=f"项目 {project_id} 不存在")
@@ -74,7 +75,7 @@ def update_project(project_id: str, data: CourseProjectUpdate, db: Session = Dep
 
 # --- 删除项目 ---
 @router.delete("/projects/{project_id}", status_code=204, summary="删除项目")
-def delete_project(project_id: str, db: Session = Depends(get_db)):
+def delete_project(project_id: str, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     project = db.query(CourseProject).filter(CourseProject.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail=f"项目 {project_id} 不存在")
@@ -90,7 +91,7 @@ class ImportDataRequest(BaseModel):
 
 
 @router.post("/projects/{project_id}/import", response_model=CourseProjectResponse, summary="导入项目数据")
-def import_project_data(project_id: str, data: ImportDataRequest, db: Session = Depends(get_db)):
+def import_project_data(project_id: str, data: ImportDataRequest, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     project = db.query(CourseProject).filter(CourseProject.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail=f"项目 {project_id} 不存在")
@@ -104,7 +105,7 @@ def import_project_data(project_id: str, data: ImportDataRequest, db: Session = 
 
 # --- 上传JSON文件导入 ---
 @router.post("/projects/{project_id}/upload", response_model=CourseProjectResponse, summary="上传JSON文件导入数据")
-async def upload_project_data(project_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def upload_project_data(project_id: str, file: UploadFile = File(...), db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     project = db.query(CourseProject).filter(CourseProject.project_id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail=f"项目 {project_id} 不存在")
@@ -157,14 +158,14 @@ class TeachingStatusUpdate(BaseModel):
 
 
 @router.get("/teaching-status/{project_id}")
-def get_teaching_status(project_id: str, db: Session = Depends(get_db)):
+def get_teaching_status(project_id: str, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """获取某项目所有节点的教学达成状态"""
     rows = db.query(TeachingStatus).filter(TeachingStatus.project_id == project_id).all()
     return {str(r.node_id): {"status": r.status, "node_name": r.node_name, "updated_at": r.updated_at} for r in rows}
 
 
 @router.put("/teaching-status")
-def update_teaching_status(data: TeachingStatusUpdate, db: Session = Depends(get_db)):
+def update_teaching_status(data: TeachingStatusUpdate, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """更新某节点的教学达成状态"""
     row = db.query(TeachingStatus).filter(
         TeachingStatus.project_id == data.project_id,

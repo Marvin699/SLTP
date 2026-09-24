@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAppStore } from '@/stores/pathPlanning/app'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
 import {
@@ -127,11 +128,23 @@ function applyRegen() {
 
 /** 查看历史记录概要 */
 function viewRecord(r) {
-  alert(`核验记录 #${r.id}\n得分：${r.score}　判定：${r.verdict}\n差异项：${r.mismatch_count}　一致率：${r.consistency}%\n时间：${r.created_at}`)
+  ElMessageBox.alert(
+    `得分：${r.score}　判定：${r.verdict}　差异项：${r.mismatch_count}　一致率：${r.consistency}%\n时间：${r.created_at}`,
+    `核验记录 #${r.id}`,
+    { confirmButtonText: '关闭' }
+  )
 }
 
 async function handleDeleteRecord(r) {
-  if (!confirm(`确认删除核验记录 #${r.id}？`)) return
+  try {
+    await ElMessageBox.confirm(`确认删除核验记录 #${r.id}？`, '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
   try {
     await apiDeleteRecord(r.id)
     records.value = records.value.filter(x => x.id !== r.id)
@@ -140,7 +153,7 @@ async function handleDeleteRecord(r) {
       showRight.value = false
     }
   } catch (e) {
-    alert(e.response?.data?.detail || e.message)
+    ElMessage.error(e.response?.data?.detail || e.message)
   }
 }
 

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useLLMStore } from '@/stores/pathPlanning/llm'
 
 const llmStore = useLLMStore()
@@ -58,7 +59,7 @@ function openEditModal(config) {
 
 async function handleSave() {
   if (!form.value.name || !form.value.model_id || !form.value.base_url || !form.value.api_key) {
-    alert('请填写完整信息')
+    ElMessage.warning('请填写完整信息')
     return
   }
 
@@ -75,9 +76,16 @@ async function handleSave() {
 }
 
 async function handleDelete(id) {
-  if (confirm('确定删除此模型配置？')) {
-    await llmStore.removeConfig(id)
+  try {
+    await ElMessageBox.confirm('确定删除此模型配置？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
   }
+  await llmStore.removeConfig(id)
 }
 
 async function handleActivate(id) {

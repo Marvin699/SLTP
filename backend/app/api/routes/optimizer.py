@@ -1,6 +1,6 @@
 """模块四：路径规划 API 路由"""
 from fastapi import APIRouter, HTTPException, Depends
-from app.core.deps import get_optional_user
+from app.core.deps import get_current_user
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
@@ -44,7 +44,7 @@ class ManualAdjustRequest(BaseModel):
 
 
 @router.post("/manual")
-def manual_adjust(req: ManualAdjustRequest, current_user=Depends(get_optional_user)):
+def manual_adjust(req: ManualAdjustRequest, current_user=Depends(get_current_user)):
     """
     手动调整配送顺序后重算（跳过ACO，直接按传入路线重建方案）
 
@@ -65,7 +65,7 @@ def manual_adjust(req: ManualAdjustRequest, current_user=Depends(get_optional_us
 
 
 @router.post("/run")
-def run_optimize(req: OptimizeRequest, current_user=Depends(get_optional_user)):
+def run_optimize(req: OptimizeRequest, current_user=Depends(get_current_user)):
     """
     运行路径优化。
 
@@ -120,7 +120,7 @@ def run_optimize(req: OptimizeRequest, current_user=Depends(get_optional_user)):
 
 
 @router.post("/params/default")
-def get_default(req: DefaultParamsRequest):
+def get_default(req: DefaultParamsRequest, _: object = Depends(get_current_user)):
     """获取默认 ACO 参数"""
     try:
         task = parse_task(req.task)
@@ -131,7 +131,7 @@ def get_default(req: DefaultParamsRequest):
 
 
 @router.post("/export/excel")
-def export_excel_endpoint(req: OptimizeRequest):
+def export_excel_endpoint(req: OptimizeRequest, _: object = Depends(get_current_user)):
     """
     导出 Excel 运输汇总（4个Sheet）。
 
@@ -159,7 +159,7 @@ def export_excel_endpoint(req: OptimizeRequest):
 # ─── 历史记录 CRUD ───
 
 @router.get("/history")
-def get_optimization_history(limit: int = 20):
+def get_optimization_history(limit: int = 20, _: object = Depends(get_current_user)):
     """
     获取路径规划历史记录
     
@@ -194,7 +194,7 @@ def get_optimization_history(limit: int = 20):
 
 
 @router.get("/{record_id}")
-def get_optimization_detail(record_id: int):
+def get_optimization_detail(record_id: int, _: object = Depends(get_current_user)):
     """
     获取单个优化记录详情
     
@@ -235,7 +235,7 @@ def get_optimization_detail(record_id: int):
 
 
 @router.delete("/{record_id}")
-def delete_optimization(record_id: int):
+def delete_optimization(record_id: int, _: object = Depends(get_current_user)):
     """
     删除优化记录
     

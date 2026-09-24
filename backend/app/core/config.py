@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./path_planning_data.db"
     CORS_ORIGINS: str = '["*"]'
 
+    # JWT 密钥（正式部署必须在 .env 中固定配置，否则重启后所有登录失效）
+    JWT_SECRET: str = ""
+
     # LLM 大模型配置（OpenAI 兼容接口）
     LLM_API_KEY: str = ""
     LLM_BASE_URL: str = "https://api.deepseek.com"

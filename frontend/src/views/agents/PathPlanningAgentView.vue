@@ -52,7 +52,10 @@ const firstUnready = computed(() => {
 })
 const pendingHint = computed(() => {
   if (app.activeAdmin !== null) return null
-  return firstUnready.value ? (stepHints[firstUnready.value] || null) : null
+  // 仅当用户浏览到后面的步骤、且前置步骤数据未就绪时提示；
+  // 停留在第①/②步时不提示（用户正在做的就是该步骤本身）
+  if (!firstUnready.value || firstUnready.value >= app.activeStep) return null
+  return stepHints[firstUnready.value] || null
 })
 
 const goBack = () => {
@@ -107,7 +110,7 @@ onMounted(() => {
       <span class="hint-icon">💡</span>
       <span>{{ pendingHint }}（当前页面可直接浏览）</span>
       <button
-        v-if="firstUnready && firstUnready < app.activeStep"
+        v-if="firstUnready"
         class="hint-jump"
         @click="app.gotoStep(firstUnready)"
       >← 去完成第 {{ ['一', '二', '三', '四'][firstUnready - 1] }} 步</button>

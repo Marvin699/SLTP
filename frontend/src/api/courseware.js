@@ -1,6 +1,6 @@
-import axios from 'axios'
+import { createApi, apiRoot } from '@/utils/request'
 
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/courseware',
   timeout: 60000,
 })
@@ -46,7 +46,7 @@ export function uploadCourseware(file, courseName, title, fileType = 'courseware
  * 下载课件（浏览器直接跳转，携带 token 的场景需用 fetch 转 blob）
  */
 export function downloadCourseware(item) {
-  return axios.get(`/api/courseware/${item.id}/download`, {
+  return apiRoot.get(`/api/courseware/${item.id}/download`, {
     responseType: 'blob',
     headers: authHeaders(),
     timeout: 300000,

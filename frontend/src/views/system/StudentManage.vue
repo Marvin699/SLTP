@@ -184,15 +184,14 @@ import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Upload, Download, Refresh, Search, UploadFilled, RefreshRight, Delete, Key, UserFilled } from '@element-plus/icons-vue'
 import * as XLSX from 'xlsx'
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 import { GROUP_NAMES } from '@/constants/groups'
 
 const API_BASE = import.meta.env.VITE_API_BASE || ''
-const token = localStorage.getItem('sltp_token')
 
-const api = axios.create({
+// 统一实例：自动携带最新 token，401 自动跳登录（原写法在 create 时固化 token，过期后全部请求失效）
+const api = createApi({
   baseURL: API_BASE,
-  headers: { Authorization: `Bearer ${token}` }
 })
 
 const loading = ref(false)

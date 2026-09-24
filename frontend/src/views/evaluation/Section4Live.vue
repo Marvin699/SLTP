@@ -249,6 +249,7 @@
 </template>
 
 <script setup>
+import { authFetch } from '@/utils/request'
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import QRCode from 'qrcode'
@@ -751,7 +752,7 @@ const groupVideoBlobUrl = reactive({})
 
 async function pollGroupStream(g) {
   try {
-    const r = await fetch(`/api/calls/latest?group_id=${g.id}&t=${Date.now()}`)
+    const r = await authFetch(`/api/calls/latest?group_id=${g.id}&t=${Date.now()}`)
     const data = await r.json()
     if (data.ok && data.item) {
       const prevName = groupVideoLatestName[g.id]
@@ -810,7 +811,7 @@ async function recordAll() {
 }
 async function stopRecordAll() {
   recordingAll.value = false
-  const r = await fetch('/api/calls/list')
+  const r = await authFetch('/api/calls/list')
   const data = await r.json()
   const listText = (data.items || []).map(i => `${i.group_id || '?'} ${i.name || ''} ${i.url}`).join('\n')
   const blob = new Blob([listText], { type: 'text/plain;charset=utf-8' })

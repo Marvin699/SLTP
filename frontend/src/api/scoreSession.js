@@ -1,6 +1,6 @@
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/score',
   timeout: 10000,
 })

@@ -41,6 +41,7 @@ from app.models.llm_config import LLMConfig  # noqa: F401
 from app.models.case_study import CaseStudy  # noqa: F401
 from app.models.course_graph import CourseProject, TeachingStatus  # noqa: F401
 from app.models.score_session import ScoreSession, ScoreRecord  # noqa: F401
+from app.models.rating import RatingRecord  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.chat_history import ChatHistory  # noqa: F401
 from app.models.debate import DebateSession, DebateMessage  # noqa: F401

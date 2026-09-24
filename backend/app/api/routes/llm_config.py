@@ -1,11 +1,12 @@
 """系统管理 - 大模型配置 API"""
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_teacher
 from app.models.llm_config import LLMConfig
 from app.core.config import settings
 
@@ -35,7 +36,7 @@ class LLMConfigResponse(BaseModel):
     name: str
     model_id: str
     base_url: str
-    api_key: str  # 返回完整key，前端需要显示
+    api_key: str
     description: Optional[str]
     is_active: bool
     is_default: bool
@@ -45,16 +46,26 @@ class LLMConfigResponse(BaseModel):
     class Config:
         from_attributes = True
 
+    @field_validator("api_key")
+    @classmethod
+    def mask_api_key(cls, v: str) -> str:
+        """响应脱敏：完整 key 不出后端，仅保留首尾各4位"""
+        if not v:
+            return ""
+        if len(v) <= 8:
+            return "****"
+        return v[:4] + "****" + v[-4:]
+
 
 @router.get("/configs", response_model=List[LLMConfigResponse])
-def get_llm_configs(db: Session = Depends(get_db)):
+def get_llm_configs(db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """获取所有大模型配置"""
     configs = db.query(LLMConfig).order_by(LLMConfig.created_at.desc()).all()
     return configs
 
 
 @router.post("/configs", response_model=LLMConfigResponse)
-def create_llm_config(config: LLMConfigCreate, db: Session = Depends(get_db)):
+def create_llm_config(config: LLMConfigCreate, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """添加大模型配置"""
     # 如果设置为默认，取消其他默认
     if config.is_default:
@@ -80,17 +91,21 @@ def create_llm_config(config: LLMConfigCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/configs/{config_id}", response_model=LLMConfigResponse)
-def update_llm_config(config_id: int, config: LLMConfigUpdate, db: Session = Depends(get_db)):
+def update_llm_config(config_id: int, config: LLMConfigUpdate, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """更新大模型配置"""
     db_config = db.query(LLMConfig).filter(LLMConfig.id == config_id).first()
     if not db_config:
         raise HTTPException(status_code=404, detail="配置不存在")
-    
+
     # 如果设置为默认，取消其他默认
     if config.is_default:
         db.query(LLMConfig).update({LLMConfig.is_default: False})
-    
+
     update_data = config.dict(exclude_unset=True)
+    # api_key 为空或为脱敏回显值时，不覆盖数据库中的真实 key
+    new_key = update_data.get("api_key") or ""
+    if not new_key.strip() or "****" in new_key:
+        update_data.pop("api_key", None)
     for field, value in update_data.items():
         setattr(db_config, field, value)
     
@@ -101,7 +116,7 @@ def update_llm_config(config_id: int, config: LLMConfigUpdate, db: Session = Dep
 
 
 @router.delete("/configs/{config_id}")
-def delete_llm_config(config_id: int, db: Session = Depends(get_db)):
+def delete_llm_config(config_id: int, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """删除大模型配置"""
     db_config = db.query(LLMConfig).filter(LLMConfig.id == config_id).first()
     if not db_config:
@@ -127,7 +142,7 @@ def delete_llm_config(config_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/configs/{config_id}/activate")
-def activate_llm_config(config_id: int, db: Session = Depends(get_db)):
+def activate_llm_config(config_id: int, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """激活指定大模型配置"""
     result = activate_llm_config_internal(config_id, db)
     if not result:
@@ -158,14 +173,14 @@ def activate_llm_config_internal(config_id: int, db: Session):
 
 
 @router.get("/active", response_model=Optional[LLMConfigResponse])
-def get_active_config(db: Session = Depends(get_db)):
+def get_active_config(db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """获取当前激活的大模型配置"""
     config = db.query(LLMConfig).filter(LLMConfig.is_active == True).first()
     return config
 
 
 @router.post("/test")
-def test_llm_connection(config_id: int, db: Session = Depends(get_db)):
+def test_llm_connection(config_id: int, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """测试大模型连接"""
     config = db.query(LLMConfig).filter(LLMConfig.id == config_id).first()
     if not config:
@@ -202,7 +217,7 @@ def test_llm_connection(config_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/init-default")
-def init_default_config(db: Session = Depends(get_db)):
+def init_default_config(db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """初始化默认大模型配置（从环境变量）"""
     # 检查是否已有配置
     existing = db.query(LLMConfig).first()

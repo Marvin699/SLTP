@@ -1,12 +1,12 @@
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/path-planning',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
 
-const apiLLM = axios.create({
+const apiLLM = createApi({
   baseURL: '/api/path-planning',
   timeout: 300000,
   headers: { 'Content-Type': 'application/json' },

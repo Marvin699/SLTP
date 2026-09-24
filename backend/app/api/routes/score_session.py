@@ -1,9 +1,10 @@
 import uuid
 import json
 from datetime import datetime
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import func as sql_func
 
+from app.core.deps import get_current_user, require_teacher
 from app.core.database import SessionLocal
 from app.models.score_session import ScoreSession, ScoreRecord
 from app.schemas.score_session import (
@@ -67,13 +68,13 @@ def _calc_weighted_avg(dim_scores, weights):
 
 
 @router.get("/sections")
-def list_sections():
+def list_sections(_: object = Depends(require_teacher)):
     """获取三个环节的配置信息"""
     return list(SECTION_CONFIG.values())
 
 
 @router.get("/sessions")
-def list_sessions(section_id: str = None):
+def list_sessions(section_id: str = None, _: object = Depends(require_teacher)):
     """获取所有评分会话，可按环节筛选"""
     db = SessionLocal()
     try:
@@ -104,7 +105,7 @@ def list_sessions(section_id: str = None):
 
 
 @router.post("/sessions", response_model=ScoreSessionResponse)
-def create_session(data: ScoreSessionCreate):
+def create_session(data: ScoreSessionCreate, _: object = Depends(require_teacher)):
     """创建评分会话（根据环节自动填充维度）"""
     section = SECTION_CONFIG.get(data.section_id)
     if not section:
@@ -142,7 +143,7 @@ def create_session(data: ScoreSessionCreate):
 
 
 @router.delete("/sessions/{session_id}")
-def delete_session(session_id: int):
+def delete_session(session_id: int, _: object = Depends(require_teacher)):
     """停用评分会话（链接失效，打分数据保留，成绩总览不受影响）"""
     db = SessionLocal()
     try:
@@ -157,7 +158,7 @@ def delete_session(session_id: int):
 
 
 @router.delete("/clear/{section_id}")
-def clear_section_scores(section_id: str):
+def clear_section_scores(section_id: str, _: object = Depends(require_teacher)):
     """清空某环节下所有打分记录（保留评分链接）"""
     sec = SECTION_CONFIG.get(section_id)
     if not sec:
@@ -326,7 +327,7 @@ def get_scorer_status(token: str):
 
 
 @router.get("/dashboard/{section_id}")
-def get_dashboard(section_id: str):
+def get_dashboard(section_id: str, _: object = Depends(get_current_user)):
     """获取某环节的全组成绩仪表盘数据（聚合该环节下所有会话的打分）"""
     sec = SECTION_CONFIG.get(section_id)
     if not sec:
@@ -406,7 +407,7 @@ def get_dashboard(section_id: str):
 
 
 @router.get("/overview")
-def get_overview():
+def get_overview(_: object = Depends(require_teacher)):
     """获取所有环节的整体概览（仪表盘用）"""
     db = SessionLocal()
     try:

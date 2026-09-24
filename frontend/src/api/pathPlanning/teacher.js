@@ -1,16 +1,10 @@
-import axios from 'axios'
+import { createApi, apiRoot } from '@/utils/request'
 
 /** 教师端监控 API（需教师登录，自动携带 token） */
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/path-planning/teacher',
   timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
-})
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('sltp_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
 })
 
 /** 全班总览：学生列表 + 参与度/质量聚合 */
@@ -40,17 +34,9 @@ export function getStudentActivities(userId, limit = 50) {
 
 /** 教师介入留言（复用辩论模块接口） */
 export function sendTeacherNote(sessionId, content) {
-  return axios.post(
+  return apiRoot.post(
     `/api/debate/session/${sessionId}/teacher-note`,
     { content },
-    {
-      timeout: 30000,
-      headers: (() => {
-        const h = { 'Content-Type': 'application/json' }
-        const token = localStorage.getItem('sltp_token')
-        if (token) h.Authorization = `Bearer ${token}`
-        return h
-      })(),
-    }
+    { timeout: 30000 }
   )
 }

@@ -1,21 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import { createApi, safeParse } from '@/utils/request'
 
 // 后端 API 基础地址（前端通过 Vite 代理 /api → http://127.0.0.1:8000）
 // 生产环境打包后，前端与后端同源，相对路径也能工作
 const API_BASE = import.meta.env.VITE_API_BASE || ''
 
-// 创建专用 axios 实例
-const authApi = axios.create({
+// 登录/注册等公开接口专用实例（skipAuth：不带统一拦截器，登录失败不会被误判为会话过期）
+const authApi = createApi({
   baseURL: API_BASE,
   timeout: 10000,
-})
+}, { skipAuth: true })
 
 export const useUserStore = defineStore('user', () => {
-  // 从 localStorage 恢复登录状态
+  // 从 localStorage 恢复登录状态（safeParse：数据损坏时回退默认值，防启动白屏）
   const savedToken = localStorage.getItem('sltp_token') || ''
-  const savedUser = JSON.parse(localStorage.getItem('sltp_user') || 'null')
+  const savedUser = safeParse('sltp_user', null)
 
   const token = ref(savedToken)
   const user = ref(savedUser)  // { id, username, role, student_no, class_name, group_no, must_change_password }
@@ -56,7 +56,7 @@ export const useUserStore = defineStore('user', () => {
         user.value = res.data.user
         localStorage.setItem('sltp_token', res.data.token)
         localStorage.setItem('sltp_user', JSON.stringify(res.data.user))
-        return { success: true }
+        return { success: true, weak_password: !!res.data.weak_password }
       }
       return { success: false, message: res.data.message || '登录失败' }
     } catch (err) {

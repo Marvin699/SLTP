@@ -1,15 +1,28 @@
+"""任务8·电子评量表 API
+
+v2：评分数据持久化到 SQLite（rating_records 表），替代原 JSON 文件存储。
+原因：JSON 文件读-改-写无事务，课堂多人同时提交会互相覆盖丢分；
+数据库 + WAL（core/database.py 已开启）下并发提交安全，且服务重启不丢数据。
+首次启动自动把旧 JSON 数据一次性导入数据库（幂等，导入后文件改名 .imported）。
+API 响应结构与 v1 完全一致，前端零改动。
+"""
 import json
 import time
-import threading
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from app.core.deps import get_current_user, require_teacher
+from app.core.database import SessionLocal
+from app.models.rating import RatingRecord
+
 router = APIRouter(prefix="/api/ratings", tags=["任务8·电子评量表"])
 
+# 旧 JSON 数据目录（仅用于一次性迁移）
 RATING_DIR = Path(__file__).resolve().parent.parent.parent.parent / "media" / "ratings"
 RATING_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -17,60 +30,118 @@ GROUP_KEYS = {
     1: "揽星组", 2: "御风组", 3: "巡天组", 4: "逐日组", 5: "凌云组", 6: "长空组",
 }
 
-_lock = threading.Lock()
+
+# ── 旧 JSON 数据一次性迁移（幂等：导入成功/空文件后改名，不再重复处理） ──
+def _migrate_json_files():
+    for gid in GROUP_KEYS:
+        src = RATING_DIR / f"g{gid}_list.json"
+        if not src.exists():
+            continue
+        try:
+            items = json.loads(src.read_text(encoding="utf-8") or "[]")
+        except Exception:
+            continue  # 文件损坏则保留，下次启动再试
+        if isinstance(items, list) and items:
+            db = SessionLocal()
+            try:
+                for it in items:
+                    ts = it.get("ts") or int(time.time() * 1000)
+                    try:
+                        created = datetime.fromtimestamp(ts / 1000)
+                    except Exception:
+                        created = datetime.now()
+                    db.add(RatingRecord(
+                        group_id=gid,
+                        name=(it.get("name") or "匿名")[:100],
+                        role=(it.get("role") or "student")[:50],
+                        dims=json.dumps(it.get("dims") or [], ensure_ascii=False),
+                        total=it.get("total"),
+                        created_at=created,
+                    ))
+                db.commit()
+                print(f"[Ratings] 已迁移 g{gid} 的 {len(items)} 条 JSON 评分记录到数据库")
+            except Exception as e:
+                print(f"[Ratings] JSON 迁移失败 g{gid}: {e}")
+                db.rollback()
+                db.close()
+                continue  # 保留原文件，下次启动重试
+            finally:
+                db.close()
+        # 导入成功（或文件本就为空）→ 改名避免重复导入；latest 可由记录重算，直接废弃
+        try:
+            src.rename(src.with_suffix(".json.imported"))
+        except Exception:
+            pass
+        latest = RATING_DIR / f"g{gid}_latest.json"
+        if latest.exists():
+            try:
+                latest.rename(latest.with_suffix(".json.imported"))
+            except Exception:
+                pass
 
 
-def _group_file(group_id: int) -> Path:
-    return RATING_DIR / f"g{group_id}_latest.json"
+_migrate_json_files()
 
 
-def _group_list_file(group_id: int) -> Path:
-    return RATING_DIR / f"g{group_id}_list.json"
+# ── 聚合工具 ──
 
-
-def _ensure_list(group_id: int) -> list:
-    p = _group_list_file(group_id)
-    if not p.exists():
-        p.write_text("[]", encoding="utf-8")
-        return []
+def _item_from(r: RatingRecord) -> dict:
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
+        dims = json.loads(r.dims) if r.dims else []
     except Exception:
-        return []
+        dims = []
+    return {
+        "name": r.name or "匿名",
+        "role": r.role or "student",
+        "dims": dims,
+        "total": r.total,
+        "ts": int(r.created_at.timestamp() * 1000) if r.created_at else 0,
+    }
 
 
-def _reset_group(group_id: int):
-    with _lock:
-        _group_file(group_id).write_text(json.dumps({}), encoding="utf-8")
-        _group_list_file(group_id).write_text("[]", encoding="utf-8")
+def _empty(group_id: int) -> dict:
+    return {
+        "group_id": group_id,
+        "group_name": GROUP_KEYS.get(group_id, ""),
+        "total": 0, "dims": [], "count": 0, "updated_at": 0,
+    }
 
 
-def _reset_all():
-    with _lock:
-        for g in GROUP_KEYS:
-            _group_file(g).write_text(json.dumps({}), encoding="utf-8")
-            _group_list_file(g).write_text("[]", encoding="utf-8")
+def _latest(db, group_id: int) -> dict:
+    """从数据库聚合某组的最新评分看板（维度平均 / 总分平均 / 最近10条）"""
+    rows = (
+        db.query(RatingRecord)
+        .filter(RatingRecord.group_id == group_id)
+        .order_by(RatingRecord.created_at.asc(), RatingRecord.id.asc())
+        .all()
+    )
+    if not rows:
+        return _empty(group_id)
 
+    items = [_item_from(r) for r in rows]
 
-def _latest(group_id: int) -> dict:
-    p = _group_file(group_id)
-    if not p.exists():
-        return {"group_id": group_id, "group_name": GROUP_KEYS.get(group_id, ""), "total": 0, "dims": [], "count": 0, "updated_at": 0}
-    try:
-        data = json.loads(p.read_text(encoding="utf-8"))
-        if not data or "total" not in data:
-            return {"group_id": group_id, "group_name": GROUP_KEYS.get(group_id, ""), "total": 0, "dims": [], "count": 0, "updated_at": 0}
-        return {
-            "group_id": group_id,
-            "group_name": GROUP_KEYS.get(group_id, ""),
-            "total": data.get("total", 0),
-            "dims": data.get("dims", []),
-            "count": data.get("count", 0),
-            "updated_at": data.get("updated_at", 0),
-            "ratings": data.get("ratings", []),
-        }
-    except Exception:
-        return {"group_id": group_id, "group_name": GROUP_KEYS.get(group_id, ""), "total": 0, "dims": [], "count": 0, "updated_at": 0}
+    # 维度平均：按 label 聚合全部记录（与 v1 的 key 对齐逻辑一致）
+    agg: Dict[str, list] = {}
+    for it in items:
+        for d in it.get("dims", []):
+            label = d.get("label")
+            if label is None:
+                continue
+            agg.setdefault(label, []).append(int(d.get("val", 0)))
+    dims = [{"label": k, "val": round(sum(v) / len(v))} for k, v in agg.items()]
+
+    totals = [it["total"] for it in items if it.get("total") is not None]
+    total_avg = round(sum(totals) / len(totals)) if totals else 0
+
+    return {
+        "group_id": group_id,
+        "group_name": GROUP_KEYS.get(group_id, ""),
+        "total": total_avg,
+        "dims": dims,
+        "count": len(items),
+        "updated_at": items[-1]["ts"],
+        "ratings": items[-10:],
+    }
 
 
 class RatingSubmit(BaseModel):
@@ -82,90 +153,84 @@ class RatingSubmit(BaseModel):
 
 
 @router.post("/submit")
-def submit_rating(r: RatingSubmit):
+def submit_rating(r: RatingSubmit, _: object = Depends(get_current_user)):
     group_id = r.group_id
     if group_id not in GROUP_KEYS:
         raise HTTPException(400, "未知 group_id")
 
-    with _lock:
-        lst = _ensure_list(group_id)
-        item = {
-            "name": r.name or "匿名",
-            "role": r.role or "student",
-            "dims": r.dims,
-            "total": r.total,
-            "ts": int(time.time() * 1000),
-        }
-        lst.append(item)
-        _group_list_file(group_id).write_text(json.dumps(lst, ensure_ascii=False), encoding="utf-8")
+    db = SessionLocal()
+    try:
+        db.add(RatingRecord(
+            group_id=group_id,
+            name=(r.name or "匿名")[:100],
+            role=(r.role or "student")[:50],
+            dims=json.dumps(r.dims or [], ensure_ascii=False),
+            total=r.total,
+        ))
+        db.commit()
 
+        count = db.query(RatingRecord).filter(RatingRecord.group_id == group_id).count()
         if not r.dims:
-            return JSONResponse({"ok": True, "count": len(lst)})
+            return JSONResponse({"ok": True, "count": count})
 
-        dim_labels = [d.get("label", f"d{i+1}") for i, d in enumerate(r.dims)]
-        dim_vals = [int(d.get("val", 0)) for d in r.dims]
-        total = r.total if r.total is not None else sum(dim_vals)
-
-        agg = {}
-        for prev in lst:
-            for j, d in enumerate(prev.get("dims", [])):
-                if j >= len(dim_labels):
-                    break
-                key = dim_labels[j]
-                if key not in agg:
-                    agg[key] = []
-                agg[key].append(int(d.get("val", 0)))
-
-        dim_avg = []
-        for i, label in enumerate(dim_labels):
-            vals = agg.get(label, dim_vals[i:i+1])
-            if not vals:
-                continue
-            avg = round(sum(vals) / len(vals))
-            dim_avg.append({"label": label, "val": avg})
-
-        all_totals = [prev.get("total") for prev in lst if prev.get("total") is not None]
-        all_totals.append(total)
-        total_avg = round(sum(all_totals) / len(all_totals)) if all_totals else total
-
-        latest_data = {
+        data = _latest(db, group_id)
+        return JSONResponse({
+            "ok": True,
             "group_id": group_id,
-            "group_name": GROUP_KEYS[group_id],
-            "total": total_avg,
-            "dims": dim_avg,
-            "count": len(lst),
-            "updated_at": int(time.time() * 1000),
-            "ratings": lst[-10:],
-        }
-        _group_file(group_id).write_text(json.dumps(latest_data, ensure_ascii=False), encoding="utf-8")
-
-    return JSONResponse({"ok": True, "group_id": group_id, "count": len(lst), "total": total_avg, "dims": dim_avg})
+            "count": count,
+            "total": data["total"],
+            "dims": data["dims"],
+        })
+    finally:
+        db.close()
 
 
 @router.get("/latest")
-def get_latest(group_id: int = Query(...)):
-    data = _latest(group_id)
-    return JSONResponse(data)
+def get_latest(group_id: int = Query(...), _: object = Depends(get_current_user)):
+    db = SessionLocal()
+    try:
+        return JSONResponse(_latest(db, group_id))
+    finally:
+        db.close()
 
 
 @router.get("/latest_all")
-def get_latest_all():
-    result = {}
-    for gid, gname in GROUP_KEYS.items():
-        result[gid] = _latest(gid)
-    return JSONResponse(result)
+def get_latest_all(_: object = Depends(get_current_user)):
+    db = SessionLocal()
+    try:
+        result = {}
+        for gid in GROUP_KEYS:
+            result[gid] = _latest(db, gid)
+        return JSONResponse(result)
+    finally:
+        db.close()
 
 
 @router.post("/reset")
-def reset_group(group_id: Optional[int] = Query(None)):
-    if group_id is not None:
-        _reset_group(group_id)
-        return JSONResponse({"ok": True, "reset": group_id})
-    _reset_all()
-    return JSONResponse({"ok": True, "reset": "all"})
+def reset_group(group_id: Optional[int] = Query(None), _: object = Depends(require_teacher)):
+    db = SessionLocal()
+    try:
+        q = db.query(RatingRecord)
+        if group_id is not None:
+            if group_id not in GROUP_KEYS:
+                raise HTTPException(400, "未知 group_id")
+            q = q.filter(RatingRecord.group_id == group_id)
+            q.delete(synchronize_session=False)
+            db.commit()
+            return JSONResponse({"ok": True, "reset": group_id})
+        q.delete(synchronize_session=False)
+        db.commit()
+        return JSONResponse({"ok": True, "reset": "all"})
+    finally:
+        db.close()
 
 
 @router.post("/reset_all")
-def reset_all():
-    _reset_all()
-    return JSONResponse({"ok": True})
+def reset_all(_: object = Depends(require_teacher)):
+    db = SessionLocal()
+    try:
+        db.query(RatingRecord).delete(synchronize_session=False)
+        db.commit()
+        return JSONResponse({"ok": True})
+    finally:
+        db.close()

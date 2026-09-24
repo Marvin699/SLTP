@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 
 const store = usePointsStore()
@@ -56,7 +57,7 @@ function onEsc(e) {
 
 async function handleSave() {
   if (!form.value.name.trim()) {
-    alert('请输入点位名称')
+    ElMessage.warning('请输入点位名称')
     return
   }
 
@@ -74,7 +75,7 @@ async function handleSave() {
     }
     store.closeEditor()
   } catch (e) {
-    alert('保存失败: ' + (e.response?.data?.detail || e.message))
+    ElMessage.error('保存失败: ' + (e.response?.data?.detail || e.message))
   }
 }
 
@@ -84,8 +85,8 @@ const geojsonPreview = computed(() => {
 
 function copyGeoJSON() {
   navigator.clipboard.writeText(geojsonPreview.value)
-    .then(() => alert('已复制到剪贴板'))
-    .catch(() => alert('复制失败'))
+    .then(() => ElMessage.success('已复制到剪贴板'))
+    .catch(() => ElMessage.error('复制失败'))
 }
 </script>
 

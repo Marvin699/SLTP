@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
 import { usePointsStore } from './points'
 import { useMaterialsStore } from './materials'
 import { useUavsStore } from './uavs'
@@ -156,7 +157,7 @@ export const useAppStore = defineStore('app', () => {
   /** 提交当前步骤：校验通过则标记已提交并自动进入下一步 */
   function submitStep(stepId) {
     if (!stepStatus.value[stepId]) {
-      alert(STEP_BLOCK_MSGS[stepId] || '当前步骤尚未完成')
+      ElMessage.warning(STEP_BLOCK_MSGS[stepId] || '当前步骤尚未完成')
       return false
     }
     stepSubmitted.value = { ...stepSubmitted.value, [stepId]: true }

@@ -1,4 +1,5 @@
 <script setup>
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 
 const store = usePointsStore()
@@ -28,11 +29,19 @@ function getSupplyIcon(type) {
 }
 
 async function handleDelete(pt) {
-  if (!confirm(`确认删除 "${pt.name}" ？`)) return
+  try {
+    await ElMessageBox.confirm(`确认删除「${pt.name}」？`, '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
   try {
     await store.removePoint(pt.id)
   } catch (e) {
-    alert('删除失败')
+    ElMessage.error('删除失败')
   }
 }
 </script>

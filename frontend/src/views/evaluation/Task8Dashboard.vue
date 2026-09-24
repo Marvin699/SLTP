@@ -279,6 +279,7 @@
 </template>
 
 <script setup>
+import { authFetch } from '@/utils/request'
 import { ref, reactive, onMounted, watch, computed, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import QRCode from 'qrcode'
@@ -314,7 +315,7 @@ function copyRateLink() {
   else { const ta = document.createElement('textarea'); ta.value = rateLink.value||''; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta) }
 }
 async function resetAllRatings() {
-  try { await fetch(`${location.protocol}//${RATE_BASE}/api/ratings/reset_all`, { method:'POST' }) } catch(e){}
+  try { await authFetch(`${location.protocol}//${RATE_BASE}/api/ratings/reset_all`, { method:'POST' }) } catch(e){}
   for (const k in rateLatest) {
     Object.assign(rateLatest[k], { total:0, dims:[], count:0, updated_at:0 })
   }
@@ -323,7 +324,7 @@ async function resetAllRatings() {
 async function _pollRatings() {
   try {
     const base = `${location.protocol}//${RATE_BASE}/api/ratings/latest_all`
-    const r = await fetch(base)
+    const r = await authFetch(base)
     const j = await r.json()
     for (const gid in j) {
       if (rateLatest[gid]) Object.assign(rateLatest[gid], j[gid])

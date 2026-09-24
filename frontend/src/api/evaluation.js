@@ -2,20 +2,15 @@
  * T5 课前课中贯通 API
  * 课中环节引用课前方案库 + 基于真实方案数据的 AI 点评
  */
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/evaluation',
   timeout: 120000,
   headers: { 'Content-Type': 'application/json' },
 })
 
 // 自动携带登录 token（与平台其他模块一致）
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('sltp_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
 
 /**
  * 课前方案库列表（含学生姓名、四维评分、辩论概况）

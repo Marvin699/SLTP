@@ -41,9 +41,15 @@ logs/
 # Database
 *.db
 *.sqlite3
+*.db-shm
+*.db-wal
 
 # Uploads
 backend/uploads/
+
+# Runtime media & backups (contain user data, never commit)
+backend/media/
+backend/backups/
 
 # Generated reports (runtime artifacts)
 backend/app/reports/

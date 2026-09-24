@@ -221,8 +221,10 @@ function submitScore() {
     submitted_at: new Date().toISOString()
   }
   
-  // 保存到本地存储
-  const savedScores = JSON.parse(localStorage.getItem('task7_scores') || '[]')
+  // 保存到本地存储（防损坏数据破坏流程）
+  let savedScores = []
+  try { savedScores = JSON.parse(localStorage.getItem('task7_scores') || '[]') } catch { savedScores = [] }
+  if (!Array.isArray(savedScores)) savedScores = []
   savedScores.push(scoreData)
   localStorage.setItem('task7_scores', JSON.stringify(savedScores))
   

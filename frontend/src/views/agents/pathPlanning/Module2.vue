@@ -1,5 +1,7 @@
 <script setup>
+import { authFetch } from '@/utils/request'
 import { ref, onMounted, computed, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useConfigStore } from '@/stores/pathPlanning/config'
@@ -75,7 +77,7 @@ watch(
 
 async function loadFromWorkspace() {
   try {
-    const response = await fetch('/api/path-planning/workspace/load/module2')
+    const response = await authFetch('/api/path-planning/workspace/load/module2')
     const result = await response.json()
     if (result.success && result.data?.assignments) {
       const newAssignments = { ...matStore.assignments }
@@ -160,25 +162,25 @@ async function handleSaveModule2() {
   }
   
   try {
-    const response = await fetch('/api/path-planning/workspace/save/module2', {
+    const response = await authFetch('/api/path-planning/workspace/save/module2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(module2Data),
     })
     const result = await response.json()
     if (result.success) {
-      alert('模块二数据已保存！')
+      ElMessage.success('模块二数据已保存')
     } else {
-      alert('保存失败: ' + result.message)
+      ElMessage.error('保存失败: ' + result.message)
     }
   } catch (e) {
-    alert('保存失败: ' + e.message)
+    ElMessage.error('保存失败: ' + e.message)
   }
 }
 
 async function handleApplyCase(caseData) {
   if (!caseData.material_data) {
-    alert('该案例没有物资配置数据')
+    ElMessage.warning('该案例没有物资配置数据')
     showCaseDropdown.value = false
     return
   }
@@ -189,14 +191,14 @@ async function handleApplyCase(caseData) {
   const matchedCount = caseDemandNames.filter(name => currentDemandNames.includes(name)).length
   
   if (matchedCount === 0) {
-    alert('当前配送点与案例需求点不匹配，请先在模块一加载对应的案例')
+    ElMessage.warning('当前配送点与案例需求点不匹配，请先在模块一加载对应的案例')
     showCaseDropdown.value = false
     return
   }
   
   await matStore.loadAssignmentFromCase(caseData.material_data)
   showCaseDropdown.value = false
-  alert(`已应用案例物资，匹配 ${matchedCount} 个需求点`)
+  ElMessage.success(`已应用案例物资，匹配 ${matchedCount} 个需求点`)
 }
 
 function toggleCaseDropdown() {

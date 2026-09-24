@@ -7,8 +7,7 @@ import {
   updateReport as apiUpdate,
   deleteReport as apiDelete,
   chooseReport as apiChoose,
-  downloadWordUrl,
-  downloadPdfUrl,
+  downloadReportFile,
 } from '@/api/pathPlanning/report'
 import { useOptimizerStore } from './optimizer'
 import { useDiagnosisStore } from './diagnosis'
@@ -147,15 +146,10 @@ export const useReportStore = defineStore('report', () => {
     error.value = null
   }
 
-  /** 获取下载链接 */
-  function getWordDownloadUrl() {
-    if (!currentReport.value?.id) return null
-    return downloadWordUrl(currentReport.value.id)
-  }
-
-  function getPdfDownloadUrl() {
-    if (!currentReport.value?.id) return null
-    return downloadPdfUrl(currentReport.value.id)
+  /** 下载报告文件（word/pdf，blob 下载带 token） */
+  async function downloadReportFileItem(ext) {
+    if (!currentReport.value?.id) return
+    await downloadReportFile(currentReport.value.id, ext)
   }
 
   return {
@@ -176,7 +170,6 @@ export const useReportStore = defineStore('report', () => {
     chooseReportItem,
     setSchemeType,
     resetReport,
-    getWordDownloadUrl,
-    getPdfDownloadUrl,
+    downloadReportFileItem,
   }
 })

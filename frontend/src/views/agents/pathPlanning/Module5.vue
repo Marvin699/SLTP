@@ -1,11 +1,18 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { useDiagnosisStore } from '@/stores/pathPlanning/diagnosis'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
 import RightPanel from '@/components/pathPlanning/RightPanel.vue'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 marked.setOptions({ breaks: true, gfm: true })
+
+// AI 输出经消毒后再渲染，防注入恶意 HTML/脚本
+function renderSafe(text) {
+  return DOMPurify.sanitize(marked(text || ''))
+}
 
 const diagStore = useDiagnosisStore()
 const optStore = useOptimizerStore()
@@ -253,7 +260,15 @@ async function viewHistory(recordId) {
 }
 
 async function deleteHistory(recordId) {
-  if (!confirm('确定要删除这条诊断记录吗？')) return
+  try {
+    await ElMessageBox.confirm('确定要删除这条诊断记录吗？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
   await diagStore.deleteRecord(recordId)
 }
 
@@ -779,7 +794,7 @@ const aiSuggestions = computed(() => {
             <!-- 原始报告入口（可选显示） -->
             <details class="raw-report">
               <summary>查看AI原始报告</summary>
-              <div class="raw-content" v-html="marked(diagStore.aiReport)" />
+              <div class="raw-content" v-html="renderSafe(diagStore.aiReport)" />
             </details>
           </div>
           <div v-else class="ai-empty">

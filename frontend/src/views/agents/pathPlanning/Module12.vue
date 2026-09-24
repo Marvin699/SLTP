@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { useDebateStore } from '@/stores/pathPlanning/debate'
 import { useReportStore } from '@/stores/pathPlanning/report'
 
@@ -58,7 +59,15 @@ async function handleCreateSession() {
 // 删除历史会话（含确认提示）
 async function handleDeleteSession(s) {
   const name = s.group_name || `#${s.id}`
-  if (!confirm(`确认删除会话「${name}」？\n删除后整场辩论记录无法恢复。`)) return
+  try {
+    await ElMessageBox.confirm(
+      `确认删除会话「${name}」？删除后整场辩论记录无法恢复。`,
+      '删除确认',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+    )
+  } catch {
+    return
+  }
   await debateStore.deleteSession(s.id)
 }
 

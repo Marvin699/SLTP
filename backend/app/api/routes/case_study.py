@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import get_current_user, require_teacher
 from app.models.case_study import CaseStudy
 
 router = APIRouter(prefix="/api/path-planning/case", tags=["教学管理-案例管理"])
@@ -50,7 +51,7 @@ class CaseStudyResponse(BaseModel):
 
 
 @router.get("/studies", response_model=List[CaseStudyResponse])
-def get_case_studies(db: Session = Depends(get_db)):
+def get_case_studies(db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """获取所有案例"""
     cases = db.query(CaseStudy).filter(CaseStudy.is_active == True).order_by(
         CaseStudy.is_default.desc(),
@@ -76,7 +77,7 @@ def get_case_studies(db: Session = Depends(get_db)):
 
 
 @router.get("/studies/{case_id}", response_model=CaseStudyResponse)
-def get_case_study(case_id: int, db: Session = Depends(get_db)):
+def get_case_study(case_id: int, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """获取单个案例详情"""
     case = db.query(CaseStudy).filter(CaseStudy.id == case_id, CaseStudy.is_active == True).first()
     if not case:
@@ -98,7 +99,7 @@ def get_case_study(case_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/studies", response_model=CaseStudyResponse)
-def create_case_study(case: CaseStudyCreate, db: Session = Depends(get_db)):
+def create_case_study(case: CaseStudyCreate, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """创建新案例"""
     if case.is_default:
         db.query(CaseStudy).update({CaseStudy.is_default: False})
@@ -132,7 +133,7 @@ def create_case_study(case: CaseStudyCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/studies/{case_id}", response_model=CaseStudyResponse)
-def update_case_study(case_id: int, case: CaseStudyUpdate, db: Session = Depends(get_db)):
+def update_case_study(case_id: int, case: CaseStudyUpdate, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """更新案例"""
     db_case = db.query(CaseStudy).filter(CaseStudy.id == case_id, CaseStudy.is_active == True).first()
     if not db_case:
@@ -175,7 +176,7 @@ def update_case_study(case_id: int, case: CaseStudyUpdate, db: Session = Depends
 
 
 @router.delete("/studies/{case_id}")
-def delete_case_study(case_id: int, db: Session = Depends(get_db)):
+def delete_case_study(case_id: int, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """删除案例（软删除）"""
     db_case = db.query(CaseStudy).filter(CaseStudy.id == case_id, CaseStudy.is_active == True).first()
     if not db_case:
@@ -188,7 +189,7 @@ def delete_case_study(case_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/studies/{case_id}/set-default")
-def set_default_case(case_id: int, db: Session = Depends(get_db)):
+def set_default_case(case_id: int, db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """设置为默认案例"""
     db_case = db.query(CaseStudy).filter(CaseStudy.id == case_id, CaseStudy.is_active == True).first()
     if not db_case:
@@ -203,7 +204,7 @@ def set_default_case(case_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/init-default")
-def init_default_case(db: Session = Depends(get_db)):
+def init_default_case(db: Session = Depends(get_db), _: object = Depends(require_teacher)):
     """初始化默认案例（渠洋镇应急物资配送案例）"""
     existing = db.query(CaseStudy).filter(CaseStudy.is_default == True).first()
     if existing:

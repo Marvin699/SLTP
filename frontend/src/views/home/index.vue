@@ -308,7 +308,7 @@ import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { Document, List, User, TrendCharts } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import axios from 'axios'
+import { apiRoot } from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()

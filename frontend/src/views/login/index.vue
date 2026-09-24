@@ -55,6 +55,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
@@ -84,6 +85,14 @@ async function handleLogin() {
   loading.value = false
 
   if (result.success) {
+    // 弱密码提醒（默认密码/密码与用户名相同）：不阻断登录，引导修改
+    if (result.weak_password) {
+      ElMessageBox.confirm(
+        '当前密码过于简单（默认密码或与用户名相同），平台正式使用前建议尽快修改，防止账号被他人登录。',
+        '安全提醒',
+        { confirmButtonText: '立即修改', cancelButtonText: '稍后再说', type: 'warning' }
+      ).then(() => { router.push('/change-password') }).catch(() => {})
+    }
     if (userStore.mustChangePassword) {
       router.push('/change-password')
     } else {

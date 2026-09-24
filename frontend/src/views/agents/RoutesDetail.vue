@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import L from 'leaflet'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
@@ -533,10 +533,25 @@ onMounted(() => {
   })
 })
 
-function submitCurrentSolution() {
+async function submitCurrentSolution() {
   if (props.readOnly) return
   const tStore = useTeacherSolutionsStore()
-  const name = prompt('请输入你的姓名 / 小组名称（用于提交方案）：', '演示组')
+  let name
+  try {
+    const { value } = await ElMessageBox.prompt(
+      '请输入你的姓名 / 小组名称（用于提交方案）：',
+      '提交方案',
+      {
+        confirmButtonText: '提交',
+        cancelButtonText: '取消',
+        inputValue: '演示组',
+        inputPlaceholder: '例如：御风组',
+      }
+    )
+    name = value
+  } catch {
+    return
+  }
   if (!name) return
   const s = {
     groupId: name,

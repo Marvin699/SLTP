@@ -1,7 +1,8 @@
 """模块三：无人机选择 API 路由"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
+from app.core.deps import get_current_user
 from app.services.uav_service import (
     get_all_brands,
     get_all_models,
@@ -53,7 +54,7 @@ class UAVParamUpdate(BaseModel):
 
 
 @router.get("/brands")
-def list_brands():
+def list_brands(_: object = Depends(get_current_user)):
     """获取所有无人机品牌"""
     return get_all_brands()
 
@@ -76,7 +77,7 @@ class UAVModelCreate(BaseModel):
 
 
 @router.post("/models")
-def create_uav_model(data: UAVModelCreate):
+def create_uav_model(data: UAVModelCreate, _: object = Depends(get_current_user)):
     """新建无人机型号（型号 ID 自动生成，冲突自动加后缀）"""
     payload = {k: v for k, v in data.model_dump().items() if v is not None}
     result = create_model(payload)
@@ -84,7 +85,7 @@ def create_uav_model(data: UAVModelCreate):
 
 
 @router.delete("/models/{model_id}")
-def remove_uav_model(model_id: str):
+def remove_uav_model(model_id: str, _: object = Depends(get_current_user)):
     """删除无人机型号"""
     if not delete_model(model_id):
         raise HTTPException(status_code=404, detail="未找到该无人机型号")
@@ -92,13 +93,13 @@ def remove_uav_model(model_id: str):
 
 
 @router.get("/models")
-def list_models():
+def list_models(_: object = Depends(get_current_user)):
     """获取所有无人机型号（从数据库读取，支持编辑后的最新数据）"""
     return get_all_models()
 
 
 @router.get("/models/{model_id}")
-def get_model(model_id: str):
+def get_model(model_id: str, _: object = Depends(get_current_user)):
     """获取单个无人机型号详情"""
     model = get_model_by_id(model_id)
     if not model:
@@ -107,7 +108,7 @@ def get_model(model_id: str):
 
 
 @router.put("/models/{model_id}")
-def update_uav_model(model_id: str, data: UAVParamUpdate):
+def update_uav_model(model_id: str, data: UAVParamUpdate, _: object = Depends(get_current_user)):
     """更新无人机型号参数（实时保存到数据库）"""
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if not update_data:
@@ -119,13 +120,13 @@ def update_uav_model(model_id: str, data: UAVParamUpdate):
 
 
 @router.get("/llm-status")
-def llm_status():
+def llm_status(_: object = Depends(get_current_user)):
     """检查大模型是否已配置"""
     return {"configured": is_configured()}
 
 
 @router.post("/assess")
-def assess(req: AssessRequest):
+def assess(req: AssessRequest, _: object = Depends(get_current_user)):
     """规则引擎评估（使用数据库中的最新无人机参数）"""
     if not req.selections:
         raise HTTPException(status_code=400, detail="请至少选择一种无人机")
@@ -141,7 +142,7 @@ def assess(req: AssessRequest):
 
 
 @router.post("/assess-ai")
-def assess_ai():
+def assess_ai(_: object = Depends(get_current_user)):
     """AI 智能选型（调用Agent，读取任务配置信息.md）"""
     if not is_configured():
         raise HTTPException(status_code=400, detail="未配置大模型API Key，请在 .env 中设置 LLM_API_KEY")
@@ -170,7 +171,7 @@ def assess_ai():
 
 
 @router.get("/ai-results")
-def list_ai_results():
+def list_ai_results(_: object = Depends(get_current_user)):
     """获取所有已保存的 AI 选型结果（按时间倒序）"""
     db = SessionLocal()
     try:
@@ -190,7 +191,7 @@ def list_ai_results():
 
 
 @router.get("/ai-results/{result_id}")
-def get_ai_result(result_id: int):
+def get_ai_result(result_id: int, _: object = Depends(get_current_user)):
     """获取单条 AI 选型结果"""
     db = SessionLocal()
     try:
@@ -209,7 +210,7 @@ def get_ai_result(result_id: int):
 
 
 @router.delete("/ai-results/{result_id}")
-def delete_ai_result(result_id: int):
+def delete_ai_result(result_id: int, _: object = Depends(get_current_user)):
     """删除单条 AI 选型结果"""
     db = SessionLocal()
     try:

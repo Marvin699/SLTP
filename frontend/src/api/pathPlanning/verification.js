@@ -1,17 +1,12 @@
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
 /** 合规性核验 API（需登录，自动携带 token） */
-const api = axios.create({
+const api = createApi({
   baseURL: '/api/path-planning/verification',
   timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('sltp_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
 
 /** 获取标准核验模板（7 组指标） */
 export function getTemplate() {

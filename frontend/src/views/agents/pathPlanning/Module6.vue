@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useReportStore } from '@/stores/pathPlanning/report'
 import { useOptimizerStore } from '@/stores/pathPlanning/optimizer'
 import { useAppStore } from '@/stores/pathPlanning/app'
@@ -94,11 +95,22 @@ async function handleCompare() {
 
 /** 择优决策：选定最终方案并记录理由 */
 async function handleChoose(item) {
-  const reason = prompt(
-    `选定「${item.name}」为最终方案。\n请简述决策理由（将随报告存档）：`,
-    item.scores && Object.keys(item.scores).length ? '综合四维评分最优' : ''
-  )
-  if (reason === null) return
+  let reason
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `选定「${item.name}」为最终方案，请简述决策理由（将随报告存档）：`,
+      '择优决策',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputValue: item.scores && Object.keys(item.scores).length ? '综合四维评分最优' : '',
+        inputPlaceholder: '例如：综合四维评分最优',
+      }
+    )
+    reason = value
+  } catch {
+    return
+  }
   const res = await reportStore.chooseReportItem(item.id, reason)
   if (res) {
     // 同步更新对比面板与本地徽标
@@ -112,7 +124,7 @@ async function handleChoose(item) {
 /** 从此方案派生重生成：回填当时的 ACO 参数到路径规划面板 */
 function handleDerive(item) {
   if (!item.aco_params) {
-    alert('该报告生成于旧版本，未记录 ACO 参数；\n请以当前规划面板的参数为基础手动调整。')
+    ElMessage.warning('该报告生成于旧版本，未记录 ACO 参数，请以当前规划面板参数为基础手动调整')
     appStore.setModule(4)
     return
   }
@@ -125,9 +137,16 @@ function handleDerive(item) {
 }
 
 async function handleDelete(reportId) {
-  if (confirm('确定删除此报告？')) {
-    await reportStore.deleteReportItem(reportId)
+  try {
+    await ElMessageBox.confirm('确定删除此报告？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
   }
+  await reportStore.deleteReportItem(reportId)
 }
 
 function handleEdit() {
@@ -145,17 +164,11 @@ async function handleSaveEdit() {
 }
 
 function handleDownloadWord() {
-  const url = reportStore.getWordDownloadUrl()
-  if (url) {
-    window.open(url, '_blank')
-  }
+  reportStore.downloadReportFileItem('word')
 }
 
 function handleDownloadPdf() {
-  const url = reportStore.getPdfDownloadUrl()
-  if (url) {
-    window.open(url, '_blank')
-  }
+  reportStore.downloadReportFileItem('pdf')
 }
 
 function formatTime(dateStr) {

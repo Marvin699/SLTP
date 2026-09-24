@@ -1,7 +1,8 @@
 """模块五：方案诊断 API 路由"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
+from app.core.deps import get_current_user
 from app.services.ai.diagnosis_service import diagnose_solution, run_rule_diagnosis, run_ai_diagnosis
 from app.core.database import SessionLocal
 from app.models.diagnosis import DiagnosisRecord
@@ -30,7 +31,7 @@ class DiagnosisResult(BaseModel):
 
 
 @router.post("/run", response_model=DiagnosisResult)
-def run_diagnosis(req: DiagnosisRequest):
+def run_diagnosis(req: DiagnosisRequest, _: object = Depends(get_current_user)):
     """
     执行方案诊断（同时执行规则诊断和AI诊断）
     
@@ -45,7 +46,7 @@ def run_diagnosis(req: DiagnosisRequest):
 
 
 @router.post("/rule", response_model=DiagnosisResult)
-def run_rule_only_diagnosis(req: DiagnosisRequest):
+def run_rule_only_diagnosis(req: DiagnosisRequest, _: object = Depends(get_current_user)):
     """
     仅执行规则诊断（不调用AI，速度快）
     
@@ -60,7 +61,7 @@ def run_rule_only_diagnosis(req: DiagnosisRequest):
 
 
 @router.get("/test")
-def test_endpoint():
+def test_endpoint(_: object = Depends(get_current_user)):
     """测试端点"""
     return {
         "message": "API is working",
@@ -74,7 +75,7 @@ def test_endpoint():
 
 
 @router.post("/ai", response_model=DiagnosisResult)
-def run_ai_only_diagnosis(req: DiagnosisRequest):
+def run_ai_only_diagnosis(req: DiagnosisRequest, _: object = Depends(get_current_user)):
     """
     仅执行AI诊断（基于任务配置信息.md）
     
@@ -144,7 +145,7 @@ def _run_diagnosis_internal(req: DiagnosisRequest, mode: str = "both"):
 
 
 @router.get("/history")
-def get_diagnosis_history(limit: int = 10):
+def get_diagnosis_history(limit: int = 10, _: object = Depends(get_current_user)):
     """
     获取诊断历史记录
     
@@ -182,7 +183,7 @@ def get_diagnosis_history(limit: int = 10):
 
 
 @router.get("/{record_id}")
-def get_diagnosis_detail(record_id: int):
+def get_diagnosis_detail(record_id: int, _: object = Depends(get_current_user)):
     """
     获取单个诊断记录详情
     
@@ -225,7 +226,7 @@ def get_diagnosis_detail(record_id: int):
 
 
 @router.delete("/{record_id}")
-def delete_diagnosis(record_id: int):
+def delete_diagnosis(record_id: int, _: object = Depends(get_current_user)):
     """
     删除诊断记录
     

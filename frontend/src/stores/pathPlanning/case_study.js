@@ -153,6 +153,11 @@ export const useCaseStudyStore = defineStore('caseStudy', () => {
     const uavsStoreModule = await import('./uavs')
     const uavsStore = uavsStoreModule.useUavsStore()
     uavsStore.clearSelections()
+    // 报告与辩论数据也属于上一案例的产物，必须一并重置，避免跨案例残留
+    const reportStoreModule = await import('./report')
+    reportStoreModule.useReportStore().resetReport()
+    const debateStoreModule = await import('./debate')
+    debateStoreModule.useDebateStore().reset()
     // 重置向导步骤提交记录（新案例从头走流程）
     const appStoreModule = await import('./app')
     appStoreModule.useAppStore().resetSubmissions()

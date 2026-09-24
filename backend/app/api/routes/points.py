@@ -4,6 +4,7 @@ from typing import List
 import httpx
 
 from app.core.database import get_db
+from app.core.deps import get_current_user
 from app.core.config import settings
 from app.models.point import DeliveryPoint
 from app.schemas.point import (
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/api/path-planning/points", tags=["配送点管理"])
 
 
 @router.get("", response_model=List[PointResponse], summary="获取所有点位")
-def get_all_points(db: Session = Depends(get_db)):
+def get_all_points(db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """获取所有配送中心与需求点"""
     points = db.query(DeliveryPoint).order_by(DeliveryPoint.id).all()
     return points
@@ -31,14 +32,14 @@ def get_all_points(db: Session = Depends(get_db)):
 # ── 固定路径必须在 /{point_id} 之前注册 ──
 
 @router.get("/geojson/export", response_model=GeoJSONCollection, summary="导出GeoJSON")
-def export_geojson(db: Session = Depends(get_db)):
+def export_geojson(db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """将所有点位导出为标准GeoJSON FeatureCollection"""
     points = db.query(DeliveryPoint).order_by(DeliveryPoint.id).all()
     return points_to_geojson(points)
 
 
 @router.get("/distance-matrix", response_model=DistanceMatrixResponse, summary="生成距离矩阵")
-def get_distance_matrix(db: Session = Depends(get_db)):
+def get_distance_matrix(db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """根据当前所有点位生成Haversine距离矩阵"""
     points = db.query(DeliveryPoint).order_by(DeliveryPoint.id).all()
     if len(points) < 2:
@@ -47,7 +48,7 @@ def get_distance_matrix(db: Session = Depends(get_db)):
 
 
 @router.post("/batch", response_model=List[PointResponse], status_code=201, summary="批量创建点位")
-def batch_create_points(data: BatchPointCreate, db: Session = Depends(get_db)):
+def batch_create_points(data: BatchPointCreate, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """批量创建点位，先清空旧数据再写入"""
     db.query(DeliveryPoint).delete()
     db.commit()
@@ -74,7 +75,7 @@ def batch_create_points(data: BatchPointCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/geojson/import", response_model=List[PointResponse], summary="导入GeoJSON")
-def import_geojson(data: GeoJSONSaveRequest, db: Session = Depends(get_db)):
+def import_geojson(data: GeoJSONSaveRequest, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """从GeoJSON FeatureCollection导入点位数据"""
     imported = []
     for feature in data.geojson.features:
@@ -100,7 +101,7 @@ def import_geojson(data: GeoJSONSaveRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/geocode/search", summary="地址搜索（高德地图）")
-async def geocode_search(keyword: str):
+async def geocode_search(keyword: str, _: object = Depends(get_current_user)):
     """通过高德地图API搜索地址，返回经纬度"""
     if not settings.AMAP_KEY:
         raise HTTPException(status_code=500, detail="高德地图API Key未配置，请在 .env 文件中设置 AMAP_KEY")
@@ -137,7 +138,7 @@ async def geocode_search(keyword: str):
 # ── 动态路径放在最后 ──
 
 @router.get("/{point_id}", response_model=PointResponse, summary="获取单个点位")
-def get_point(point_id: int, db: Session = Depends(get_db)):
+def get_point(point_id: int, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """根据ID获取点位详情"""
     point = db.query(DeliveryPoint).filter(DeliveryPoint.id == point_id).first()
     if not point:
@@ -146,7 +147,7 @@ def get_point(point_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=PointResponse, status_code=201, summary="创建点位")
-def create_point(data: PointCreate, db: Session = Depends(get_db)):
+def create_point(data: PointCreate, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """创建新的配送中心或需求点"""
     point = DeliveryPoint(
         name=data.name,
@@ -165,7 +166,7 @@ def create_point(data: PointCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{point_id}", response_model=PointResponse, summary="更新点位")
-def update_point(point_id: int, data: PointUpdate, db: Session = Depends(get_db)):
+def update_point(point_id: int, data: PointUpdate, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """更新点位信息"""
     point = db.query(DeliveryPoint).filter(DeliveryPoint.id == point_id).first()
     if not point:
@@ -181,7 +182,7 @@ def update_point(point_id: int, data: PointUpdate, db: Session = Depends(get_db)
 
 
 @router.delete("/{point_id}", status_code=204, summary="删除点位")
-def delete_point(point_id: int, db: Session = Depends(get_db)):
+def delete_point(point_id: int, db: Session = Depends(get_db), _: object = Depends(get_current_user)):
     """删除指定点位"""
     point = db.query(DeliveryPoint).filter(DeliveryPoint.id == point_id).first()
     if not point:

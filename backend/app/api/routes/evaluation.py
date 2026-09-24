@@ -8,10 +8,11 @@ LLM_BASE_URL / LLM_MODEL / LLM_API_KEY 决定），
 未配置或调用失败时自动降级为规则化点评，保证课堂不中断。
 """
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 
+from app.core.deps import get_current_user
 from app.core.database import SessionLocal
 from app.models.optimizer import OptimizationRecord
 from app.models.report import ReportRecord
@@ -78,7 +79,7 @@ def _debate_brief_by_user(db):
 
 
 @router.get("/plans")
-def list_plans(limit: int = 30, user_id: Optional[int] = None):
+def list_plans(limit: int = 30, user_id: Optional[int] = None, _: object = Depends(get_current_user)):
     """课前方案库列表（含学生姓名、四维评分、辩论概况），供课中环节引用"""
     db = SessionLocal()
     try:
@@ -240,7 +241,7 @@ def _fallback_comment(contexts):
 
 
 @router.post("/ai-comment")
-def ai_comment(req: AiCommentRequest):
+def ai_comment(req: AiCommentRequest, _: object = Depends(get_current_user)):
     """基于真实方案数据生成 AI 点评（词云/风险/综合点评），失败降级为规则点评"""
     if not req.plan_ids:
         raise HTTPException(status_code=400, detail="plan_ids 不能为空")
@@ -255,6 +256,8 @@ def ai_comment(req: AiCommentRequest):
         raise HTTPException(status_code=404, detail="方案不存在")
 
     # LLM 可用则走真实点评，否则/失败降级规则点评（免费模型限流常见，重试一次）
+    # 注：此路由为同步 def（跑在 FastAPI 线程池），LLM 客户端超时已降至 30s，
+    # 最坏阻塞 ≈ 30+2+30=62s，不再出现 180s×N 的线程池雪崩
     if is_configured():
         try:
             system, user = _build_llm_prompt(contexts)

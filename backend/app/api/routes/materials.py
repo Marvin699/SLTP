@@ -1,9 +1,10 @@
 """物资需求 API 路由"""
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 
+from app.core.deps import get_current_user
 from app.services.material_service import (
     get_categories,
     get_category_by_id,
@@ -41,13 +42,13 @@ class MaterialAssignBatch(BaseModel):
 # ── Routes ──
 
 @router.get("/categories")
-def list_categories():
+def list_categories(_: object = Depends(get_current_user)):
     """获取所有物资类别（含默认物品列表）"""
     return get_categories()
 
 
 @router.get("/categories/{cat_id}")
-def get_category(cat_id: str):
+def get_category(cat_id: str, _: object = Depends(get_current_user)):
     cat = get_category_by_id(cat_id)
     if not cat:
         raise HTTPException(status_code=404, detail="物资类别不存在")
@@ -55,7 +56,7 @@ def get_category(cat_id: str):
 
 
 @router.post("/compute")
-def compute_materials(assign: MaterialAssign):
+def compute_materials(assign: MaterialAssign, _: object = Depends(get_current_user)):
     """根据物资类别和可选的自定义物品列表计算需求信息"""
     for cid in assign.category_ids:
         if not get_category_by_id(cid):
@@ -67,13 +68,13 @@ def compute_materials(assign: MaterialAssign):
 
 
 @router.get("/default-case")
-def default_case():
+def default_case(_: object = Depends(get_current_user)):
     """获取案例全部村庄的真实物资分配"""
     return get_default_case_materials()
 
 
 @router.get("/default-case/{village_name}")
-def default_case_village(village_name: str):
+def default_case_village(village_name: str, _: object = Depends(get_current_user)):
     result = get_case_village(village_name)
     if not result:
         raise HTTPException(status_code=404, detail=f"案例中无此村庄: {village_name}")
@@ -81,7 +82,7 @@ def default_case_village(village_name: str):
 
 
 @router.get("/case-villages")
-def case_villages():
+def case_villages(_: object = Depends(get_current_user)):
     """获取案例村庄名称列表"""
     return list(CASE_VILLAGE_MATERIALS.keys())
 
@@ -106,7 +107,7 @@ class MaterialAssignmentBatchSave(BaseModel):
 
 
 @router.post("/save")
-def save_assignment(assign: MaterialAssignmentSave):
+def save_assignment(assign: MaterialAssignmentSave, _: object = Depends(get_current_user)):
     """保存单个需求点的物资分配到数据库"""
     db = SessionLocal()
     try:
@@ -145,7 +146,7 @@ def save_assignment(assign: MaterialAssignmentSave):
 
 
 @router.post("/save-batch")
-def save_assignments_batch(batch: MaterialAssignmentBatchSave):
+def save_assignments_batch(batch: MaterialAssignmentBatchSave, _: object = Depends(get_current_user)):
     """批量保存物资分配到数据库"""
     db = SessionLocal()
     try:
@@ -187,7 +188,7 @@ def save_assignments_batch(batch: MaterialAssignmentBatchSave):
 
 
 @router.get("/saved")
-def load_saved_assignments():
+def load_saved_assignments(_: object = Depends(get_current_user)):
     """从数据库加载所有已保存的物资分配"""
     db = SessionLocal()
     try:
@@ -212,7 +213,7 @@ def load_saved_assignments():
 
 
 @router.delete("/saved/{point_id}")
-def delete_saved_assignment(point_id: int):
+def delete_saved_assignment(point_id: int, _: object = Depends(get_current_user)):
     """删除指定需求点的物资分配"""
     db = SessionLocal()
     try:

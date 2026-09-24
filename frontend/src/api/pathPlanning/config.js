@@ -1,6 +1,6 @@
-import axios from 'axios'
+import { createApi } from '@/utils/request'
 
-const api = axios.create({ baseURL: '/api/path-planning/config' })
+const api = createApi({ baseURL: '/api/path-planning/config' })
 
 export const listConfigs = () => api.get('/list')
 

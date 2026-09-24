@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { safeParse } from '@/utils/request'
 
 const routes = [
   {
@@ -225,20 +226,16 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // 检查登录状态（新版：使用 token + user）
+  // 检查登录状态：token 是唯一凭证，缺失即跳登录
+  // （旧版仅凭 sltp_user 存在即放行，等于没有校验，已移除该兼容分支）
   const token = localStorage.getItem('sltp_token')
-  const userStr = localStorage.getItem('sltp_user')
-  if (!token || !userStr) {
-    // 兼容旧版 localStorage key
-    const legacyUser = localStorage.getItem('sltp_user')
-    if (!legacyUser) {
-      next('/login')
-      return
-    }
+  if (!token) {
+    next('/login')
+    return
   }
 
-  // 角色权限校验
-  const user = JSON.parse(userStr || 'null')
+  // 角色权限校验（safeParse：sltp_user 损坏时不致启动白屏）
+  const user = safeParse('sltp_user', null)
   if (to.meta.roles && to.meta.roles.length > 0) {
     if (!user || !to.meta.roles.includes(user.role)) {
       // 无权访问，跳转首页

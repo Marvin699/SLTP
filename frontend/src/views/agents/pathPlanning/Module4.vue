@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { usePointsStore } from '@/stores/pathPlanning/points'
 import { useMaterialsStore } from '@/stores/pathPlanning/materials'
 import { useUavsStore } from '@/stores/pathPlanning/uavs'
@@ -214,7 +214,15 @@ async function viewHistory(recordId) {
 }
 
 async function deleteHistory(recordId) {
-  if (!confirm('确定要删除这条记录吗？')) return
+  try {
+    await ElMessageBox.confirm('确定要删除这条记录吗？', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
   await optStore.deleteRecord(recordId)
 }
 </script>

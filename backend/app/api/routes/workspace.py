@@ -3,7 +3,9 @@ import sqlite3
 import time
 from pathlib import Path
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
+
+from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/api/path-planning/workspace", tags=["工作区持久化"])
 
@@ -36,7 +38,7 @@ _ensure_table()
 
 
 @router.post("/save/{module_id}")
-async def save_module(module_id: str, req: Request):
+async def save_module(module_id: str, req: Request, _: object = Depends(get_current_user)):
     if module_id not in ("module1", "module2", "module3", "module4"):
         raise HTTPException(400, "module_id 必须是 module1~module4")
     payload = await req.json()
@@ -56,7 +58,7 @@ async def save_module(module_id: str, req: Request):
 
 
 @router.get("/load/{module_id}")
-async def load_module(module_id: str):
+async def load_module(module_id: str, _: object = Depends(get_current_user)):
     conn = _get_conn()
     try:
         row = conn.execute(
@@ -75,7 +77,7 @@ async def load_module(module_id: str):
 
 
 @router.get("/list")
-async def list_modules():
+async def list_modules(_: object = Depends(get_current_user)):
     conn = _get_conn()
     try:
         rows = conn.execute(
