@@ -82,28 +82,9 @@ onMounted(() => {
   <div class="path-planning-agent-page" :class="{ 'day-mode': isDayMode }">
     <!-- 顶部隐藏导航（鼠标移到屏幕顶部呼出） -->
     <AgentTopNav />
-    <!-- Top header with back button -->
-    <header class="agent-top-header">
-      <div class="header-left">
-        <el-button @click="goBack" type="primary" plain size="small">
-          <el-icon><ArrowLeft /></el-icon>
-          返回首页
-        </el-button>
-        <h1 class="page-title">无人机应急调度智能体</h1>
-        <el-tag type="info" size="small">v1.2</el-tag>
-      </div>
-      <div class="header-right">
-        <el-button @click="toggleTheme" circle size="small" class="theme-toggle-btn">
-          <el-icon :size="16">
-            <Sunny v-if="!isDayMode" />
-            <Moon v-else />
-          </el-icon>
-        </el-button>
-      </div>
-    </header>
 
-    <!-- StepNav for wizard navigation -->
-    <StepNav />
+    <!-- 单行顶栏：返回 + 四步向导 + 子模块 + 管理工具 + 主题切换 -->
+    <StepNav :is-day="isDayMode" @back="goBack" @toggle-theme="toggleTheme" />
 
     <!-- 自由浏览引导提示条 -->
     <div v-if="pendingHint" class="step-hint-bar">
@@ -264,6 +245,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
   background: #060d1a;
   color: #cdd9f0;
   font-family: 'Noto Sans SC', sans-serif;
@@ -317,60 +299,19 @@ onMounted(() => {
   color: var(--text);
 }
 
-.agent-top-header {
-  min-height: 52px;
-  height: 52px;
-  background: var(--navy2);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  flex-shrink: 0;
-  z-index: 200;
-  position: relative;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.theme-toggle-btn {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid var(--border2) !important;
-  color: var(--text2) !important;
-  transition: all 0.3s;
-}
-
-.theme-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: var(--teal) !important;
-  border-color: var(--teal) !important;
-}
-
-.page-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--teal);
-  margin: 0;
-  letter-spacing: 0.5px;
-}
-
-/* 步骤引导提示条 */
+/* 步骤引导提示条（悬浮于顶栏下方，不占布局高度） */
 .step-hint-bar {
+  position: absolute;
+  top: 49px;
+  left: 0;
+  right: 0;
+  z-index: 150;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 20px;
-  background: rgba(255, 179, 0, 0.08);
+  padding: 6px 20px;
+  background: rgba(20, 26, 14, 0.85);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 179, 0, 0.25);
   font-size: 12px;
   color: var(--amber);
@@ -378,6 +319,11 @@ onMounted(() => {
 }
 
 .hint-icon { font-size: 14px; }
+
+/* 白天模式下引导条底色适配 */
+.day-mode .step-hint-bar {
+  background: rgba(255, 252, 240, 0.88);
+}
 
 .hint-jump {
   margin-left: auto;

@@ -381,7 +381,7 @@ function drawMarker(pt, idx, total, isDraggable = false, isGreen = false) {
     end: '#3b82f6'
   }
   const c = colors[pt.type] || '#f59e0b'
-  const label = pt.type === 'start' ? '🛫' : pt.type === 'end' ? '🛬' : (idx + ' / ' + total)
+  const label = pt.type === 'start' ? '🛫' : pt.type === 'end' ? '🛬' : '📍'
 
   const el = document.createElement('div')
   el.innerHTML = `
@@ -417,11 +417,20 @@ function drawMarker(pt, idx, total, isDraggable = false, isGreen = false) {
       const p = e.target.getLatLng()
       dragPoints.value[idx].lat = p.lat
       dragPoints.value[idx].lng = p.lng
-      redrawOptimizedRoute()
+      // 拖拽过程中只重画航线（不重建标记，否则正在拖的标记被删除会导致拖拽中断）
+      redrawOptimizedLine()
     })
     m.on('dragend', () => { draggingIdx.value = -1; redrawOptimizedRoute() })
   }
   return m
+}
+
+// 拖拽过程中仅重画航线层，保持标记层不动
+function redrawOptimizedLine() {
+  routeLayer.clearLayers()
+  drawRoute(initialRoute.value, '#facc15', true, 2)
+  const pts = dragPoints.value
+  if (pts.length >= 2) drawRoute(pts, '#22c55e', false, 5)
 }
 
 function redrawOptimizedRoute() {
@@ -446,6 +455,26 @@ function updateMap() {
   drawTrees()
 
   const initPts = initialRoute.value
+
+  // 第4步人工优化：固定渲染可拖拽沙盘（黄色虚线=初始航线，绿色=可拖拽优化航线）。
+  // 无论是否存在真实优化器航线（geojson），都进入沙盘模式，保证拖拽功能始终可用
+  if (stage.value === 4) {
+    drawRoute(initPts, '#facc15', true, 2)
+    const opt = dragPoints.value
+    if (opt.length >= 2) drawRoute(opt, '#22c55e', false, 5)
+    opt.forEach((pt, i) => { drawMarker(pt, i, opt.length, true, true).addTo(markerLayer) })
+    L.marker([opt.length >= 2 ? opt[1].lat : depotReal.value.lat, opt.length >= 2 ? opt[1].lng - 0.002 : depotReal.value.lng + 0.003], {
+      icon: L.divIcon({
+        className: 'optimize-tag',
+        html: '<div style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.25);">✓ 已调整配送顺序</div>',
+        iconSize: [100, 22], iconAnchor: [50, 11]
+      })
+    }).addTo(markerLayer)
+
+    const center = depotReal.value
+    map.setView([center.lat, center.lng], 13)
+    return
+  }
 
   const usedReal = renderGeojsonRoutes()
 
@@ -483,18 +512,6 @@ function updateMap() {
         })
         L.marker([pt.lat, pt.lng], { icon: ic }).addTo(markerLayer)
       })
-    } else if (stage.value === 4) {
-      drawRoute(initPts, '#facc15', true, 2)
-      const opt = dragPoints.value
-      if (opt.length >= 2) drawRoute(opt, '#22c55e', false, 5)
-      opt.forEach((pt, i) => { drawMarker(pt, i, opt.length, true, true).addTo(markerLayer) })
-      L.marker([opt.length >= 2 ? opt[1].lat : depotReal.value.lat, opt.length >= 2 ? opt[1].lng - 0.002 : depotReal.value.lng + 0.003], {
-        icon: L.divIcon({
-          className: 'optimize-tag',
-          html: '<div style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.25);">✓ 已调整配送顺序</div>',
-          iconSize: [100, 22], iconAnchor: [50, 11]
-        })
-      }).addTo(markerLayer)
     }
   }
 

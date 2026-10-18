@@ -48,8 +48,11 @@ const items = computed(() => navItemsFor(userStore.role))
 
 const visible = ref(false)
 let hideTimer = null
+let showTimer = null
 
 function show() {
+  clearTimeout(showTimer)
+  showTimer = null
   clearTimeout(hideTimer)
   visible.value = true
 }
@@ -69,9 +72,15 @@ function cancelHide() {
   clearTimeout(hideTimer)
 }
 
-// 鼠标接近屏幕顶部边缘（≤8px）自动滑出
+// 悬停意图：鼠标在顶部边缘（≤6px）停留 500ms 才滑出，快速划过不触发
 function onMouseMove(e) {
-  if (e.clientY <= 8 && !visible.value) show()
+  if (visible.value) return
+  if (e.clientY <= 6) {
+    if (!showTimer) showTimer = setTimeout(show, 500)
+  } else if (showTimer) {
+    clearTimeout(showTimer)
+    showTimer = null
+  }
 }
 
 // 路由变化后立即收起
@@ -81,6 +90,7 @@ onMounted(() => document.addEventListener('mousemove', onMouseMove))
 onBeforeUnmount(() => {
   document.removeEventListener('mousemove', onMouseMove)
   clearTimeout(hideTimer)
+  clearTimeout(showTimer)
 })
 </script>
 
