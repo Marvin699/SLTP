@@ -125,7 +125,11 @@ function onSubmitStep() {
   flex-shrink: 0;
   z-index: 100;
   position: relative;
+  /* 极窄窗口兜底：内容横向滚动，绝不裁切或隐藏文字 */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.stepnav::-webkit-scrollbar { display: none; }
 
 /* ─── 通用小图标按钮（返回 / 管理工具 / 主题）─── */
 .nav-icon-btn {
@@ -166,6 +170,8 @@ function onSubmitStep() {
   display: flex;
   align-items: center;
   gap: 0;
+  /* 四步向导永不压缩，窄窗口时整条横条出横向滚动而不是挤碎文字 */
+  flex-shrink: 0;
 }
 
 .step {
@@ -320,14 +326,7 @@ function onSubmitStep() {
   flex-shrink: 0;
 }
 
-/* ─── 窄屏降级 ─── */
-@media (max-width: 1366px) {
-  .step-title { display: none; }
-  .step { padding: 4px 6px; }
-}
-
-@media (max-width: 1280px) {
-  .step-link { width: 12px; }
-  .submit-step-btn { padding: 5px 10px; }
-}
+/* 注意：不再有任何隐藏步骤标题的媒体查询——1366×768/1024×768 是教学大屏和
+   投影仪的常见分辨率，曾因 max-width 断点导致大屏上只剩数字圆圈。
+   现在的策略：标题任何分辨率下永远显示，极窄窗口靠 .stepnav 横向滚动兜底。 */
 </style>
